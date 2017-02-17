@@ -1,0 +1,103 @@
+<div class="utls-selector-row">
+    <div class="utls-header-text">
+        <h1 class="utls-text">User transaction-logs</h1>
+    </div>
+
+
+    <div class="utls-logfilter-column">
+        <div class="utls-selector-text utls-text">
+            Filter on column:
+        </div>
+
+        <select class="form-control utls-select"
+                [(ngModel)]="selectedColumn"
+                (ngModelChange)="changeColumn($event)"
+                *ngIf="isLoaded">
+            <option>--- Select column ---</option>
+            <option>All</option>
+            <option *ngFor="let col of cols" [ngValue]="col">{{col.name}}</option>
+        </select>
+    </div>
+
+    <div class="utls-logfilter-column">
+        <div class="utls-selector-text utls-text">
+            Specify columnvalue:
+        </div>
+
+        <select class="form-control utls-select"value
+                [(ngModel)]="selectedContent"
+                (ngModelChange)="changeLogContent($event)"
+                *ngIf="isLoaded">
+            <option>--- Select ---</option>
+            <option>All</option>
+            <option *ngFor="let con of columnContent | dtoSort" [ngValue]="con">{{con.value}}</option>
+        </select>
+
+
+
+    </div>
+
+
+</div>
+
+<div hidden>{{clock | async}}</div>
+
+<div class="utls-container">
+    <table class="table table-striped utls-table"
+           *ngIf="isLoaded"
+           [mfData]="logs$ | async | dataFilter : filterQuery"
+           #mf="mfDataTable"
+           [(mfSortBy)]="sortBy"
+           [(mfSortOrder)]="sortOrder"
+           [mfRowsOnPage]="20">
+        <thead>
+        <tr>
+            <th class="utls-column">
+                <mfDefaultSorter by="username">Username</mfDefaultSorter>
+            </th>
+            <th class="utls-column-small">
+                <mfDefaultSorter by="timestampAsDate">Time for log</mfDefaultSorter>
+            </th>
+            <th class="utls-column-xsmall">
+                <mfDefaultSorter by="tab">Active tab</mfDefaultSorter>
+            </th>
+            <th class="utls-column-xsmall">
+                <mfDefaultSorter by="target">Using device</mfDefaultSorter>
+            </th>
+            <th class="utls-column-small">
+                <mfDefaultSorter by="category">Category</mfDefaultSorter>
+            </th>
+            <th class="utls-column-xsmall">
+                <mfDefaultSorter by="name">Eventname</mfDefaultSorter>
+            </th>
+            <th class="utls-column-xsmall">
+                <mfDefaultSorter by="host">Robot</mfDefaultSorter>
+            </th>
+            <th class="utls-column-big">
+                <mfDefaultSorter by="label">Label</mfDefaultSorter>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let log of mf.data">
+            <td>{{log.username}}</td>
+            <td>{{log.timestampAsDate}}</td>
+            <td>{{log.tab}}</td>
+            <td>{{log.target}}</td>
+            <td>{{log.category}}</td>
+            <td>{{log.name}}</td>
+            <td>{{log.host}}</td>
+            <td>{{log.label}}</td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+            <td colspan="5">
+                <mfBootstrapPaginator [rowsOnPageSet]="[15,20]"></mfBootstrapPaginator>
+            </td>
+        </tr>
+        </tfoot>
+
+    </table>
+</div>
+

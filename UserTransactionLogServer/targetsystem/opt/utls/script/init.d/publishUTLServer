@@ -1,0 +1,44 @@
+#!/sbin/openrc-run
+
+depend()
+{
+	need avahi-daemon
+	need utlServer
+}
+
+
+start()
+{
+  ebegin "Starting publishUTLServer"
+
+  logger -t publishUTLServer Publish the User Transaction Logserver service
+  . /opt/amsserver/amsdefinitions
+
+  HOSTNAME=`hostname`
+
+  start-stop-daemon --start --background --make-pidfile --pidfile /var/run/publishUTLServer.pid \
+	  --exec /usr/bin/avahi-publish \
+	  --stdout $AMSLOGDIR/publishUTLServer.log \
+	  --stderr $AMSLOGDIR/publishUTLServer_err.log \
+      -- -s UTLSERVER _vmsutl._tcp 8085 $HOSTNAME
+
+
+  logger -t publishUTLServer The User Transacation Logserver service is published !
+  eend 0
+}
+
+
+
+stop()
+{
+  ebegin "Stopping publishUTLServer"
+  logger -t publishUTLServer Stop publishing the User Transaction Logserver service
+
+  start-stop-daemon --stop --exec /usr/bin/avahi-publish \
+	  --pidfile /var/run/publishUTLServer.pid
+
+  logger -t publishUTLServer Stop of publishing the User Transaction Logserver service, done !
+  eend 0
+}
+
+

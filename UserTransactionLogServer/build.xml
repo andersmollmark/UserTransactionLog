@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- You may freely edit this file. See commented blocks below for -->
+<!-- some examples of how to customize the build. -->
+<!-- (If you delete it and reopen the project it will be recreated.) -->
+<!-- By default, only the Clean and Build commands use this build script. -->
+<!-- Commands such as Run, Debug, and Test only use this build script if -->
+<!-- the Compile on Save feature is turned off for the project. -->
+<!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
+<!-- in the project's Project Properties dialog box.-->
+<project name="UserTransactionLogServer" default="default" basedir=".">
+    <description>Builds, tests, and runs the project UserTransactionLogServer.</description>
+    <import file="nbproject/build-impl.xml"/>
+    <property location="lib\nblibraries.properties" name="libraries.path"/>
+
+    <property name="src.dir" value="src"/>
+    <property name="build.jenkins.dir" value="build"/>
+    <property name="distJenkins.dir"   value="./dist"/>
+    <property name="distJenkins.lib.dir" value="${distJenkins.dir}/lib"/>
+    <property name="classes.jenkins.dir" value="${build.jenkins.dir}/classes"/>
+    <property name="test.classes.dir" value="${build.jenkins.dir}/testClasses"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="build.lib.dir" value="${build.jenkins.dir}/lib"/>
+    <property name="test.report.dir" value="${build.jenkins.dir}/testreport"/>
+    <property name="test.dir" value="test"/>
+    <property name="testlib.dir" value="testlib"/>
+    <!--<property name="nightlyJenkins.dir"     value="${BUILD_DIR}/externals"/>-->
+    <!--<property name="nightlyJenkins.dir" value="../trunk/externals"/>-->
+    <property name="application.jar" value="UserTransactionLogServer.jar"/>
+    <property name="java.sdk" value="1.8"/>
+
+    <target name="package-APPLICATION-INIT" >
+        <!-- Java code file where name, version and revision should be updated -->
+        <property name="SRC.Main.File" value="./src/com/delaval/usertransactionlogserver/UserTransactionLogServer.java"/>
+        <property name="Application.name" value="UserTransactionLogServer"/>         <!-- Name of application -->
+        <property name="Application.version.major" value="1"/>
+        <property name="Application.version.minor" value="0"/>
+        <property name="Application.version" value="${Application.version.major}.${Application.version.minor}"/>     <!-- Version of application -->
+    </target>
+    
+    <target name="SVN_GET_REVISION" depends="package-APPLICATION-INIT" description="TEST_SPLIT">
+
+		<exec executable="svn" output="svninfo.xml" failonerror="true">
+			<arg line="info --xml ." />
+		</exec>
+		<xmlproperty file="svninfo.xml" collapseattributes="true" />
+		<property name="SVN.revision" value="${info.entry.commit.revision}" />
+
+        <scriptdef name="split" language="javascript">
+            <attribute name="value"/>
+            <attribute name="sep"/>
+            <attribute name="prefix"/>
+            <![CDATA[
+                values = ("00000" + attributes.get("value")).split(attributes.get("sep"));
+                project.setNewProperty("greger.value", values);
+                x=0;
+                for(i=values.length-5; i<values.length; i++) //We want the 5 last digits
+                    project.setNewProperty(attributes.get("prefix")+(x++), values[i]);
+            ]]>
+        </scriptdef>
+
+        <split value="${SVN.revision}" sep="" prefix="SVN.revision."/>
+        <echo>SVN revision found: ${SVN.revision}</echo>
+		
+    </target>
+    
+    <target name="UPDATE_MAIN_CLASS_WITH_VERSION_DATA" depends="COMMON_SCRIPTS,SVN_GET_REVISION,package-APPLICATION-INIT">
+
+        <!-- Update revision number in Main class -->
+        <loadfile property="SRC.Main" srcFile="${SRC.Main.File}"></loadfile>
+        <UpdateVariable id="//ANT REPLACE" data="${SRC.Main}" prefix="&#009;private static final String[] ANTDATA = {" suffix="};&#009;" newvalue="&#034;${Application.name}&#034;, &#034;${Application.version}&#034;, &#034;${SVN.revision}&#034;" target="SRC.NewMain"/>
+        <echo file="${SRC.Main.File}">${SRC.NewMain}</echo>
+        <echo>${SRC.Main.File} was updated with ${Application.name}, ${Application.version}, ${SVN.revision}</echo>
+
+    </target>    
+
+    <!-- RESTORE_MAIN_CLASS_TO_NEUTRAL_VERSION -->
+    <target name="RESTORE_MAIN_CLASS_TO_NEUTRAL_VERSION" depends="COMMON_SCRIPTS,SVN_GET_REVISION,package-APPLICATION-INIT">
+
+		<!-- Restore Main class and install script -->
+		<!--<antcall target="RESTORE_INSTALL_SCRIPT_TO_NEUTRAL_VERSION"/> -->
+
+        <!-- Update revision number in Main class -->
+        <loadfile property="SRC.Main" srcFile="${SRC.Main.File}"></loadfile>
+        <UpdateVariable id="//ANT REPLACE" data="${SRC.Main}" prefix="&#009;private static final String[] ANTDATA = {" suffix="};&#009;" newvalue="&#034;XX&#034;, &#034;0.0&#034;, &#034;0000&#034;" target="SRC.NeutralMain"/>
+        <echo file="${SRC.Main.File}">${SRC.NeutralMain}</echo>
+        <echo>${SRC.Main.File} was restored to neutral version XX, 0.0, 0000</echo>
+
+    </target>
+<target name="COMMON_SCRIPTS" depends="">
+
+	   <!-- Java Script that locates a row containing "id" and replacing it
+			with prefix + newvalue + suffix + revisionID -->
+       <scriptdef name="UpdateVariable" language="javascript">
+             <attribute name="data"/>
+             <attribute name="newvalue"/>
+             <attribute name="target"/>
+             <attribute name="id"/>
+             <attribute name="prefix"/>
+             <attribute name="suffix"/>
+             <![CDATA[
+                var result = "";
+                var revisionID = attributes.get("id");
+                var revisionLine1 = attributes.get("prefix");
+                var revisionLine2 = attributes.get("suffix") + revisionID;
+                var rows = attributes.get("data").split("\n");
+                for(i=0; i<rows.length; i++)
+                {
+                    if (rows[i].indexOf(revisionID)>-1)
+                    {
+                        rows[i] = attributes.get("prefix") + attributes.get("newvalue") + attributes.get("suffix") + revisionID;
+                        break;
+                    }
+                }
+                for(i=0; i<rows.length; i++)
+                {
+                    result = result + rows[i] + "\n";
+                }
+                project.setNewProperty(attributes.get("target"), result);
+             ]]>
+        </scriptdef>
+
+	   <!-- Java Script that performs simple math evals -->
+       <scriptdef name="PerformEval" language="javascript">
+             <attribute name="operand1"/>
+             <attribute name="operand2"/>
+             <attribute name="target"/>
+             <attribute name="operator"/>
+             <![CDATA[
+                var result = eval(attributes.get("operand1") + attributes.get("operator") + attributes.get("operand2"));
+                project.setNewProperty(attributes.get("target"), result);
+             ]]>
+        </scriptdef>
+
+    </target>
+    <target name="copyLibsJenkins">
+        <copy todir="${build.lib.dir}" flatten="true">
+            <fileset dir="${lib.dir}" includes="**/*.jar"/>
+			<!-- libs are copied to lib folder by jenkins job
+            <fileset dir="${nightlyJenkins.dir}/slf4j-1.7.12" includes="slf4j-api-1.7.12.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/aopalliance-1.0" includes="aopalliance-1.0.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/jetty-9.3.2" includes="jetty-all-9.3.2.v20150730-uber.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/xstream-1.4.7/lib" includes="xstream-1.4.7.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/javax-3.1.0" includes="javax.servlet-api-3.1.0.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/logback-1.1.3" includes="logback-classic-1.1.3.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/logback-1.1.3" includes="logback-core-1.1.3.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/activemqClient-5.11.1" includes="activemq-client-5.11.1.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/xbean-spring-3.12" includes="xbean-spring-3.12.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/commons-logging-1.2" includes="commons-logging-1.2.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/spring-jms-4.1.0" includes="*.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/hawtbuf-1.9" includes="hawtbuf-1.9.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/gson-2.3.1" includes="gson-2.3.1.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/groovy/groovy-2.3.6/embeddable" includes="groovy-all-2.3.6-indy.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/geronimo-1.1" includes="*.jar"/>
+			-->
+        </copy>
+    </target>
+
+    <target name="cleanStart">
+        <delete dir="${build.jenkins.dir}"/>
+        <delete dir="${distJenkins.dir}"/>
+        <mkdir dir="${build.jenkins.dir}"/>
+        <mkdir dir="${distJenkins.dir}"/>
+        <mkdir dir="${distJenkins.lib.dir}"/>
+    </target>
+
+    <path id="mainClasspath">
+        <fileset dir="${build.lib.dir}" includes="**/*.jar"/>
+    </path>
+
+    <path id="testClasspath">
+        <path refid="mainClasspath"/>
+        <pathelement location="${classes.jenkins.dir}"/>
+        <pathelement location="${test.classes.dir}"/>
+        <fileset dir="${testlib.dir}" includes="*.jar"/>
+    </path>
+
+    <target name="compileJenkins" depends="copyLibsJenkins">
+        <mkdir dir="${classes.jenkins.dir}"/>
+        <javac srcdir="${src.dir}"
+               destdir="${classes.jenkins.dir}"
+               classpathref="mainClasspath"
+               target="${java.sdk}"/>
+    </target>
+
+    <target name="testCompile" depends="compileJenkins">
+        <mkdir dir="${test.classes.dir}"/>
+        <mkdir dir="${testlib.dir}"/>
+        <javac srcdir="${test.dir}"
+               destdir="${test.classes.dir}"
+               includeantruntime="false"
+               classpathref="testClasspath"
+               target="${java.sdk}" source="${java.sdk}"/>
+    </target>
+
+    <target name="testOnJenkins" depends="testCompile">
+        <junit printsummary="on" fork="true" haltonfailure="yes">
+            <classpath refid="testClasspath"/>
+            <batchtest todir="${test.report.dir}">
+                <fileset dir="${test.dir}">
+                    <exclude name="main/*.java"/>
+                    <include name="**/*Test*.java"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+    <!-- target name="jenkinsJar" depends="package-APPLICATION-INIT,UPDATE_MAIN_CLASS_WITH_VERSION_DATA,clean,compile,jar,RESTORE_MAIN_CLASS_TO_NEUTRAL_VERSION" --> 
+    <target name="jenkinsJar" depends="package-APPLICATION-INIT,UPDATE_MAIN_CLASS_WITH_VERSION_DATA,clean,compile,jar,jarJenkins,RESTORE_MAIN_CLASS_TO_NEUTRAL_VERSION">         
+    </target>
+    
+    <target name="jarJenkins">
+       <path id="classpath.to.dist.lib">
+            <fileset dir="${distJenkins.lib.dir}" includes="**/*.jar"/>
+        </path>
+
+        <pathconvert property="manifest.classpath" pathsep=" ">
+            <path refid="classpath.to.dist.lib"/>
+            <mapper>
+                <chainedmapper>
+                    <flattenmapper/>
+                    <globmapper from="*.jar" to="lib/*.jar"/>
+                </chainedmapper>
+            </mapper>
+        </pathconvert>
+
+        <tstamp/><!-- needed for TODAY -->
+        <jar destfile="${distJenkins.dir}/${application.jar}" basedir="${classes.jenkins.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="com.delaval.usertransactionlogserver.UserTransactionLogServer"/>
+                <attribute name="Built-Date" value="${TODAY}" />
+                <attribute name="Class-Path" value="${manifest.classpath}"/>
+            </manifest>
+        </jar> 
+    </target>
+
+    <target name="copyLibsToDistDir">
+        <copy todir="${distJenkins.lib.dir}" flatten="true">
+            <fileset dir="${build.lib.dir}" includes="**/*.jar"/>
+        </copy>
+
+    </target>
+
+    <target name="copyToJenkinsDistLib" depends="cleanStart, testOnJenkins, copyLibsToDistDir, jenkinsJar" />
+
+    <!--
+
+    There exist several targets which are by default empty and which can be 
+    used for execution of your tasks. These targets are usually executed 
+    before and after some main targets. They are: 
+
+      -pre-init:                 called before initialization of project properties
+      -post-init:                called after initialization of project properties
+      -pre-compile:              called before javac compilation
+      -post-compile:             called after javac compilation
+      -pre-compile-single:       called before javac compilation of single file
+      -post-compile-single:      called after javac compilation of single file
+      -pre-compile-test:         called before javac compilation of JUnit tests
+      -post-compile-test:        called after javac compilation of JUnit tests
+      -pre-compile-test-single:  called before javac compilation of single JUnit test
+      -post-compile-test-single: called after javac compilation of single JUunit test
+      -pre-jar:                  called before JAR building
+      -post-jar:                 called after JAR building
+      -post-clean:               called after cleaning build products
+
+    (Targets beginning with '-' are not intended to be called on their own.)
+
+    Example of inserting an obfuscator after compilation could look like this:
+
+        <target name="-post-compile">
+            <obfuscate>
+                <fileset dir="${build.classes.dir}"/>
+            </obfuscate>
+        </target>
+
+    For list of available properties check the imported 
+    nbproject/build-impl.xml file. 
+
+
+    Another way to customize the build is by overriding existing main targets.
+    The targets of interest are: 
+
+      -init-macrodef-javac:     defines macro for javac compilation
+      -init-macrodef-junit:     defines macro for junit execution
+      -init-macrodef-debug:     defines macro for class debugging
+      -init-macrodef-java:      defines macro for class execution
+      -do-jar:                  JAR building
+      run:                      execution of project 
+      -javadoc-build:           Javadoc generation
+      test-report:              JUnit report generation
+
+    An example of overriding the target for project execution could look like this:
+
+        <target name="run" depends="UserTransactionLogServer-impl.jar">
+            <exec dir="bin" executable="launcher.exe">
+                <arg file="${dist.jar}"/>
+            </exec>
+        </target>
+
+    Notice that the overridden target depends on the jar target and not only on 
+    the compile target as the regular run target does. Again, for a list of available 
+    properties which you can use, check the target you are overriding in the
+    nbproject/build-impl.xml file. 
+
+    -->
+</project>

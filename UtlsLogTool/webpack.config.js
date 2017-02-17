@@ -1,0 +1,54 @@
+var path = require('path');
+var webpack = require('webpack');
+var CommonsChunkPlugin = webpack.optimize.CommonsChunkPlugin;
+
+module.exports = {
+  devtool: 'source-map',
+  debug: true,
+
+  entry: {
+    'angular2': [
+      'rxjs',
+      'reflect-metadata',
+      'zone.js',
+      '@angular/core',
+      '@angular/router',
+      '@angular/http'
+    ],
+	'app': './app/app'
+  },
+
+  output: {
+    path: __dirname + '/build/',
+    publicPath: 'build/',
+    filename: '[name].js',
+    sourceMapFilename: '[name].js.map',
+    chunkFilename: '[id].chunk.js'
+  },
+
+  resolve: {
+    extensions: ['','.ts','.js','.json', '.css', '.html']
+  },
+
+  module: {
+    loaders: [
+      {
+        test: /\.ts$/,
+        loader: 'ts',
+        exclude: [ /node_modules/ ]
+      },
+      {
+        test: /\.css/,
+        loaders: ['style', 'css'],
+        include: [ path.resolve(__dirname, "/app"),
+          path.resolve(__dirname, "/node_modules/bootstrap")]
+      }
+    ]
+  },
+
+  plugins: [
+    new CommonsChunkPlugin({ name: 'angular2', filename: 'angular2.js', minChunks: Infinity }),
+    new CommonsChunkPlugin({ name: 'com mon',   filename: 'common.js' })
+  ],
+  target: 'electron-renderer'
+};

@@ -1,0 +1,38 @@
+#!/sbin/openrc-run
+
+depend()
+{
+	use logger net 
+}
+
+start()
+{
+    ebegin "Starting ActiveMQ"
+
+    logger -t ActiveMQ Start the ActiveMQ
+	. /opt/amsserver/amsdefinitions
+
+    start-stop-daemon --start --background --pidfile /var/run/activemq.pid \
+        --exec /opt/utls/apache-activemq-5.11.1/bin/activemq \
+        --user root \
+        --stdout $AMSLOGDIR/activemq.log \
+        --stderr $AMSLOGDIR/activemq_err.log \
+        --  start
+
+    logger -t ActiveMQ Start of the ActiveMQ, done !
+
+  eend 0
+}
+
+stop()
+{
+  ebegin "Stopping ActiveMQ"
+  logger -t ActiveMQ Stop the ActiveMQ
+
+  start-stop-daemon --stop --exec /usr/bin/java \
+	  --pidfile /var/run/activemq.pid
+  logger -t ActiveMQ Stop of the ActiveMQ done
+  eend 0
+}
+
+

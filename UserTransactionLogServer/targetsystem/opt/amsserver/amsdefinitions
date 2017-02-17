@@ -1,0 +1,5 @@
+TMP=/tmp
+LOGROOT=/var/log
+AMSLOGDIR=${LOGROOT}/amsserver
+LOGCOPYDIR=${LOGROOT}/ams_logcopy
+AMSHOME=/opt/amsserver

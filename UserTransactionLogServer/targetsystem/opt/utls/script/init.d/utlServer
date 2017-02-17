@@ -1,0 +1,40 @@
+#!/sbin/openrc-run
+
+depend()
+{
+	use logger net
+	need mysql
+}
+
+
+start()
+{
+    ebegin "Starting Asterix utlServer"
+
+    logger -t UserTransactionLogServer Start the utlServer
+	. /opt/amsserver/amsdefinitions
+    
+	start-stop-daemon --start --background --make-pidfile --pidfile /var/run/utls.pid \
+        --chdir /opt/utls/dist \
+        --exec /usr/bin/java \
+        --user root \
+        --stdout $AMSLOGDIR/utlServer.log \
+        --stderr $AMSLOGDIR/utlServer_err.log \
+        -- -Dlogback.configurationFile=/opt/utls/config/utlsLoggingConfig.groovy -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8800 -jar UserTransactionLogServer.jar
+
+    logger -t UserTransactionLogServer Start of the utlServer, done !
+  eend 0
+}
+
+
+
+stop()
+{
+  ebegin "Stopping utlServer"
+  logger -t UserTransactionLogServer Stop the utlServer
+
+  start-stop-daemon --stop --exec /usr/bin/java \
+	  --pidfile /var/run/utls.pid
+  logger -t UserTransactionLogServer Stop of the utlServer done
+  eend 0
+}
