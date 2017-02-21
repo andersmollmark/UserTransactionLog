@@ -11,9 +11,9 @@
     "clean-win": "rm -rf ./dist/windows",
     "clean-lin": "rm -rf ./dist/linux",
     "clean-osx": "rm -rf ./dist/osx",
-    "package-linux": "npm run clean-lin && electron-packager . Linuxapp --out=dist/linux --platform=linux --arch=x64",
-    "package-windows": "npm run clean-win && electron-packager . Windowsapp --out=dist/windows --platform=win32 --arch=all",
-    "package-osx": "npm run clean-osx && electron-packager . Macapp --out=dist/osx --platform=darwin --arch=x64"
+    "package-linux": "npm run clean-lin && electron-packager . UtlsLogTool --out=dist/linux --platform=linux --arch=x64",
+    "package-windows": "npm run clean-win && electron-packager . UtlsLogTool --out=dist/windows --platform=win32 --arch=all",
+    "package-osx": "npm run clean-osx && electron-packager . UtlsLogTool --out=dist/osx --platform=darwin --arch=x64"
   },
   "author": "AndersMollmark",
   "license": "MIT",
