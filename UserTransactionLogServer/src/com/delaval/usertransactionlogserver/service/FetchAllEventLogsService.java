@@ -56,6 +56,7 @@ public class FetchAllEventLogsService {
 
 
     JsonArray getAllEventLogsAsJson(){
+        UtlsLogUtil.info(this.getClass(),"Get all eventlogs and creating json-format");
         List<InternalUserTransactionKey> userTransactionIds = getUserTransactionIds();
         JsonArray arrayWithAllLogs = new JsonArray();
         userTransactionIds.forEach(id -> arrayWithAllLogs.addAll(getJsonEventLogsWithUserTransactionId(id)));
@@ -70,6 +71,11 @@ public class FetchAllEventLogsService {
 
     JsonArray getJsonEventLogsWithUserTransactionId(InternalUserTransactionKey aKey){
         List<InternalEventLog> eventLogsWithUserTransactionId = getEventLogsWithUserTransactionId(aKey);
+        UtlsLogUtil.info(this.getClass(), "Number of eventlogs found:" + eventLogsWithUserTransactionId.size());
+        eventLogsWithUserTransactionId.forEach(log -> {
+            log.setUsername(aKey.getUsername());
+            log.setTarget(aKey.getTarget());
+        });
         Gson gson = new Gson();
         JsonElement element = gson.toJsonTree(eventLogsWithUserTransactionId, new TypeToken<List<InternalEventLog>>(){}.getType());
         JsonArray jsonArray = element.getAsJsonArray();

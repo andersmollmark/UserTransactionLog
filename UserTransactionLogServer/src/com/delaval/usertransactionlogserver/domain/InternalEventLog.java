@@ -10,6 +10,7 @@ import java.util.Date;
 public class InternalEventLog {
 
     private String id;
+    private String username;
     private String name;
     private String category;
     private String label;
@@ -18,6 +19,7 @@ public class InternalEventLog {
     private Date timestampAsDate;
     private String tab;
     private String host;
+    private String target;
 
     public InternalEventLog(EventLog eventLog) {
         id = eventLog.getId();
@@ -29,6 +31,22 @@ public class InternalEventLog {
         timestampAsDate = eventLog.getTimestamp();
         timestamp = eventLog.getTimestamp().getTime();
         host = eventLog.getHost();
+    }
+
+    public void setUsername(String username){
+        this.username = username;
+    }
+
+    public String getUsername(){
+        return username;
+    }
+
+    public String getTarget() {
+        return target;
+    }
+
+    public void setTarget(String target) {
+        this.target = target;
     }
 
     public long getTimestamp() {
