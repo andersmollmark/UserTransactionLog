@@ -136,13 +136,13 @@
         <copy todir="${build.lib.dir}" flatten="true">
             <fileset dir="${lib.dir}" includes="**/*.jar"/>
 			<!-- libs are copied to lib folder by jenkins job
-            <fileset dir="${nightlyJenkins.dir}/slf4j-1.7.12" includes="slf4j-api-1.7.12.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/slf4j-1.7.24" includes="slf4j-api-1.7.24.jar"/>
             <fileset dir="${nightlyJenkins.dir}/aopalliance-1.0" includes="aopalliance-1.0.jar"/>
             <fileset dir="${nightlyJenkins.dir}/jetty-9.3.2" includes="jetty-all-9.3.2.v20150730-uber.jar"/>
             <fileset dir="${nightlyJenkins.dir}/xstream-1.4.7/lib" includes="xstream-1.4.7.jar"/>
             <fileset dir="${nightlyJenkins.dir}/javax-3.1.0" includes="javax.servlet-api-3.1.0.jar"/>
-            <fileset dir="${nightlyJenkins.dir}/logback-1.1.3" includes="logback-classic-1.1.3.jar"/>
-            <fileset dir="${nightlyJenkins.dir}/logback-1.1.3" includes="logback-core-1.1.3.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/logback-1.2.1" includes="logback-classic-1.2.1.jar"/>
+            <fileset dir="${nightlyJenkins.dir}/logback-1.2.1" includes="logback-core-1.2.1.jar"/>
             <fileset dir="${nightlyJenkins.dir}/activemqClient-5.11.1" includes="activemq-client-5.11.1.jar"/>
             <fileset dir="${nightlyJenkins.dir}/xbean-spring-3.12" includes="xbean-spring-3.12.jar"/>
             <fileset dir="${nightlyJenkins.dir}/commons-logging-1.2" includes="commons-logging-1.2.jar"/>
