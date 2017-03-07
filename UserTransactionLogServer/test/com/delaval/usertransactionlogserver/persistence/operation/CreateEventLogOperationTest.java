@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by delaval on 2016-08-26.
@@ -55,7 +56,8 @@ public class CreateEventLogOperationTest {
 //        PowerMockito.doNothing().when(UserTransactionKey.findOrCreateKey(mockSession, webSocketMessage));
 //        PowerMockito.doNothing().when(UtlsLogUtil.debug(CreateEventLogOperation.class, Mockito.anyString()));
 
-        webSocketMessage.setUsername("Testuser");
+        String username = "Testuser@Delaval.Com";
+        webSocketMessage.setUsername(username);
 
         Instant now = Instant.now();
         Timestamp timestamp = Timestamp.from(now);
@@ -76,9 +78,12 @@ public class CreateEventLogOperationTest {
         ArgumentCaptor<SFieldString> nameFieldCaptor = ArgumentCaptor.forClass(SFieldString.class);
         ArgumentCaptor<String> valueCaptor = ArgumentCaptor.forClass(String.class);
 
+        ArgumentCaptor<WebSocketMessage> message = ArgumentCaptor.forClass(WebSocketMessage.class);
+
         testOperation.execute();
 
         Mockito.verify(mockLog, Mockito.times(6)).setString(nameFieldCaptor.capture(), valueCaptor.capture());
+        Mockito.verify(mockLog, Mockito.times(1)).createUserTransactionId(message.capture());
 
         List<SFieldString> nameFieldCaptorAllValues = nameFieldCaptor.getAllValues();
         assertEquals(EventLog.NAME, nameFieldCaptorAllValues.get(0));
@@ -87,6 +92,11 @@ public class CreateEventLogOperationTest {
         assertEquals(EventLog.LABEL, nameFieldCaptorAllValues.get(3));
         assertEquals(EventLog.TIMESTAMP, nameFieldCaptorAllValues.get(4));
         assertEquals(EventLog.TAB, nameFieldCaptorAllValues.get(5));
+
+        WebSocketMessage capturedMessage = message.getValue();
+        assertNotNull(capturedMessage);
+        assertEquals(capturedMessage.getUsername(), username.toLowerCase());
+
 
         List<String> valueCaptorAllValues = valueCaptor.getAllValues();
         assertEquals(eventLogContent.getEventName(), valueCaptorAllValues.get((0)));
