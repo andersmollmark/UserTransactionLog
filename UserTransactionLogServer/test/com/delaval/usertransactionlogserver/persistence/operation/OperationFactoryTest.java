@@ -98,7 +98,7 @@ public class OperationFactoryTest {
         WebSocketMessage webSocketMessage = createSystemPropertyParam.getWebSocketMessage();
         assertThat(webSocketMessage.getClient(), is(system));
         assertThat(webSocketMessage.getTarget(), is(system));
-        assertThat(webSocketMessage.getUsername(), is(system));
+        assertThat(webSocketMessage.getUsername(), is(system.toLowerCase()));
     }
 
     @Test
