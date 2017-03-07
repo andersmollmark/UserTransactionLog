@@ -44,7 +44,7 @@ public class WebSocketMessage {
     }
 
     public String getUsername() {
-        return username;
+        return username.toLowerCase();
 
     }
 
