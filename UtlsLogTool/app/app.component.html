@@ -47,33 +47,36 @@
            *ngIf="isLoaded"
            [mfData]="logs$ | async | dataFilter : filterQuery"
            #mf="mfDataTable"
-           [(mfSortBy)]="sortBy"
-           [(mfSortOrder)]="sortOrder"
            [mfRowsOnPage]="20">
-        <thead>
+
+    <thead>
         <tr>
-            <th class="utls-column">
+            <th class="utls-column" (click)="resetSort()">
                 <mfDefaultSorter by="username">Username</mfDefaultSorter>
             </th>
             <th class="utls-column-small">
-                <mfDefaultSorter by="timestampAsDate">Time for log</mfDefaultSorter>
+                <a style="cursor: pointer" (click)="changeTimestampSort()" class="text-nowrap">
+                    <span *ngIf="isTimestampSortAsc()" class="glyphicon glyphicon-triangle-top"></span>
+                    <span *ngIf="isTimestampSortDesc()" class="glyphicon glyphicon-triangle-bottom"></span>
+                    Time for log
+                </a>
             </th>
-            <th class="utls-column-xsmall">
+            <th class="utls-column-xsmall" (click)="resetSort()">
                 <mfDefaultSorter by="tab">Active tab</mfDefaultSorter>
             </th>
-            <th class="utls-column-xsmall">
+            <th class="utls-column-xsmall" (click)="resetSort()">
                 <mfDefaultSorter by="target">Using device</mfDefaultSorter>
             </th>
-            <th class="utls-column-small">
+            <th class="utls-column-small" (click)="resetSort()">
                 <mfDefaultSorter by="category">Category</mfDefaultSorter>
             </th>
-            <th class="utls-column-xsmall">
+            <th class="utls-column-xsmall" (click)="resetSort()">
                 <mfDefaultSorter by="name">Eventname</mfDefaultSorter>
             </th>
-            <th class="utls-column-xsmall">
+            <th class="utls-column-xsmall" (click)="resetSort()">
                 <mfDefaultSorter by="host">Robot</mfDefaultSorter>
             </th>
-            <th class="utls-column-big">
+            <th class="utls-column-big" (click)="resetSort()">
                 <mfDefaultSorter by="label">Label</mfDefaultSorter>
             </th>
         </tr>

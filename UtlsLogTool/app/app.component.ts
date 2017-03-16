@@ -4,6 +4,7 @@ import {remote, ipcRenderer} from "electron";
 import {UtlsLog} from "./log";
 import {Observable} from "rxjs/Observable";
 import {Dto} from "./dto";
+import {AppSettings} from "./app.settings";
 
 let {dialog} = remote;
 
@@ -67,12 +68,13 @@ export class AppComponent implements OnInit {
         }
         else {
             console.log("filename selected:" + fileNamesArr[0]);
+            this.filterQuery = "";
             this.selectedColumn = this.selectedColumnDefaultChoice;
             this.selectedContent = this.selectedContentDefaultChoice;
             this.logs$ = this.utlsFileService.createLogs(fileNamesArr[0]);
             this.isLoaded = true;
         }
-    }
+    };
 
     changeColumn(newColumn) {
         this.selectedColumn = newColumn;
@@ -85,6 +87,29 @@ export class AppComponent implements OnInit {
             this.columnContent = emptyContent;
             this.logs$ = this.utlsFileService.getAllLogs();
         }
+    }
+
+    changeTimestampSort() {
+        if (this.isTimestampSortAsc()) {
+            this.filterQuery = AppSettings.TIMESTAMP_SORT_DESC;
+        }
+        else{
+            this.filterQuery = AppSettings.TIMESTAMP_SORT_ASC;
+        }
+        this.sortOrder = "";
+    }
+
+    isTimestampSortAsc(){
+        return this.filterQuery === AppSettings.TIMESTAMP_SORT_ASC;
+    }
+
+    isTimestampSortDesc(){
+        return this.filterQuery === AppSettings.TIMESTAMP_SORT_DESC;
+    }
+
+    resetSort(){
+        this.filterQuery = "";
+        this.sortOrder = "asc";
     }
 
     changeLogContent(newValueFromSpecificColumn) {

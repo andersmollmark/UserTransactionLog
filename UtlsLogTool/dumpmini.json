@@ -39,6 +39,19 @@
     "target": "mob"
   },
   {
+    "id": "anders.mollmarkext@delaval.com1482395758512",
+    "username": "anders.mollmarkext@delaval.com",
+    "name": "stalltab.event",
+    "category": "openEntryGate",
+    "label": "open the stall-entrygate",
+    "userTransactionKeyId": "anders.mollmarkext@delaval.com10.34.34.72mob",
+    "timestamp": 1481272200000,
+    "timestampAsDate": "Dec 9, 2016 9:30:00 AM",
+    "tab": "stall",
+    "host": "10.34.35.15",
+    "target": "mob"
+  },
+  {
     "id": "anders.mollmarkext@delaval.com1482395759922",
     "username": "anders.mollmarkext@delaval.com",
     "name": "stalltab.event",

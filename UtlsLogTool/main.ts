@@ -10,7 +10,7 @@ function createWindow(){
     });
 
     mainWindow.loadURL('file://' + __dirname + '/index.html');
-    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
 
     // Emitted when the window is closed.
     mainWindow.on('closed', () => {
@@ -21,24 +21,6 @@ function createWindow(){
     });
 
     mainWindow.maximize();
-    // secondWindow = new BrowserWindow({
-    //     width: 800,
-    //     height: 600,
-    //     show: false
-    // });
-    // secondWindow.loadURL('file://' + __dirname + '/app/second.html');
-    //
-    // ipcMain.on('open-custom', () => {
-    //     secondWindow.show();
-    // });
-    //
-    // // Emitted when the window is closed.
-    // secondWindow.on('closed', () => {
-    //     // Dereference the window object, usually you would store windows
-    //     // in an array if your app supports multi windows, this is the time
-    //     // when you should delete the corresponding element.
-    //     secondWindow = null;
-    // });
 
 }
 
