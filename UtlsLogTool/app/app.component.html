@@ -24,7 +24,7 @@
             Specify columnvalue:
         </div>
 
-        <select class="form-control utls-select"value
+        <select class="form-control utls-select" value
                 [(ngModel)]="selectedContent"
                 (ngModelChange)="changeLogContent($event)"
                 *ngIf="isLoaded">
@@ -32,11 +32,54 @@
             <option>All</option>
             <option *ngFor="let con of columnContent | dtoSort" [ngValue]="con">{{con.value}}</option>
         </select>
-
-
-
     </div>
 
+    <!--<div class="utls-logfilter-column">-->
+        <!--<div class="utls-selector-text utls-text">-->
+
+            <!--From:{{timestampFromAsDateString}}-->
+            <!--<div class="calendaricon">-->
+                <!--<img src="app/resources/calendar-image.png" (click)="setShowFrom()">-->
+            <!--</div>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!---->
+    <div class="utls-logfilter-column">
+        <div class="utls-selector-text utls-text">From:</div>
+        <div class="form-group calendarInput">
+            <input type="text" class="form-control" value="{{getFromFilterDateString()}}" readonly>
+            <div class="calendaricon">
+                <img src="app/resources/calendar-image.png" (click)="setShowFrom()">
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="isShowFrom()" class="calendardiv">
+        <datepicker [(ngModel)]="selectedDateFrom.value" [showWeeks]="false" (click)="changeFrom()"></datepicker>
+    </div>
+
+
+    <!--<div class="utls-logfilter-column">-->
+    <!--<div class="utls-selector-text utls-text">-->
+    <!--Tom:{{timestampToAsDateString}}-->
+    <!--<div class="calendaricon">-->
+    <!--<img src="app/resources/calendar-image.png" (click)="setShowTo()">-->
+    <!--</div>-->
+    <!--</div>-->
+    <!--</div>-->
+    <div class="utls-logfilter-column">
+        <div class="utls-selector-text utls-text">Tom:</div>
+        <div class="form-group calendarInput">
+            <input type="text" class="form-control" value="{{getToFilterDateString()}}" readonly>
+            <div class="calendaricon">
+                <img src="app/resources/calendar-image.png" (click)="setShowTo()">
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="isShowTo()" class="calendardiv">
+        <datepicker [(ngModel)]="selectedDateTo.value" [showWeeks]="false" (click)="changeTo($event)"></datepicker>
+    </div>
 
 </div>
 
@@ -45,11 +88,11 @@
 <div class="utls-container">
     <table class="table table-striped utls-table"
            *ngIf="isLoaded"
-           [mfData]="logs$ | async | dataFilter : filterQuery"
+           [mfData]="logs$ | async | dataFilter : filterQuery | timestampSort : timestampSortValue"
            #mf="mfDataTable"
            [mfRowsOnPage]="20">
 
-    <thead>
+        <thead>
         <tr>
             <th class="utls-column" (click)="resetSort()">
                 <mfDefaultSorter by="username">Username</mfDefaultSorter>

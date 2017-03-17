@@ -64,7 +64,7 @@
 
 .utls-selector-text{
     font-size: 16px;
-    display: inline;
+    display: inline-flex;
 }
 
 
@@ -81,4 +81,20 @@
 .utls-logfilter-column{
     float: left;
     padding-bottom: 10px;
+}
+
+.calendardiv{
+    color: black;
+    display: inline-flex;
+    position: absolute;
+}
+
+.calendaricon{
+    display: inline-flex;
+}
+
+.calendarInput{
+    width: auto;
+    display: inline-flex;
+    height: 20px;
 }
