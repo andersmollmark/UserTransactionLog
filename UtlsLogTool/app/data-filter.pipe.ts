@@ -20,10 +20,12 @@ export class DataFilterPipe implements PipeTransform {
                 if (this.filterService.getTimefilterFrom() && this.filterService.getTimefilterTo()) {
                     let from = this.filterService.getTimefilterFrom().getTime();
                     let to = this.filterService.getTimefilterTo().getTime();
+                    console.log('from:' + from + ' to:' + to);
                     resultArray = _.filter(array, row => row.timestamp >= from && row.timestamp <= to);
                 }
                 else if (this.filterService.getTimefilterFrom()) {
                     let from = this.filterService.getTimefilterFrom().getTime();
+                    console.log('from:' + from);
                     resultArray = _.filter(array, row => row.timestamp >= from);
                 }
             }
@@ -31,10 +33,12 @@ export class DataFilterPipe implements PipeTransform {
                 if (this.filterService.getTimefilterFrom() && this.filterService.getTimefilterTo()) {
                     let from = this.filterService.getTimefilterFrom().getTime();
                     let to = this.filterService.getTimefilterTo().getTime();
+                    console.log('from:' + from + ' to:' + to);
                     resultArray = _.filter(array, row => row.timestamp >= from && row.timestamp <= to);
                 }
                 else if(this.filterService.getTimefilterTo()){
                     let to = this.filterService.getTimefilterTo().getTime();
+                    console.log('to:' + to);
                     resultArray = _.filter(array, row => row.timestamp <= to);
                 }
             }

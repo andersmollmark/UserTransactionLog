@@ -89,8 +89,25 @@
     position: absolute;
 }
 
+.timepickerdiv{
+    background-color: white;
+    padding: 5px;
+    border-color: black;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.calendarIconBundle{
+    display: inline-block;
+}
+
 .calendaricon{
     display: inline-flex;
+}
+
+.clockicon{
+    display: inline-flex;
+    padding-left: 3px;
 }
 
 .calendarInput{

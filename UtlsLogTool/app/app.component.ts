@@ -20,6 +20,11 @@ export class AppComponent implements OnInit {
 
     showTo: boolean = false;
     showFrom: boolean = false;
+    showFromTime: boolean = false;
+    showToTime: boolean = false;
+    ismeridian:boolean = true;
+    fromTime: Date = new Date();
+    toTime: Date = new Date();
 
     logs$: Observable<UtlsLog[]>;
     public filterQuery;
@@ -157,8 +162,16 @@ export class AppComponent implements OnInit {
         this.showFrom = true;
     }
 
+    setShowFromTime(){
+        this.showFromTime = true;
+    }
+
     isShowFrom(){
         return this.showFrom;
+    }
+
+    isShowFromTime(){
+        return this.showFromTime;
     }
 
     changeFrom(){
@@ -166,31 +179,61 @@ export class AppComponent implements OnInit {
             if(!this.selectedDateFrom.isSame(this.lastSelectedDateFrom)){
                 this.lastSelectedDateFrom = SelectedDate.getFromDateParts(this.selectedDateFrom.value);
                 this.showFrom = false;
-                this.filterService.setTimefilterFrom(this.selectedDateFrom.value);
-                this.filterService.setFilterQuery(AppSettings.TIMESTAMP_FILTER_FROM.concat(this.selectedDateFrom.asString()));
+                this.showFromTime = true;
             }
         }
     }
 
-    changeTo($event){
+    changeFromTime(){
+        if(this.fromTime && this.selectedDateFrom){
+            if(!this.selectedDateFrom.isSameTime(this.fromTime)){
+                this.selectedDateFrom.setTime(this.fromTime, 0);
+            }
+            this.filterService.setTimefilterFrom(this.selectedDateFrom.value);
+            this.filterService.setFilterQuery(AppSettings.TIMESTAMP_FILTER_FROM.concat(this.selectedDateFrom.asString()));
+            this.showFromTime = false;
+        }
+    }
+
+    changeTo(){
         if(this.selectedDateTo){
             if(!this.selectedDateTo.isSame(this.lastSelectedDateTo)){
                 this.lastSelectedDateTo = SelectedDate.getFromDateParts(this.selectedDateTo.value);
                 this.showTo = false;
-                this.filterService.setTimefilterTo(this.selectedDateTo.value);
-                this.filterService.setFilterQuery(AppSettings.TIMESTAMP_FILTER_TO.concat(this.selectedDateTo.asString()));
+                this.showToTime = true;
             }
         }
 
+    }
+
+    changeToTime(){
+        if(this.toTime && this.selectedDateTo){
+            if(!this.selectedDateTo.isSameTime(this.toTime)){
+                this.selectedDateTo.setTime(this.toTime, 59);
+            }
+            this.filterService.setTimefilterTo(this.selectedDateTo.value);
+            this.filterService.setFilterQuery(AppSettings.TIMESTAMP_FILTER_TO.concat(this.selectedDateTo.asString()));
+            this.showToTime = false;
+        }
     }
 
     setShowTo(){
         this.showTo = true;
     }
 
+    setShowToTime(){
+        this.showToTime = true;
+    }
+
     isShowTo(){
         return this.showTo;
     }
+
+
+    isShowToTime(){
+        return this.showToTime;
+    }
+
 
 
     isTimestampSortAsc(){

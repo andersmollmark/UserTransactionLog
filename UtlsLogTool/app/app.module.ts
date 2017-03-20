@@ -10,13 +10,13 @@ import {DataTableModule} from "angular2-datatable";
 import {HttpModule} from "@angular/http";
 import {FormsModule} from "@angular/forms";
 import {DtoSortPipe} from "./dtoSort.pipe";
-import {DatepickerModule} from "ng2-bootstrap";
 import {FilterService} from "./filter.service";
 import {TimeStampSortPipe} from "./timestampSort.pipe";
+import {DatepickerModule, TimepickerModule} from "ng2-bootstrap";
 
 @NgModule({
     imports:      [ BrowserModule, FormsModule,
-        DataTableModule, HttpModule, DatepickerModule.forRoot()],
+        DataTableModule, HttpModule, DatepickerModule.forRoot(), TimepickerModule.forRoot()],
     declarations: [ AppComponent, DataFilterPipe, StringSortPipe, DtoSortPipe, TimeStampSortPipe ],
     providers: [ UtlsFileService, FilterService],
     bootstrap:    [ AppComponent ]
