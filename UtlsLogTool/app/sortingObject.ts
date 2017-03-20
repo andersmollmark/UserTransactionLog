@@ -1,4 +1,4 @@
-import {AppSettings} from "./app.settings";
+import {AppConstants} from "./app.constants";
 export class SortingObject {
     sortorder: string = "";
     sortname: string = "";
@@ -9,7 +9,7 @@ export class SortingObject {
     }
 
     isTimestamp(): boolean{
-        return this.isOk() && this.sortname === AppSettings.TIMESTAMP_SORT;
+        return this.isOk() && this.sortname === AppConstants.COL_TIMESTAMP;
     }
 
 }

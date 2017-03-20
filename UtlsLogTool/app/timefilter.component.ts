@@ -1,7 +1,7 @@
 import {Component, OnInit} from "@angular/core";
 import {SelectedDate} from "./selectedDate";
 import {TimeFilterService} from "./timefilter.service";
-import {AppSettings} from "./app.settings";
+import {AppConstants} from "./app.constants";
 @Component({
     selector: 'timefilter',
     templateUrl: './app/timefilter.component.html'
@@ -74,7 +74,7 @@ export class TimefilterComponent {
                 this.selectedDateFrom.setTime(this.fromTime, 0);
             }
             this.timeFilterService.setSelectedTimefilterFrom(this.selectedDateFrom.value);
-            this.timeFilterService.setFilterQuery(AppSettings.TIMESTAMP_FILTER_FROM.concat(this.selectedDateFrom.asString()));
+            this.timeFilterService.setFilterQuery(AppConstants.TIMESTAMP_FILTER_FROM.concat(this.selectedDateFrom.asString()));
             this.showFromTime = false;
         }
     }
@@ -96,7 +96,7 @@ export class TimefilterComponent {
                 this.selectedDateTo.setTime(this.toTime, 59);
             }
             this.timeFilterService.setSelectedTimefilterTo(this.selectedDateTo.value);
-            this.timeFilterService.setFilterQuery(AppSettings.TIMESTAMP_FILTER_TO.concat(this.selectedDateTo.asString()));
+            this.timeFilterService.setFilterQuery(AppConstants.TIMESTAMP_FILTER_TO.concat(this.selectedDateTo.asString()));
             this.showToTime = false;
         }
     }

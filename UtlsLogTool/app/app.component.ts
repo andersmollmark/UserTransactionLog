@@ -4,7 +4,7 @@ import {remote, ipcRenderer} from "electron";
 import {UtlsLog} from "./log";
 import {Observable} from "rxjs/Observable";
 import {Dto} from "./dto";
-import {AppSettings} from "./app.settings";
+import {AppConstants} from "./app.constants";
 import * as _ from "lodash";
 import {TimeFilterService} from "./timefilter.service";
 import {SortingObject} from "./sortingObject";
@@ -32,18 +32,18 @@ export class AppComponent implements OnInit {
     //Select-column-filter
     selectedColumnDefaultChoice = "--- Select column ---";
     public selectedColumn = this.selectedColumnDefaultChoice;
-    allColumns = "All";
+    allColumns = AppConstants.STR_ALL;
     cols = [
-        {name: "Username", value: UtlsFileService.USERNAME},
-        {name: "Active tab", value: UtlsFileService.TAB},
-        {name: "Category", value: UtlsFileService.CATEGORY},
-        {name: "Eventname", value: UtlsFileService.EVENTNAME}
+        {name: "Username", value: AppConstants.COL_USERNAME},
+        {name: "Active tab", value: AppConstants.COL_TAB},
+        {name: "Category", value: AppConstants.COL_CATEGORY},
+        {name: "Eventname", value: AppConstants.COL_EVENTNAME}
     ];
 
     //Selected-column-filter
     selectedContentDefaultChoice = "--- Select ---";
     public selectedContent = this.selectedContentDefaultChoice;
-    allContent = "All";
+    allContent = AppConstants.STR_ALL;
     columnContent: Dto[];
 
 
@@ -71,6 +71,9 @@ export class AppComponent implements OnInit {
 
     ngDoCheck() {
         this.filterQuery = this.timeFilterService.getFilterQuery();
+        if(this.utlsFileService.isColumnContentChanged()){
+            this.changeColumnValueAndContentValues(this.selectedColumn);
+        }
     }
 
 
@@ -84,6 +87,7 @@ export class AppComponent implements OnInit {
             this.filterQuery = "";
             this.selectedColumn = this.selectedColumnDefaultChoice;
             this.selectedContent = this.selectedContentDefaultChoice;
+            this.columnContent = new Array<Dto>();
             this.logs$ = this.utlsFileService.createLogs(fileNamesArr[0]);
             let self = this;
             this.logs$.subscribe(logs => {
@@ -102,8 +106,10 @@ export class AppComponent implements OnInit {
                 self.timeFilterService.setLastSelectedTimefilterTo(new Date(self.timestampTo));
 
                 this.columnSortObject = new SortingObject();
-                this.columnSortObject.sortorder = AppSettings.COLUMN_SORT_DESC;
-                this.columnSortObject.sortname = AppSettings.TIMESTAMP_SORT;
+                this.columnSortObject.sortorder = AppConstants.COLUMN_SORT_DESC;
+                this.columnSortObject.sortname = AppConstants.COL_TIMESTAMP;
+                this.columnSortValue = AppConstants.COLUMN_SORT_DESC;
+                this.sortBy = AppConstants.COL_TIMESTAMP;
 
                 console.log('new from:' + self.timeFilterService.getSelectedTimefilterFrom().asString() + ' new to:' +
                     self.timeFilterService.getLastSelectedTimefilterTo().asString());
@@ -119,6 +125,13 @@ export class AppComponent implements OnInit {
     }
 
     changeColumn(newColumn) {
+        this.changeColumnValueAndContentValues(newColumn);
+        if (AppConstants.STR_ALL === newColumn) {
+            this.logs$ = this.utlsFileService.getAllLogs();
+        }
+    }
+
+    private changeColumnValueAndContentValues(newColumn) {
         this.selectedColumn = newColumn;
         if (this.allColumns !== newColumn && this.selectedColumnDefaultChoice !== newColumn) {
             this.columnContent = this.utlsFileService.getContentForSpecificColumn(newColumn);
@@ -126,23 +139,23 @@ export class AppComponent implements OnInit {
         }
         if (this.allColumns === newColumn) {
             this.columnContent = new Array<Dto>();
-            this.logs$ = this.utlsFileService.getAllLogs();
         }
+
     }
 
 
     resetSort(sortBy) {
         if (this.isSameColumn(sortBy)) {
             if (this.isColumnSortAsc(sortBy)) {
-                this.columnSortValue = AppSettings.COLUMN_SORT_DESC;
+                this.columnSortValue = AppConstants.COLUMN_SORT_DESC;
             }
             else {
-                this.columnSortValue = AppSettings.COLUMN_SORT_ASC;
+                this.columnSortValue = AppConstants.COLUMN_SORT_ASC;
             }
         }
         else {
             this.sortBy = sortBy;
-            this.columnSortValue = AppSettings.COLUMN_SORT_ASC;
+            this.columnSortValue = AppConstants.COLUMN_SORT_ASC;
         }
         this.columnSortObject = new SortingObject();
         this.columnSortObject.sortorder = this.columnSortValue;
@@ -154,11 +167,11 @@ export class AppComponent implements OnInit {
     }
 
     isColumnSortAsc(sortBy): boolean {
-        return this.sortBy === sortBy && this.columnSortValue === AppSettings.COLUMN_SORT_ASC;
+        return this.sortBy === sortBy && this.columnSortValue === AppConstants.COLUMN_SORT_ASC;
     }
 
     isColumnSortDesc(sortBy): boolean {
-        return this.sortBy === sortBy && this.columnSortValue === AppSettings.COLUMN_SORT_DESC;
+        return this.sortBy === sortBy && this.columnSortValue === AppConstants.COLUMN_SORT_DESC;
     }
 
     changeLogContent(newValueFromSpecificColumn) {

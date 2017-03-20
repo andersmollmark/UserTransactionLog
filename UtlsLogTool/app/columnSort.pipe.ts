@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import {AppSettings} from "./app.settings";
+import {AppConstants} from "./app.constants";
 import {Pipe, PipeTransform} from "@angular/core";
 import {UtlsLog} from "./log";
 import {SortingObject} from "./sortingObject";
@@ -16,7 +16,7 @@ export class ColumnSortPipe implements PipeTransform {
     transform(array: any[], sortObject: SortingObject): any {
         var result = array;
         if (sortObject && sortObject.isOk() && !_.isNil(array)) {
-            if(AppSettings.COLUMN_SORT_ASC === sortObject.sortorder){
+            if(AppConstants.COLUMN_SORT_ASC === sortObject.sortorder){
                 if(sortObject.isTimestamp()){
                     result = array.sort((a: UtlsLog, b: UtlsLog) => {
                         return b.timestamp - a.timestamp
@@ -27,7 +27,7 @@ export class ColumnSortPipe implements PipeTransform {
                 }
 
             }
-            else if(AppSettings.COLUMN_SORT_DESC === sortObject.sortorder){
+            else if(AppConstants.COLUMN_SORT_DESC === sortObject.sortorder){
                 if(sortObject.isTimestamp()){
                     result = array.sort((a: UtlsLog, b: UtlsLog) => {
                         return a.timestamp - b.timestamp

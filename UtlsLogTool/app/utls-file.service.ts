@@ -4,6 +4,7 @@ import {Observable} from "rxjs/Observable";
 import {Http} from "@angular/http";
 import {Dto} from "./dto";
 import * as _ from "lodash";
+import {AppConstants} from "./app.constants";
 
 @Injectable()
 export class UtlsFileService {
@@ -11,16 +12,12 @@ export class UtlsFileService {
     activeLogContent: Observable<UtlsLog[]>;
     partOfLogContent: Observable<UtlsLog[]>;
 
+    columnContentHasChanged: boolean = false;
+
     usersInLogContent: Dto[] = [];
     categoriesInLogContent: Dto[] = [];
     tabsInLogContent: Dto[] = [];
     eventNamesInLogContent: Dto[] = [];
-
-    public static USERNAME = "username";
-    public static TAB = "tab";
-    public static CATEGORY = "category";
-    public static EVENTNAME = "name";
-
     allColumnContent = [];
 
     constructor(private http: Http) {
@@ -51,47 +48,79 @@ export class UtlsFileService {
         }
     }
 
-    mapLogToContentAndColumn(logs: UtlsLog[]){
-        let tempUser = [];
-        let tempTab = [];
-        let tempCategory = [];
-        let tempName = [];
-        let self = this;
-        _.forEach(logs, function (log) {
-            if(tempUser.indexOf(log.username) === -1){
-                tempUser.push(log.username);
-                self.usersInLogContent.push({name: UtlsFileService.USERNAME, value:log.username});
-            }
-            if(tempTab.indexOf(log.tab) === -1){
-                tempTab.push(log.tab);
-                self.tabsInLogContent.push({name: UtlsFileService.TAB, value:log.tab});
-            }
-            if(tempCategory.indexOf(log.category) === -1){
-                tempCategory.push(log.category);
-                self.categoriesInLogContent.push({name: UtlsFileService.CATEGORY, value:log.category});
-            }
-            if(tempName.indexOf(log.name) === -1){
-                tempName.push(log.name);
-                self.eventNamesInLogContent.push({name: UtlsFileService.EVENTNAME, value:log.name});
-            }
-        });
-
-        this.allColumnContent[UtlsFileService.USERNAME] = this.usersInLogContent;
-        this.allColumnContent[UtlsFileService.TAB] = this.tabsInLogContent;
-        this.allColumnContent[UtlsFileService.CATEGORY] = this.categoriesInLogContent;
-        this.allColumnContent[UtlsFileService.EVENTNAME] = this.eventNamesInLogContent;
+    createColumnFilteringValuesForLogs(logarray: any[]) {
+        this.createLogContentAndColumn(logarray);
     }
 
+    mapLogToContentAndColumn(logs: UtlsLog[]){
+        this.createLogContentAndColumn(logs);
+    }
+
+    private createLogContentAndColumn(logs: any[]){
+        let tempStructure = {
+            tempUser: [],
+            tempTab: [],
+            tempCategory: [],
+            tempName: []
+        };
+        let self = this;
+        this.resetColumnData();
+        _.forEach(logs, function (log) {
+            self.createPossibleColumnFilter(self, log, tempStructure);
+        });
+        this.addColumndataToAllColumns();
+    }
+
+    private resetColumnData(){
+        this.usersInLogContent = [];
+        this.categoriesInLogContent = [];
+        this.tabsInLogContent = [];
+        this.eventNamesInLogContent = [];
+        this.allColumnContent = [];
+
+    }
+
+    private createPossibleColumnFilter(self, log, tempStructure){
+        if(tempStructure.tempUser.indexOf(log.username) === -1){
+            tempStructure.tempUser.push(log.username);
+            self.usersInLogContent.push({name: AppConstants.COL_USERNAME, value:log.username});
+        }
+        if(tempStructure.tempTab.indexOf(log.tab) === -1){
+            tempStructure.tempTab.push(log.tab);
+            self.tabsInLogContent.push({name: AppConstants.COL_TAB, value:log.tab});
+        }
+        if(tempStructure.tempCategory.indexOf(log.category) === -1){
+            tempStructure.tempCategory.push(log.category);
+            self.categoriesInLogContent.push({name: AppConstants.COL_CATEGORY, value:log.category});
+        }
+        if(tempStructure.tempName.indexOf(log.name) === -1){
+            tempStructure.tempName.push(log.name);
+            self.eventNamesInLogContent.push({name: AppConstants.COL_EVENTNAME, value:log.name});
+        }
+    }
+
+    private addColumndataToAllColumns(){
+        this.allColumnContent[AppConstants.COL_USERNAME] = this.usersInLogContent;
+        this.allColumnContent[AppConstants.COL_TAB] = this.tabsInLogContent;
+        this.allColumnContent[AppConstants.COL_CATEGORY] = this.categoriesInLogContent;
+        this.allColumnContent[AppConstants.COL_EVENTNAME] = this.eventNamesInLogContent;
+        this.columnContentHasChanged = true;
+    }
+
+    isColumnContentChanged(){
+        return this.columnContentHasChanged;
+    }
 
     getContentForSpecificColumn(column: Dto): Dto[]{
+        this.columnContentHasChanged = false;
         return this.allColumnContent[column.value];
 
     }
 
+
     getLogsForSpecificColumnValue(content: Dto): Observable<UtlsLog[]>{
         this.partOfLogContent =
             this.activeLogContent.map(logs => logs.filter(log => {
-                // console.log('value:' + log[content.name]);
                 if(log[content.name] === content.value){
                     return true;
                 }
