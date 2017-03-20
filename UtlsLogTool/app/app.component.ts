@@ -26,9 +26,6 @@ export class AppComponent implements OnInit {
     public isLoaded: boolean;
     public sortBy = "";
 
-    timestampFrom;
-    timestampTo;
-
     //Select-column-filter
     selectedColumnDefaultChoice = "--- Select column ---";
     public selectedColumn = this.selectedColumnDefaultChoice;
@@ -83,33 +80,28 @@ export class AppComponent implements OnInit {
         }
         else {
             console.log("filename selected:" + fileNamesArr[0]);
-            this.resetDateValues();
-            this.filterQuery = "";
-            this.selectedColumn = this.selectedColumnDefaultChoice;
-            this.selectedContent = this.selectedContentDefaultChoice;
-            this.columnContent = new Array<Dto>();
+            this.init();
             this.logs$ = this.utlsFileService.createLogs(fileNamesArr[0]);
+            let timestampFrom;
+            let timestampTo;
+
             let self = this;
             this.logs$.subscribe(logs => {
                 _.forEach(logs, function (log) {
-                    if (!self.timestampFrom || self.timestampFrom > log.timestamp) {
-                        self.timestampFrom = log.timestamp;
+                    if (!timestampFrom || timestampFrom > log.timestamp) {
+                        timestampFrom = log.timestamp;
                     }
-                    else if (!self.timestampTo || self.timestampTo < log.timestamp) {
-                        self.timestampTo = log.timestamp;
+                    else if (!timestampTo || timestampTo < log.timestamp) {
+                        timestampTo = log.timestamp;
                     }
                 });
-                self.timeFilterService.setSelectedTimefilterFrom(new Date(self.timestampFrom));
-                self.timeFilterService.setLastSelectedTimefilterFrom(new Date(self.timestampFrom));
+                let firstDate = new Date(timestampFrom);
+                let lastDate = new Date(timestampTo);
 
-                self.timeFilterService.setSelectedTimefilterTo(new Date(self.timestampTo));
-                self.timeFilterService.setLastSelectedTimefilterTo(new Date(self.timestampTo));
+                self.timeFilterService.setFirstDateFromFile(firstDate);
+                self.timeFilterService.setLastDateFromFile(lastDate);
 
-                this.columnSortObject = new SortingObject();
-                this.columnSortObject.sortorder = AppConstants.COLUMN_SORT_DESC;
-                this.columnSortObject.sortname = AppConstants.COL_TIMESTAMP;
-                this.columnSortValue = AppConstants.COLUMN_SORT_DESC;
-                this.sortBy = AppConstants.COL_TIMESTAMP;
+                self.timeFilterService.resetTimefilter();
 
                 console.log('new from:' + self.timeFilterService.getSelectedTimefilterFrom().asString() + ' new to:' +
                     self.timeFilterService.getLastSelectedTimefilterTo().asString());
@@ -118,10 +110,25 @@ export class AppComponent implements OnInit {
         }
     };
 
-    resetDateValues() {
-        this.timestampFrom = undefined;
-        this.timestampTo = undefined;
-        this.timeFilterService.resetAllDateValues();
+    resetFilter(){
+        this.init();
+        this.timeFilterService.resetTimefilter();
+        this.logs$ = this.utlsFileService.getAllLogs();
+        this.utlsFileService.resetContentAndColumnToOriginFromFile();
+    }
+
+    init(){
+        // this.timeFilterService.resetAllDateValues();
+        this.filterQuery = "";
+        this.selectedColumn = this.selectedColumnDefaultChoice;
+        this.selectedContent = this.selectedContentDefaultChoice;
+        this.columnContent = new Array<Dto>();
+        this.columnSortObject = new SortingObject();
+        this.columnSortObject.sortorder = AppConstants.COLUMN_SORT_DESC;
+        this.columnSortObject.sortname = AppConstants.COL_TIMESTAMP;
+        this.columnSortValue = AppConstants.COLUMN_SORT_DESC;
+        this.sortBy = AppConstants.COL_TIMESTAMP;
+
     }
 
     changeColumn(newColumn) {

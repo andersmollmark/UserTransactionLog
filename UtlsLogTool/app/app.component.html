@@ -1,8 +1,4 @@
 <div class="utls-selector-row">
-    <div class="utls-header-text">
-        <h1 class="utls-text">User transaction-logs</h1>
-    </div>
-
 
     <div class="utls-logfilter-column">
         <div class="utls-selector-text utls-text">
@@ -34,8 +30,12 @@
         </select>
     </div>
 
+    <timefilter></timefilter>
 
-<timefilter></timefilter>
+    <div class="utls-logfilter-column">
+        <button class="btn btn-primary btn-md" (click)="resetFilter()">Clear filter</button>
+    </div>
+
 </div>
 
 <div hidden>{{clock | async}}</div>

@@ -4,6 +4,9 @@ import {SelectedDate} from "./selectedDate";
 @Injectable()
 export class TimeFilterService {
 
+    private firstDateFromFile: Date;
+    private lastDateFromFile: Date;
+
     private selectedTimefilterFrom: SelectedDate;
     private selectedTimefilterTo: SelectedDate;
 
@@ -13,6 +16,22 @@ export class TimeFilterService {
     private filterQuery: string = "";
 
     constructor() {
+    }
+
+    setFirstDateFromFile(firstDate: Date){
+        this.firstDateFromFile = firstDate;
+    }
+
+    setLastDateFromFile(lastDate: Date){
+        this.lastDateFromFile = lastDate;
+    }
+
+    resetTimefilter(){
+        this.filterQuery = "";
+        this.setSelectedTimefilterFrom(this.firstDateFromFile);
+        this.setSelectedTimefilterTo(this.lastDateFromFile);
+        this.setLastSelectedTimefilterFrom(this.firstDateFromFile);
+        this.setLastSelectedTimefilterTo(this.lastDateFromFile);
     }
 
     setSelectedTimefilterFrom(from: Date){
@@ -47,12 +66,12 @@ export class TimeFilterService {
         return this.lastSelectedTimefilterTo;
     }
 
-    resetAllDateValues(){
-        this.selectedTimefilterTo = undefined;
-        this.selectedTimefilterFrom = undefined;
-        this.lastSelectedTimefilterFrom = undefined;
-        this.lastSelectedTimefilterTo = undefined;
-    }
+    // resetAllDateValues(){
+    //     this.selectedTimefilterTo = undefined;
+    //     this.selectedTimefilterFrom = undefined;
+    //     this.lastSelectedTimefilterFrom = undefined;
+    //     this.lastSelectedTimefilterTo = undefined;
+    // }
 
     setFilterQuery(query: string){
         this.filterQuery = query;
