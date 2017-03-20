@@ -35,62 +35,7 @@
     </div>
 
 
-    <div class="utls-logfilter-column">
-        <div class="utls-selector-text utls-text">From:</div>
-        <div class="form-group calendarInput">
-            <input type="text" class="form-control" value="{{getFromFilterDateString()}}" readonly>
-
-            <div class="calendarIconBundle">
-                <div class="calendaricon">
-                    <img src="app/resources/calendar-image.png" (click)="setShowFrom()">
-                </div>
-                <div class="clockicon">
-                    <img src="app/resources/clock.png" (click)="setShowFromTime()">
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <div *ngIf="isShowFrom()" class="calendardiv">
-        <datepicker [(ngModel)]="selectedDateFrom.value" [showWeeks]="false" (click)="changeFrom()"></datepicker>
-    </div>
-    <div *ngIf="isShowFromTime()" class="calendardiv">
-        <div class="timepickerdiv">
-            <timepicker [(ngModel)]="fromTime" [showMeridian]="ismeridian"></timepicker>
-            <button class="btn btn-primary btn-xs" (click)="changeFromTime()">Done</button>
-        </div>
-
-    </div>
-
-    <div class="utls-logfilter-column">
-        <div class="utls-selector-text utls-text">To:</div>
-        <div class="form-group calendarInput">
-            <input type="text" class="form-control" value="{{getToFilterDateString()}}" readonly>
-
-            <div class="calendarIconBundle">
-                <div class="calendaricon">
-                    <img src="app/resources/calendar-image.png" (click)="setShowTo()">
-                </div>
-                <div class="clockicon">
-                    <img src="app/resources/clock.png" (click)="setShowToTime()">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div *ngIf="isShowTo()" class="calendardiv">
-        <datepicker [(ngModel)]="selectedDateTo.value" [showWeeks]="false" (click)="changeTo($event)"></datepicker>
-    </div>
-    <div *ngIf="isShowToTime()" class="calendardiv">
-        <div class="timepickerdiv">
-            <timepicker [(ngModel)]="toTime" [showMeridian]="ismeridian"></timepicker>
-            <button class="btn btn-primary btn-xs" (click)="changeToTime()">Done</button>
-        </div>
-
-    </div>
-
-
+<timefilter></timefilter>
 </div>
 
 <div hidden>{{clock | async}}</div>
@@ -98,39 +43,67 @@
 <div class="utls-container">
     <table class="table table-striped utls-table"
            *ngIf="isLoaded"
-           [mfData]="logs$ | async | dataFilter : filterQuery | timestampSort : timestampSortValue"
+           [mfData]="logs$ | async | dataFilter : filterQuery | columnSort : columnSortObject"
            #mf="mfDataTable"
            [mfRowsOnPage]="20">
 
         <thead>
         <tr>
-            <th class="utls-column" (click)="resetSort()">
-                <mfDefaultSorter by="username">Username</mfDefaultSorter>
+            <th class="utls-column">
+                <a style="cursor: pointer" (click)="resetSort('username')" class="text-nowrap">
+                    <span *ngIf="isColumnSortAsc('username')" class="glyphicon glyphicon-triangle-top"></span>
+                    <span *ngIf="isColumnSortDesc('username')" class="glyphicon glyphicon-triangle-bottom"></span>
+                    Username
+                </a>
             </th>
             <th class="utls-column-small">
-                <a style="cursor: pointer" (click)="changeTimestampSort()" class="text-nowrap">
-                    <span *ngIf="isTimestampSortAsc()" class="glyphicon glyphicon-triangle-top"></span>
-                    <span *ngIf="isTimestampSortDesc()" class="glyphicon glyphicon-triangle-bottom"></span>
+                <a style="cursor: pointer" (click)="resetSort('timestamp')" class="text-nowrap">
+                    <span *ngIf="isColumnSortAsc('timestamp')" class="glyphicon glyphicon-triangle-top"></span>
+                    <span *ngIf="isColumnSortDesc('timestamp')" class="glyphicon glyphicon-triangle-bottom"></span>
                     Time for log
                 </a>
             </th>
-            <th class="utls-column-xsmall" (click)="resetSort()">
-                <mfDefaultSorter by="tab">Active tab</mfDefaultSorter>
+            <th class="utls-column-xsmall">
+                <a style="cursor: pointer" (click)="resetSort('tab')" class="text-nowrap">
+                    <span *ngIf="isColumnSortAsc('tab')" class="glyphicon glyphicon-triangle-top"></span>
+                    <span *ngIf="isColumnSortDesc('tab')" class="glyphicon glyphicon-triangle-bottom"></span>
+                    Active tab
+                </a>
             </th>
-            <th class="utls-column-xsmall" (click)="resetSort()">
-                <mfDefaultSorter by="target">Using device</mfDefaultSorter>
+            <th class="utls-column-xsmall">
+                <a style="cursor: pointer" (click)="resetSort('target')" class="text-nowrap">
+                    <span *ngIf="isColumnSortAsc('target')" class="glyphicon glyphicon-triangle-top"></span>
+                    <span *ngIf="isColumnSortDesc('target')" class="glyphicon glyphicon-triangle-bottom"></span>
+                    Using device
+                </a>
             </th>
-            <th class="utls-column-small" (click)="resetSort()">
-                <mfDefaultSorter by="category">Category</mfDefaultSorter>
+            <th class="utls-column-small">
+                <a style="cursor: pointer" (click)="resetSort('category')" class="text-nowrap">
+                    <span *ngIf="isColumnSortAsc('category')" class="glyphicon glyphicon-triangle-top"></span>
+                    <span *ngIf="isColumnSortDesc('category')" class="glyphicon glyphicon-triangle-bottom"></span>
+                    Category
+                </a>
             </th>
-            <th class="utls-column-xsmall" (click)="resetSort()">
-                <mfDefaultSorter by="name">Eventname</mfDefaultSorter>
+            <th class="utls-column-xsmall">
+                <a style="cursor: pointer" (click)="resetSort('name')" class="text-nowrap">
+                    <span *ngIf="isColumnSortAsc('name')" class="glyphicon glyphicon-triangle-top"></span>
+                    <span *ngIf="isColumnSortDesc('name')" class="glyphicon glyphicon-triangle-bottom"></span>
+                    Eventname
+                </a>
             </th>
-            <th class="utls-column-xsmall" (click)="resetSort()">
-                <mfDefaultSorter by="host">Robot</mfDefaultSorter>
+            <th class="utls-column-xsmall">
+                <a style="cursor: pointer" (click)="resetSort('host')" class="text-nowrap">
+                    <span *ngIf="isColumnSortAsc('host')" class="glyphicon glyphicon-triangle-top"></span>
+                    <span *ngIf="isColumnSortDesc('host')" class="glyphicon glyphicon-triangle-bottom"></span>
+                    Robot
+                </a>
             </th>
-            <th class="utls-column-big" (click)="resetSort()">
-                <mfDefaultSorter by="label">Label</mfDefaultSorter>
+            <th class="utls-column-big">
+                <a style="cursor: pointer" (click)="resetSort('label')" class="text-nowrap">
+                    <span *ngIf="isColumnSortAsc('label')" class="glyphicon glyphicon-triangle-top"></span>
+                    <span *ngIf="isColumnSortDesc('label')" class="glyphicon glyphicon-triangle-bottom"></span>
+                    Label
+                </a>
             </th>
         </tr>
         </thead>

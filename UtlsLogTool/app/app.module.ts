@@ -1,24 +1,24 @@
-
-import { NgModule }      from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
-import { AppComponent }   from './app.component';
-import { DataFilterPipe } from './data-filter.pipe';
-import {StringSortPipe} from './stringSort.pipe';
-
+import {NgModule} from "@angular/core";
+import {BrowserModule} from "@angular/platform-browser";
+import {AppComponent} from "./app.component";
+import {DataFilterPipe} from "./data-filter.pipe";
+import {StringSortPipe} from "./stringSort.pipe";
 import {UtlsFileService} from "./utls-file.service";
 import {DataTableModule} from "angular2-datatable";
 import {HttpModule} from "@angular/http";
 import {FormsModule} from "@angular/forms";
 import {DtoSortPipe} from "./dtoSort.pipe";
-import {FilterService} from "./filter.service";
-import {TimeStampSortPipe} from "./timestampSort.pipe";
+import {TimeFilterService} from "./timefilter.service";
 import {DatepickerModule, TimepickerModule} from "ng2-bootstrap";
+import {TimefilterComponent} from "./timefilter.component";
+import {ColumnSortPipe} from "./columnSort.pipe";
 
 @NgModule({
     imports:      [ BrowserModule, FormsModule,
         DataTableModule, HttpModule, DatepickerModule.forRoot(), TimepickerModule.forRoot()],
-    declarations: [ AppComponent, DataFilterPipe, StringSortPipe, DtoSortPipe, TimeStampSortPipe ],
-    providers: [ UtlsFileService, FilterService],
+    declarations: [ AppComponent, TimefilterComponent, DataFilterPipe, StringSortPipe, DtoSortPipe,
+        ColumnSortPipe ],
+    providers: [ UtlsFileService, TimeFilterService],
     bootstrap:    [ AppComponent ]
 })
 export class AppModule { }

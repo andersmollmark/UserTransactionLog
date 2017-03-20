@@ -6,8 +6,8 @@ import {Observable} from "rxjs/Observable";
 import {Dto} from "./dto";
 import {AppSettings} from "./app.settings";
 import * as _ from "lodash";
-import {FilterService} from "./filter.service";
-import {SelectedDate} from "./selectedDate";
+import {TimeFilterService} from "./timefilter.service";
+import {SortingObject} from "./sortingObject";
 
 let {dialog} = remote;
 
@@ -18,28 +18,16 @@ let {dialog} = remote;
 })
 export class AppComponent implements OnInit {
 
-    showTo: boolean = false;
-    showFrom: boolean = false;
-    showFromTime: boolean = false;
-    showToTime: boolean = false;
-    ismeridian:boolean = true;
-    fromTime: Date = new Date();
-    toTime: Date = new Date();
-
     logs$: Observable<UtlsLog[]>;
     public filterQuery;
-    timestampSortValue: string = "";
+    columnSortValue: string = "";
+    columnSortObject: SortingObject = new SortingObject();
     clock;
     public isLoaded: boolean;
-    public sortBy = "timestampAsDate";
-    public sortOrder = "asc";
+    public sortBy = "";
 
     timestampFrom;
     timestampTo;
-    lastSelectedDateFrom: SelectedDate;
-    lastSelectedDateTo: SelectedDate;
-    selectedDateFrom: SelectedDate;
-    selectedDateTo: SelectedDate;
 
     //Select-column-filter
     selectedColumnDefaultChoice = "--- Select column ---";
@@ -59,7 +47,7 @@ export class AppComponent implements OnInit {
     columnContent: Dto[];
 
 
-    constructor(private utlsFileService: UtlsFileService, private filterService: FilterService) {
+    constructor(private utlsFileService: UtlsFileService, private timeFilterService: TimeFilterService) {
         this.isLoaded = false;
     }
 
@@ -81,8 +69,8 @@ export class AppComponent implements OnInit {
         this.clock = Observable.interval(1000);
     }
 
-    ngDoCheck(){
-        this.filterQuery = this.filterService.getFilterQuery();
+    ngDoCheck() {
+        this.filterQuery = this.timeFilterService.getFilterQuery();
     }
 
 
@@ -100,32 +88,34 @@ export class AppComponent implements OnInit {
             let self = this;
             this.logs$.subscribe(logs => {
                 _.forEach(logs, function (log) {
-                    if(!self.timestampFrom || self.timestampFrom > log.timestamp){
+                    if (!self.timestampFrom || self.timestampFrom > log.timestamp) {
                         self.timestampFrom = log.timestamp;
                     }
-                    else if(!self.timestampTo || self.timestampTo < log.timestamp){
+                    else if (!self.timestampTo || self.timestampTo < log.timestamp) {
                         self.timestampTo = log.timestamp;
                     }
                 });
-                self.selectedDateTo = SelectedDate.getFromDate(new Date(self.timestampTo));
-                self.selectedDateFrom = SelectedDate.getFromDate(new Date(self.timestampFrom));
-                self.lastSelectedDateFrom = SelectedDate.getFromDateParts(self.selectedDateFrom.value);
-                self.lastSelectedDateTo = SelectedDate.getFromDateParts(self.selectedDateTo.value);
-                this.timestampSortValue = AppSettings.TIMESTAMP_SORT_DESC;
-                this.sortOrder = "";
-                console.log('new from:' + self.selectedDateFrom.asString() + ' new to:' + self.selectedDateTo.asString());
+                self.timeFilterService.setSelectedTimefilterFrom(new Date(self.timestampFrom));
+                self.timeFilterService.setLastSelectedTimefilterFrom(new Date(self.timestampFrom));
+
+                self.timeFilterService.setSelectedTimefilterTo(new Date(self.timestampTo));
+                self.timeFilterService.setLastSelectedTimefilterTo(new Date(self.timestampTo));
+
+                this.columnSortObject = new SortingObject();
+                this.columnSortObject.sortorder = AppSettings.COLUMN_SORT_DESC;
+                this.columnSortObject.sortname = AppSettings.TIMESTAMP_SORT;
+
+                console.log('new from:' + self.timeFilterService.getSelectedTimefilterFrom().asString() + ' new to:' +
+                    self.timeFilterService.getLastSelectedTimefilterTo().asString());
             });
             this.isLoaded = true;
         }
     };
 
-    resetDateValues(){
+    resetDateValues() {
         this.timestampFrom = undefined;
         this.timestampTo = undefined;
-        this.selectedDateFrom = undefined;
-        this.selectedDateTo = undefined;
-        this.lastSelectedDateFrom = undefined;
-        this.lastSelectedDateTo = undefined;
+        this.timeFilterService.resetAllDateValues();
     }
 
     changeColumn(newColumn) {
@@ -140,113 +130,35 @@ export class AppComponent implements OnInit {
         }
     }
 
-    changeTimestampSort() {
-        if (this.isTimestampSortAsc()) {
-            this.timestampSortValue = AppSettings.TIMESTAMP_SORT_DESC;
-        }
-        else{
-            this.timestampSortValue = AppSettings.TIMESTAMP_SORT_ASC;
-        }
-        this.sortOrder = "";
-    }
 
-    getFromFilterDateString(): string{
-        return this.selectedDateFrom ? this.selectedDateFrom.asString() : '';
-    }
-
-    getToFilterDateString(): string{
-        return this.selectedDateTo ? this.selectedDateTo.asString() : '';
-    }
-
-    setShowFrom(){
-        this.showFrom = true;
-    }
-
-    setShowFromTime(){
-        this.showFromTime = true;
-    }
-
-    isShowFrom(){
-        return this.showFrom;
-    }
-
-    isShowFromTime(){
-        return this.showFromTime;
-    }
-
-    changeFrom(){
-        if(this.selectedDateFrom){
-            if(!this.selectedDateFrom.isSame(this.lastSelectedDateFrom)){
-                this.lastSelectedDateFrom = SelectedDate.getFromDateParts(this.selectedDateFrom.value);
-                this.showFrom = false;
-                this.showFromTime = true;
+    resetSort(sortBy) {
+        if (this.isSameColumn(sortBy)) {
+            if (this.isColumnSortAsc(sortBy)) {
+                this.columnSortValue = AppSettings.COLUMN_SORT_DESC;
+            }
+            else {
+                this.columnSortValue = AppSettings.COLUMN_SORT_ASC;
             }
         }
-    }
-
-    changeFromTime(){
-        if(this.fromTime && this.selectedDateFrom){
-            if(!this.selectedDateFrom.isSameTime(this.fromTime)){
-                this.selectedDateFrom.setTime(this.fromTime, 0);
-            }
-            this.filterService.setTimefilterFrom(this.selectedDateFrom.value);
-            this.filterService.setFilterQuery(AppSettings.TIMESTAMP_FILTER_FROM.concat(this.selectedDateFrom.asString()));
-            this.showFromTime = false;
+        else {
+            this.sortBy = sortBy;
+            this.columnSortValue = AppSettings.COLUMN_SORT_ASC;
         }
+        this.columnSortObject = new SortingObject();
+        this.columnSortObject.sortorder = this.columnSortValue;
+        this.columnSortObject.sortname = this.sortBy;
     }
 
-    changeTo(){
-        if(this.selectedDateTo){
-            if(!this.selectedDateTo.isSame(this.lastSelectedDateTo)){
-                this.lastSelectedDateTo = SelectedDate.getFromDateParts(this.selectedDateTo.value);
-                this.showTo = false;
-                this.showToTime = true;
-            }
-        }
-
+    private isSameColumn(sortBy): boolean {
+        return this.sortBy === sortBy;
     }
 
-    changeToTime(){
-        if(this.toTime && this.selectedDateTo){
-            if(!this.selectedDateTo.isSameTime(this.toTime)){
-                this.selectedDateTo.setTime(this.toTime, 59);
-            }
-            this.filterService.setTimefilterTo(this.selectedDateTo.value);
-            this.filterService.setFilterQuery(AppSettings.TIMESTAMP_FILTER_TO.concat(this.selectedDateTo.asString()));
-            this.showToTime = false;
-        }
+    isColumnSortAsc(sortBy): boolean {
+        return this.sortBy === sortBy && this.columnSortValue === AppSettings.COLUMN_SORT_ASC;
     }
 
-    setShowTo(){
-        this.showTo = true;
-    }
-
-    setShowToTime(){
-        this.showToTime = true;
-    }
-
-    isShowTo(){
-        return this.showTo;
-    }
-
-
-    isShowToTime(){
-        return this.showToTime;
-    }
-
-
-
-    isTimestampSortAsc(){
-        return this.timestampSortValue === AppSettings.TIMESTAMP_SORT_ASC;
-    }
-
-    isTimestampSortDesc(){
-        return this.timestampSortValue === AppSettings.TIMESTAMP_SORT_DESC;
-    }
-
-    resetSort(){
-        this.sortOrder = "asc";
-        this.timestampSortValue = "";
+    isColumnSortDesc(sortBy): boolean {
+        return this.sortBy === sortBy && this.columnSortValue === AppSettings.COLUMN_SORT_DESC;
     }
 
     changeLogContent(newValueFromSpecificColumn) {

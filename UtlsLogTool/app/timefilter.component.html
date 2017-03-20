@@ -1,0 +1,54 @@
+<div class="utls-logfilter-column">
+    <div class="utls-selector-text utls-text">From:</div>
+    <div class="form-group calendarInput">
+        <input type="text" class="form-control" value="{{getFromFilterDateString()}}" readonly>
+
+        <div class="calendarIconBundle">
+            <div class="calendaricon">
+                <img src="app/resources/calendar-image.png" (click)="setShowFrom()">
+            </div>
+            <div class="clockicon">
+                <img src="app/resources/clock.png" (click)="setShowFromTime()">
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div *ngIf="isShowFrom()" class="calendardiv">
+    <datepicker [(ngModel)]="selectedDateFrom.value" [showWeeks]="false" (click)="changeFrom()"></datepicker>
+</div>
+<div *ngIf="isShowFromTime()" class="calendardiv">
+    <div class="timepickerdiv">
+        <timepicker [(ngModel)]="fromTime" [showMeridian]="ismeridian"></timepicker>
+        <button class="btn btn-primary btn-xs" (click)="changeFromTime()">Done</button>
+    </div>
+
+</div>
+
+<div class="utls-logfilter-column">
+    <div class="utls-selector-text utls-text">To:</div>
+    <div class="form-group calendarInput">
+        <input type="text" class="form-control" value="{{getToFilterDateString()}}" readonly>
+
+        <div class="calendarIconBundle">
+            <div class="calendaricon">
+                <img src="app/resources/calendar-image.png" (click)="setShowTo()">
+            </div>
+            <div class="clockicon">
+                <img src="app/resources/clock.png" (click)="setShowToTime()">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div *ngIf="isShowTo()" class="calendardiv">
+    <datepicker [(ngModel)]="selectedDateTo.value" [showWeeks]="false" (click)="changeTo($event)"></datepicker>
+</div>
+<div *ngIf="isShowToTime()" class="calendardiv">
+    <div class="timepickerdiv">
+        <timepicker [(ngModel)]="toTime" [showMeridian]="ismeridian"></timepicker>
+        <button class="btn btn-primary btn-xs" (click)="changeToTime()">Done</button>
+    </div>
+
+</div>
