@@ -62,6 +62,7 @@ export class UtlsFileService {
 
     mapLogToContentAndColumn(logs: UtlsLog[]) {
         this.createLogContentAndColumn(logs);
+        this.setOriginalStructureFromFile();
 
     }
 

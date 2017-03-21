@@ -1,4 +1,4 @@
-<div class="utls-selector-row">
+<div class="utls-selector-row" *ngIf="isLoaded">
 
     <div class="utls-logfilter-column">
         <div class="utls-selector-text utls-text">
@@ -7,8 +7,7 @@
 
         <select class="form-control utls-select"
                 [(ngModel)]="selectedColumn"
-                (ngModelChange)="changeColumn($event)"
-                *ngIf="isLoaded">
+                (ngModelChange)="changeColumn($event)">
             <option>--- Select column ---</option>
             <option>All</option>
             <option *ngFor="let col of cols" [ngValue]="col">{{col.name}}</option>
@@ -22,8 +21,7 @@
 
         <select class="form-control utls-select" value
                 [(ngModel)]="selectedContent"
-                (ngModelChange)="changeLogContent($event)"
-                *ngIf="isLoaded">
+                (ngModelChange)="changeLogContent($event)">
             <option>--- Select ---</option>
             <option>All</option>
             <option *ngFor="let con of columnContent | dtoSort" [ngValue]="con">{{con.value}}</option>
