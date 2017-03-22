@@ -26,7 +26,7 @@ export class AppComponent implements OnInit {
     public isLoaded: boolean;
     public sortBy = "";
 
-    //Select-column-filter
+    // Select-column-filter
     selectedColumnDefaultChoice = "--- Select column ---";
     public selectedColumn = this.selectedColumnDefaultChoice;
     allColumns = AppConstants.STR_ALL;
@@ -37,7 +37,7 @@ export class AppComponent implements OnInit {
         {name: "Eventname", value: AppConstants.COL_EVENTNAME}
     ];
 
-    //Selected-column-filter
+    // Selected-column-filter
     selectedContentDefaultChoice = "--- Select ---";
     public selectedContent = this.selectedContentDefaultChoice;
     allContent = AppConstants.STR_ALL;
@@ -68,7 +68,7 @@ export class AppComponent implements OnInit {
 
     ngDoCheck() {
         this.filterQuery = this.timeFilterService.getFilterQuery();
-        if(this.utlsFileService.isColumnContentChanged()){
+        if (this.utlsFileService.isColumnContentChanged()) {
             this.changeColumnValueAndContentValues(this.selectedColumn);
         }
     }
@@ -108,16 +108,16 @@ export class AppComponent implements OnInit {
             });
             this.isLoaded = true;
         }
-    };
+    }
 
-    resetFilter(){
+    resetFilter() {
         this.init();
         this.timeFilterService.resetTimefilter();
         this.logs$ = this.utlsFileService.getAllLogs();
         this.utlsFileService.resetContentAndColumnToOriginFromFile();
     }
 
-    init(){
+    init() {
         // this.timeFilterService.resetAllDateValues();
         this.filterQuery = "";
         this.selectedColumn = this.selectedColumnDefaultChoice;

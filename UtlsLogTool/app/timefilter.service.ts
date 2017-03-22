@@ -66,13 +66,6 @@ export class TimeFilterService {
         return this.lastSelectedTimefilterTo;
     }
 
-    // resetAllDateValues(){
-    //     this.selectedTimefilterTo = undefined;
-    //     this.selectedTimefilterFrom = undefined;
-    //     this.lastSelectedTimefilterFrom = undefined;
-    //     this.lastSelectedTimefilterTo = undefined;
-    // }
-
     setFilterQuery(query: string){
         this.filterQuery = query;
     }
