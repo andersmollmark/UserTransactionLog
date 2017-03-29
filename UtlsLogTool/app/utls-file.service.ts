@@ -6,6 +6,7 @@ import {Dto} from "./dto";
 import * as _ from "lodash";
 import {AppConstants} from "./app.constants";
 import {UtlserverService} from "./utlserver.service";
+import moment = require("moment");
 let fileSystem = require('fs');
 
 @Injectable()
@@ -56,12 +57,13 @@ export class UtlsFileService {
             if(dump){
                 let jsondata = JSON.parse(dump);
                 let prettyPrint = JSON.stringify(jsondata, null, '\t');
-                let now = new Date();
-                let filename = 'dump' + now.getFullYear() + now.getMonth() + now.getDate() + now.getMinutes();
+                let fileSuffix = moment().format('YYYY_MM_DD_HHmmss');
+                let filename = 'dump' + fileSuffix;
                 console.log('writing file:' + filename);
                 fileSystem.writeFile(filename, prettyPrint, (err) => {
                     if(err) throw err;
                     console.log('file ' + filename + ' is saved');
+                    alert('Logfile with name :' + filename + ' is saved');
                 });
 
             }

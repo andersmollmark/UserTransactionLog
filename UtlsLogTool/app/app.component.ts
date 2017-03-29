@@ -48,7 +48,7 @@ export class AppComponent implements OnInit {
     columnContent: Dto[];
 
     showSettings: boolean = false;
-    public showLogs: boolean = false;
+    showLogs: boolean = false;
 
 
     constructor(private utlsFileService: UtlsFileService, private timeFilterService: TimeFilterService,
@@ -95,6 +95,10 @@ export class AppComponent implements OnInit {
         if (this.utlsFileService.isColumnContentChanged()) {
             this.changeColumnValueAndContentValues(this.selectedColumn);
         }
+    }
+
+    closeSettings(): void {
+        this.setShowSettings(false);
     }
 
     setShowSettings(show: boolean): void {

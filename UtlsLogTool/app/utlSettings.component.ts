@@ -1,4 +1,4 @@
-import {Component, Output, EventEmitter, Input} from "@angular/core";
+import {Component, Output, EventEmitter, Input, NgZone} from "@angular/core";
 import {AppConstants} from "./app.constants";
 import {UtlsFileService} from "./utls-file.service";
 
@@ -20,28 +20,40 @@ export class UtlSettingsComponent {
     @Output()
     isVisibleEvent: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-    constructor(private utlsFileService: UtlsFileService) {
+    constructor(private utlsFileService: UtlsFileService, private zone: NgZone) {
         let utlIp = localStorage.getItem(AppConstants.UTL_SERVER_IP_KEY);
-        if(utlIp){
+        if (utlIp) {
             this.theIp = utlIp;
         }
-        else{
+        else {
             this.theIp = AppConstants.UTL_SERVER_DEFAULT_IP;
         }
     }
 
     saveValues(): void {
-        if(this.isSaveEnabled()){
+        if (this.isSaveEnabled()) {
             localStorage.setItem(AppConstants.UTL_SERVER_IP_KEY, this.theIp);
-            this.showSave = false;
-            this.showFetch = true;
+            this.zone.run(() => {
+                this.showSave = false;
+                this.showFetch = true;
+            });
         }
     }
 
-    fetchLogs(): void{
+    fetchLogs(): void {
         this.utlsFileService.fetchLogs();
-        this.showMe = false;
-        this.isVisibleEvent.emit(this.showMe);
+        this.show(false);
+    }
+
+    close(): void {
+        this.show(false);
+    }
+
+    private show(showMe: boolean): void {
+        this.zone.run(() => {
+            this.showMe = showMe;
+            this.isVisibleEvent.emit(this.showMe);
+        });
     }
 
     private isSaveEnabled(): boolean {
