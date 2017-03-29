@@ -1,0 +1,9 @@
+<div class="timepickerdiv">
+    <div class="form-group">
+        <label for="ip">Ip-address:</label>
+        <input type="text" class="form-control" id="ip" [(ngModel)]="theIp">
+    </div>
+
+    <button *ngIf="showSave" class="btn btn-primary btn-sm" (click)="saveValues()">Save ip</button>
+    <button *ngIf="showFetch" class="btn btn-primary btn-sm" (click)="fetchLogs()">Fetch logs</button>
+</div>

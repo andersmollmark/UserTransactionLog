@@ -1,6 +1,5 @@
-import {Component, OnInit} from "@angular/core";
+import {Component, OnInit, NgZone} from "@angular/core";
 import {UtlsFileService} from "./utls-file.service";
-import {remote, ipcRenderer} from "electron";
 import {UtlsLog} from "./log";
 import {Observable} from "rxjs/Observable";
 import {Dto} from "./dto";
@@ -8,13 +7,19 @@ import {AppConstants} from "./app.constants";
 import * as _ from "lodash";
 import {TimeFilterService} from "./timefilter.service";
 import {SortingObject} from "./sortingObject";
+import {UtlserverService} from "./utlserver.service";
+
+const electron = require('electron');
+const remote = electron.remote;
+
 
 let {dialog} = remote;
 
 
 @Component({
     selector: 'my-app',
-    templateUrl: './app/app.component.html'
+    templateUrl: './app.component.html'
+
 })
 export class AppComponent implements OnInit {
 
@@ -22,7 +27,6 @@ export class AppComponent implements OnInit {
     public filterQuery;
     columnSortValue: string = "";
     columnSortObject: SortingObject = new SortingObject();
-    clock;
     public isLoaded: boolean;
     public sortBy = "";
 
@@ -43,8 +47,12 @@ export class AppComponent implements OnInit {
     allContent = AppConstants.STR_ALL;
     columnContent: Dto[];
 
+    showSettings: boolean = false;
+    public showLogs: boolean = false;
 
-    constructor(private utlsFileService: UtlsFileService, private timeFilterService: TimeFilterService) {
+
+    constructor(private utlsFileService: UtlsFileService, private timeFilterService: TimeFilterService,
+                private utlserverService: UtlserverService, private zone: NgZone) {
         this.isLoaded = false;
     }
 
@@ -54,16 +62,32 @@ export class AppComponent implements OnInit {
             label: 'Menu',
             submenu: [
                 {
-                    label: 'open logfile',
+                    label: 'Open logfile',
                     click: function () {
-                        dialog.showOpenDialog(self.handleFile);
+                        self.zone.run(() => {
+                            dialog.showOpenDialog(self.handleFile);
+                        });
+                    }
+                },
+                {
+                    label: 'Change ip for utlserver (now:'.concat(self.utlserverService.getUtlsIp()).concat(')'),
+                    click: function () {
+                        self.zone.run(() => self.setShowSettings(true));
+                    }
+                },
+                {
+                    label: 'Fetch logfile',
+                    click: function () {
+                        self.zone.run(() => {
+                                self.utlsFileService.fetchLogs();
+                                self.setShowSettings(false);
+                            }
+                        );
                     }
                 }
             ]
         }]);
         remote.Menu.setApplicationMenu(menu);
-
-        this.clock = Observable.interval(1000);
     }
 
     ngDoCheck() {
@@ -71,6 +95,16 @@ export class AppComponent implements OnInit {
         if (this.utlsFileService.isColumnContentChanged()) {
             this.changeColumnValueAndContentValues(this.selectedColumn);
         }
+    }
+
+    setShowSettings(show: boolean): void {
+        this.showSettings = show;
+        this.showLogs = !show;
+        console.log("showLogs:" + this.showLogs + " showSettings:" + this.showSettings);
+    }
+
+    setShowLogs(show: boolean): void {
+        this.setShowSettings(!show);
     }
 
 
@@ -86,35 +120,38 @@ export class AppComponent implements OnInit {
             let timestampTo;
 
             let self = this;
-            this.logs$.subscribe(logs => {
-                _.forEach(logs, function (log) {
-                    if (!timestampFrom || timestampFrom > log.timestamp) {
-                        timestampFrom = log.timestamp;
-                    }
-                    else if (!timestampTo || timestampTo < log.timestamp) {
-                        timestampTo = log.timestamp;
-                    }
+            self.zone.run(() => {
+                this.logs$.subscribe(logs => {
+                    _.forEach(logs, function (log) {
+                        if (!timestampFrom || timestampFrom > log.timestamp) {
+                            timestampFrom = log.timestamp;
+                        }
+                        else if (!timestampTo || timestampTo < log.timestamp) {
+                            timestampTo = log.timestamp;
+                        }
+                    });
+                    let firstDate = new Date(timestampFrom);
+                    let lastDate = new Date(timestampTo);
+
+                    self.timeFilterService.setFirstDateFromFile(firstDate);
+                    self.timeFilterService.setLastDateFromFile(lastDate);
+
+                    self.timeFilterService.resetTimefilter();
+
+                    console.log('new from:' + self.timeFilterService.getSelectedTimefilterFrom().asString() + ' new to:' +
+                        self.timeFilterService.getLastSelectedTimefilterTo().asString());
                 });
-                let firstDate = new Date(timestampFrom);
-                let lastDate = new Date(timestampTo);
-
-                self.timeFilterService.setFirstDateFromFile(firstDate);
-                self.timeFilterService.setLastDateFromFile(lastDate);
-
-                self.timeFilterService.resetTimefilter();
-
-                console.log('new from:' + self.timeFilterService.getSelectedTimefilterFrom().asString() + ' new to:' +
-                    self.timeFilterService.getLastSelectedTimefilterTo().asString());
             });
+            this.setShowLogs(true);
             this.isLoaded = true;
         }
     }
+
 
     resetFilter() {
         this.init();
         this.timeFilterService.resetTimefilter();
         this.logs$ = this.utlsFileService.getAllLogs();
-        this.utlsFileService.resetContentAndColumnToOriginFromFile();
     }
 
     init() {

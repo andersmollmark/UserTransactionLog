@@ -1,3 +1,5 @@
+import {} from '@types/jasmine';
+
 import {TimeFilterService} from "../app/timefilter.service";
 import {SelectedDate} from "../app/selectedDate";
 

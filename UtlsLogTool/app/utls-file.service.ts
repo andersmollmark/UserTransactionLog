@@ -5,6 +5,8 @@ import {Http} from "@angular/http";
 import {Dto} from "./dto";
 import * as _ from "lodash";
 import {AppConstants} from "./app.constants";
+import {UtlserverService} from "./utlserver.service";
+let fileSystem = require('fs');
 
 @Injectable()
 export class UtlsFileService {
@@ -28,7 +30,7 @@ export class UtlsFileService {
         allColumnContent: []
     };
 
-    constructor(private http: Http) {
+    constructor(private http: Http, private utlsserverService: UtlserverService) {
     }
 
     createLogs(filename: string): Observable<UtlsLog[]> {
@@ -46,6 +48,26 @@ export class UtlsFileService {
         return this.activeLogContent;
     }
 
+    fetchLogs(): void{
+        this.init();
+        this.utlsserverService.connectAndFetchDump();
+        this.utlsserverService.utlServerWebsocket.subscribe(dump => {
+            console.log('dump received in utls-file-service');
+            if(dump){
+                let jsondata = JSON.parse(dump);
+                let prettyPrint = JSON.stringify(jsondata, null, '\t');
+                let now = new Date();
+                let filename = 'dump' + now.getFullYear() + now.getMonth() + now.getDate() + now.getMinutes();
+                console.log('writing file:' + filename);
+                fileSystem.writeFile(filename, prettyPrint, (err) => {
+                    if(err) throw err;
+                    console.log('file ' + filename + ' is saved');
+                });
+
+            }
+        });
+    }
+
     private init() {
         if (this.usersInLogContent && this.usersInLogContent.length > 0) {
             this.usersInLogContent = [];
@@ -55,6 +77,8 @@ export class UtlsFileService {
             this.activeLogContent = Observable.of([]);
         }
     }
+
+
 
     createColumnFilteringValuesForLogs(logarray: any[]) {
         this.createLogContentAndColumn(logarray);

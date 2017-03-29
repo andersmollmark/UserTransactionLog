@@ -1,5 +1,5 @@
+// import {AppConstants} from "./app/app.constants";
 const {app, ipcMain, BrowserWindow} = require('electron');
-const fs = require('fs');
 
 let mainWindow, secondWindow;
 
@@ -21,6 +21,37 @@ function createWindow(){
     });
 
     mainWindow.maximize();
+    // secondWindow = new BrowserWindow({
+    //     width: 400,
+    //     height: 200,
+    //     show: false
+    // });
+    // secondWindow.loadURL('file://' + __dirname + '/app/utlSettingsDialog.html');
+
+    // ipcMain.on(AppConstants.IPC_OPEN_UTL_SETTINGS, () => {
+    //     secondWindow.show();
+    // });
+    //
+    // ipcMain.on(AppConstants.IPC_CLOSE_UTL_SETTINGS, () => {
+    //     secondWindow.close();
+    // });
+
+    // ipcMain.on('openUtlSettings', () => {
+    //     secondWindow.show();
+    // });
+    //
+    // ipcMain.on('closeUtlSettings', () => {
+    //     secondWindow.close();
+    // });
+    //
+    //
+    // // Emitted when the window is closed.
+    // secondWindow.on('closed', () => {
+    //     // Dereference the window object, usually you would store windows
+    //     // in an array if your app supports multi windows, this is the time
+    //     // when you should delete the corresponding element.
+    //     secondWindow = null;
+    // });
 
 }
 

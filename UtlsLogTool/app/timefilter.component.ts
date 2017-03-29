@@ -4,7 +4,7 @@ import {TimeFilterService} from "./timefilter.service";
 import {AppConstants} from "./app.constants";
 @Component({
     selector: 'timefilter',
-    templateUrl: './app/timefilter.component.html'
+    templateUrl: './timefilter.component.html'
 })
 export class TimefilterComponent {
 

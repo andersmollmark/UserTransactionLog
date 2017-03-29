@@ -114,3 +114,8 @@
     display: inline-flex;
     height: 20px;
 }
+
+.promptDiv{
+    width: 10%;
+    padding: 10px;
+}

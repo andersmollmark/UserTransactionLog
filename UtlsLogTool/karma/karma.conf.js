@@ -5,10 +5,6 @@
 module.exports = function(config) {
   config.set({
 
-    // base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath: '',
-
-
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
     frameworks: ['jasmine'],
@@ -18,14 +14,10 @@ module.exports = function(config) {
     files: [
       // 'app/*.ts',
       // 'test/*.ts'
-      '../node_modules/es6-shim/es6-shim.js',
+      // '../node_modules/es6-shim/es6-shim.js',
       'karma.entry.js'
     ],
 
-
-    // list of files to exclude
-    exclude: [
-    ],
 
     phantomJsLauncher: {
       exitOnResourceError: true
@@ -36,14 +28,22 @@ module.exports = function(config) {
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
       'karma.entry.js': ['webpack', 'sourcemap']
+      // 'karma.entry.js': ['webpack']
     },
 
+
+    remapIstanbulReporter: {
+      reports: {
+        html: 'coverage',
+        lcovonly: './coverage/coverage.lcov'
+      }
+    },
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
     // reporters: ['dots'],
-    reporters: ['progress'],
+    reporters: ['progress', 'karma-remap-istanbul'],
 
     // web server port
     port: 9876,
@@ -84,8 +84,22 @@ module.exports = function(config) {
     concurrency: Infinity,
 
     webpack: require('../webpack.test.js'),
-    webpackServer: {
-      noInfo: true
-    }
+
+
+    webpackMiddleware: {
+      // webpack-dev-middleware configuration
+      // i.e.
+      noInfo: true,
+      // and use stats to turn off verbose output
+      stats: {
+        // options i.e.
+        chunks: false
+      }
+    },
+
+    plugins: [
+      require("karma-webpack")
+    ]
+
   });
 };

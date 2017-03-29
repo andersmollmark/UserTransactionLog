@@ -1,130 +1,134 @@
-<div class="utls-selector-row" *ngIf="isLoaded">
+<div *ngIf="showSettings" class="promptDiv">
+    <utlSettings [showMe]="showSettings" (isVisibleEvent)="closeSettings($event)"></utlSettings>
+</div>
 
-    <div class="utls-logfilter-column">
-        <div class="utls-selector-text utls-text">
-            Filter on column:
+<div *ngIf="showLogs">
+    <div class="utls-selector-row" *ngIf="isLoaded">
+
+        <div class="utls-logfilter-column">
+            <div class="utls-selector-text utls-text">
+                Filter on column:
+            </div>
+
+            <select class="form-control utls-select"
+                    [(ngModel)]="selectedColumn"
+                    (ngModelChange)="changeColumn($event)">
+                <option>--- Select column ---</option>
+                <option>All</option>
+                <option *ngFor="let col of cols" [ngValue]="col">{{col.name}}</option>
+            </select>
         </div>
 
-        <select class="form-control utls-select"
-                [(ngModel)]="selectedColumn"
-                (ngModelChange)="changeColumn($event)">
-            <option>--- Select column ---</option>
-            <option>All</option>
-            <option *ngFor="let col of cols" [ngValue]="col">{{col.name}}</option>
-        </select>
-    </div>
+        <div class="utls-logfilter-column">
+            <div class="utls-selector-text utls-text">
+                Specify columnvalue:
+            </div>
 
-    <div class="utls-logfilter-column">
-        <div class="utls-selector-text utls-text">
-            Specify columnvalue:
+            <select class="form-control utls-select" value
+                    [(ngModel)]="selectedContent"
+                    (ngModelChange)="changeLogContent($event)">
+                <option>--- Select ---</option>
+                <option>All</option>
+                <option *ngFor="let con of columnContent | dtoSort" [ngValue]="con">{{con.value}}</option>
+            </select>
         </div>
 
-        <select class="form-control utls-select" value
-                [(ngModel)]="selectedContent"
-                (ngModelChange)="changeLogContent($event)">
-            <option>--- Select ---</option>
-            <option>All</option>
-            <option *ngFor="let con of columnContent | dtoSort" [ngValue]="con">{{con.value}}</option>
-        </select>
+        <timefilter></timefilter>
+
+        <div class="utls-logfilter-column">
+            <button class="btn btn-primary btn-md" (click)="resetFilter()">Clear filter</button>
+        </div>
+
     </div>
 
-    <timefilter></timefilter>
+    <div class="utls-container">
+        <table class="table table-striped utls-table"
+               *ngIf="isLoaded"
+               [mfData]="logs$ | async | dataFilter : filterQuery | columnSort : columnSortObject"
+               #mf="mfDataTable"
+               [mfRowsOnPage]="20">
 
-    <div class="utls-logfilter-column">
-        <button class="btn btn-primary btn-md" (click)="resetFilter()">Clear filter</button>
+            <thead>
+            <tr>
+                <th class="utls-column">
+                    <a style="cursor: pointer" (click)="resetSort('username')" class="text-nowrap">
+                        <span *ngIf="isColumnSortAsc('username')" class="glyphicon glyphicon-triangle-top"></span>
+                        <span *ngIf="isColumnSortDesc('username')" class="glyphicon glyphicon-triangle-bottom"></span>
+                        Username
+                    </a>
+                </th>
+                <th class="utls-column-small">
+                    <a style="cursor: pointer" (click)="resetSort('timestamp')" class="text-nowrap">
+                        <span *ngIf="isColumnSortAsc('timestamp')" class="glyphicon glyphicon-triangle-top"></span>
+                        <span *ngIf="isColumnSortDesc('timestamp')" class="glyphicon glyphicon-triangle-bottom"></span>
+                        Time for log
+                    </a>
+                </th>
+                <th class="utls-column-xsmall">
+                    <a style="cursor: pointer" (click)="resetSort('tab')" class="text-nowrap">
+                        <span *ngIf="isColumnSortAsc('tab')" class="glyphicon glyphicon-triangle-top"></span>
+                        <span *ngIf="isColumnSortDesc('tab')" class="glyphicon glyphicon-triangle-bottom"></span>
+                        Active tab
+                    </a>
+                </th>
+                <th class="utls-column-xsmall">
+                    <a style="cursor: pointer" (click)="resetSort('target')" class="text-nowrap">
+                        <span *ngIf="isColumnSortAsc('target')" class="glyphicon glyphicon-triangle-top"></span>
+                        <span *ngIf="isColumnSortDesc('target')" class="glyphicon glyphicon-triangle-bottom"></span>
+                        Using device
+                    </a>
+                </th>
+                <th class="utls-column-small">
+                    <a style="cursor: pointer" (click)="resetSort('category')" class="text-nowrap">
+                        <span *ngIf="isColumnSortAsc('category')" class="glyphicon glyphicon-triangle-top"></span>
+                        <span *ngIf="isColumnSortDesc('category')" class="glyphicon glyphicon-triangle-bottom"></span>
+                        Category
+                    </a>
+                </th>
+                <th class="utls-column-xsmall">
+                    <a style="cursor: pointer" (click)="resetSort('name')" class="text-nowrap">
+                        <span *ngIf="isColumnSortAsc('name')" class="glyphicon glyphicon-triangle-top"></span>
+                        <span *ngIf="isColumnSortDesc('name')" class="glyphicon glyphicon-triangle-bottom"></span>
+                        Eventname
+                    </a>
+                </th>
+                <th class="utls-column-xsmall">
+                    <a style="cursor: pointer" (click)="resetSort('host')" class="text-nowrap">
+                        <span *ngIf="isColumnSortAsc('host')" class="glyphicon glyphicon-triangle-top"></span>
+                        <span *ngIf="isColumnSortDesc('host')" class="glyphicon glyphicon-triangle-bottom"></span>
+                        Robot
+                    </a>
+                </th>
+                <th class="utls-column-big">
+                    <a style="cursor: pointer" (click)="resetSort('label')" class="text-nowrap">
+                        <span *ngIf="isColumnSortAsc('label')" class="glyphicon glyphicon-triangle-top"></span>
+                        <span *ngIf="isColumnSortDesc('label')" class="glyphicon glyphicon-triangle-bottom"></span>
+                        Label
+                    </a>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let log of mf.data">
+                <td>{{log.username}}</td>
+                <td>{{log.timestampAsDate}}</td>
+                <td>{{log.tab}}</td>
+                <td>{{log.target}}</td>
+                <td>{{log.category}}</td>
+                <td>{{log.name}}</td>
+                <td>{{log.host}}</td>
+                <td>{{log.label}}</td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="5">
+                    <mfBootstrapPaginator [rowsOnPageSet]="[15,20]"></mfBootstrapPaginator>
+                </td>
+            </tr>
+            </tfoot>
+
+        </table>
     </div>
 
 </div>
-
-<div hidden>{{clock | async}}</div>
-
-<div class="utls-container">
-    <table class="table table-striped utls-table"
-           *ngIf="isLoaded"
-           [mfData]="logs$ | async | dataFilter : filterQuery | columnSort : columnSortObject"
-           #mf="mfDataTable"
-           [mfRowsOnPage]="20">
-
-        <thead>
-        <tr>
-            <th class="utls-column">
-                <a style="cursor: pointer" (click)="resetSort('username')" class="text-nowrap">
-                    <span *ngIf="isColumnSortAsc('username')" class="glyphicon glyphicon-triangle-top"></span>
-                    <span *ngIf="isColumnSortDesc('username')" class="glyphicon glyphicon-triangle-bottom"></span>
-                    Username
-                </a>
-            </th>
-            <th class="utls-column-small">
-                <a style="cursor: pointer" (click)="resetSort('timestamp')" class="text-nowrap">
-                    <span *ngIf="isColumnSortAsc('timestamp')" class="glyphicon glyphicon-triangle-top"></span>
-                    <span *ngIf="isColumnSortDesc('timestamp')" class="glyphicon glyphicon-triangle-bottom"></span>
-                    Time for log
-                </a>
-            </th>
-            <th class="utls-column-xsmall">
-                <a style="cursor: pointer" (click)="resetSort('tab')" class="text-nowrap">
-                    <span *ngIf="isColumnSortAsc('tab')" class="glyphicon glyphicon-triangle-top"></span>
-                    <span *ngIf="isColumnSortDesc('tab')" class="glyphicon glyphicon-triangle-bottom"></span>
-                    Active tab
-                </a>
-            </th>
-            <th class="utls-column-xsmall">
-                <a style="cursor: pointer" (click)="resetSort('target')" class="text-nowrap">
-                    <span *ngIf="isColumnSortAsc('target')" class="glyphicon glyphicon-triangle-top"></span>
-                    <span *ngIf="isColumnSortDesc('target')" class="glyphicon glyphicon-triangle-bottom"></span>
-                    Using device
-                </a>
-            </th>
-            <th class="utls-column-small">
-                <a style="cursor: pointer" (click)="resetSort('category')" class="text-nowrap">
-                    <span *ngIf="isColumnSortAsc('category')" class="glyphicon glyphicon-triangle-top"></span>
-                    <span *ngIf="isColumnSortDesc('category')" class="glyphicon glyphicon-triangle-bottom"></span>
-                    Category
-                </a>
-            </th>
-            <th class="utls-column-xsmall">
-                <a style="cursor: pointer" (click)="resetSort('name')" class="text-nowrap">
-                    <span *ngIf="isColumnSortAsc('name')" class="glyphicon glyphicon-triangle-top"></span>
-                    <span *ngIf="isColumnSortDesc('name')" class="glyphicon glyphicon-triangle-bottom"></span>
-                    Eventname
-                </a>
-            </th>
-            <th class="utls-column-xsmall">
-                <a style="cursor: pointer" (click)="resetSort('host')" class="text-nowrap">
-                    <span *ngIf="isColumnSortAsc('host')" class="glyphicon glyphicon-triangle-top"></span>
-                    <span *ngIf="isColumnSortDesc('host')" class="glyphicon glyphicon-triangle-bottom"></span>
-                    Robot
-                </a>
-            </th>
-            <th class="utls-column-big">
-                <a style="cursor: pointer" (click)="resetSort('label')" class="text-nowrap">
-                    <span *ngIf="isColumnSortAsc('label')" class="glyphicon glyphicon-triangle-top"></span>
-                    <span *ngIf="isColumnSortDesc('label')" class="glyphicon glyphicon-triangle-bottom"></span>
-                    Label
-                </a>
-            </th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let log of mf.data">
-            <td>{{log.username}}</td>
-            <td>{{log.timestampAsDate}}</td>
-            <td>{{log.tab}}</td>
-            <td>{{log.target}}</td>
-            <td>{{log.category}}</td>
-            <td>{{log.name}}</td>
-            <td>{{log.host}}</td>
-            <td>{{log.label}}</td>
-        </tr>
-        </tbody>
-        <tfoot>
-        <tr>
-            <td colspan="5">
-                <mfBootstrapPaginator [rowsOnPageSet]="[15,20]"></mfBootstrapPaginator>
-            </td>
-        </tr>
-        </tfoot>
-
-    </table>
-</div>
-

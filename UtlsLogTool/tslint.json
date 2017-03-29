@@ -22,7 +22,7 @@
       false,
       "single"
     ],
-    "semicolon": true,
+    "semicolon": [true, "always", "ignore-interfaces"],
     "triple-equals": [
       true,
       "allow-null-check"

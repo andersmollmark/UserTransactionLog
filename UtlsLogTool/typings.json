@@ -1,9 +1,0 @@
-{
-  "name": "ElectronTest",
-  "dependencies": {},
-  "globalDependencies": {
-    "core-js": "registry:dt/core-js#0.0.0+20160602141332",
-    "jasmine": "registry:dt/jasmine#2.5.2+20170315065549",
-    "node": "registry:env/node#6.0.0+20170213133316"
-  }
-}

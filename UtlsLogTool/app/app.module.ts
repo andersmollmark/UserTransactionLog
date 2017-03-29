@@ -11,13 +11,16 @@ import {TimeFilterService} from "./timefilter.service";
 import {DatepickerModule, TimepickerModule} from "ng2-bootstrap";
 import {TimefilterComponent} from "./timefilter.component";
 import {ColumnSortPipe} from "./columnSort.pipe";
+import {WebsocketService} from "./websocket.service";
+import {UtlserverService} from "./utlserver.service";
+import {UtlSettingsComponent} from "./utlSettings.component";
 
 @NgModule({
     imports:      [ BrowserModule, FormsModule,
         DataTableModule, HttpModule, DatepickerModule.forRoot(), TimepickerModule.forRoot()],
     declarations: [ AppComponent, TimefilterComponent, DataFilterPipe, DtoSortPipe,
-        ColumnSortPipe ],
-    providers: [ UtlsFileService, TimeFilterService],
+        ColumnSortPipe, UtlSettingsComponent ],
+    providers: [ UtlsFileService, TimeFilterService, WebsocketService, UtlserverService],
     bootstrap:    [ AppComponent ]
 })
 export class AppModule { }
