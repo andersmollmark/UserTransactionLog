@@ -33,6 +33,7 @@ export class AppComponent implements OnInit {
     // Select-column-filter
     selectedColumnDefaultChoice = "--- Select column ---";
     public selectedColumn = this.selectedColumnDefaultChoice;
+    lastSelectedColumn = "";
     allColumns = AppConstants.STR_ALL;
     cols = [
         {name: "Username", value: AppConstants.COL_USERNAME},
@@ -162,6 +163,7 @@ export class AppComponent implements OnInit {
         // this.timeFilterService.resetAllDateValues();
         this.filterQuery = "";
         this.selectedColumn = this.selectedColumnDefaultChoice;
+        this.lastSelectedColumn = "";
         this.selectedContent = this.selectedContentDefaultChoice;
         this.columnContent = new Array<Dto>();
         this.columnSortObject = new SortingObject();
@@ -180,13 +182,16 @@ export class AppComponent implements OnInit {
     }
 
     private changeColumnValueAndContentValues(newColumn) {
-        this.selectedColumn = newColumn;
-        if (this.allColumns !== newColumn && this.selectedColumnDefaultChoice !== newColumn) {
-            this.columnContent = this.utlsFileService.getContentForSpecificColumn(newColumn);
-            this.selectedContent = this.selectedContentDefaultChoice;
-        }
-        if (this.allColumns === newColumn) {
-            this.columnContent = new Array<Dto>();
+        if(!_.isEqual(this.lastSelectedColumn, newColumn)){
+            this.lastSelectedColumn = newColumn;
+            this.selectedColumn = newColumn;
+            if (this.allColumns !== newColumn && this.selectedColumnDefaultChoice !== newColumn) {
+                this.columnContent = this.utlsFileService.getContentForSpecificColumn(newColumn);
+                this.selectedContent = this.selectedContentDefaultChoice;
+            }
+            if (this.allColumns === newColumn) {
+                this.columnContent = new Array<Dto>();
+            }
         }
 
     }
