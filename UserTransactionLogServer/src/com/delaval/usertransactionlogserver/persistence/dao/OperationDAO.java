@@ -43,14 +43,16 @@ public class OperationDAO {
         } catch (SQLException sqlException) {
             String error = operationClass.getName() + " " +
               (operationParam.isCreateUpdate() ? operationParam.getWebSocketMessage().toString() : " parameter:" + operationParam.getParameter());
-            UtlsLogUtil.error(this.getClass(), "Something went wrong in db-communication:" + sqlException.getMessage() + " " + error);
+            UtlsLogUtil.error(this.getClass(), "Something went wrong in db-communication:", sqlException.getMessage(), " ", error);
             JmsMessageService.getInstance().cacheJmsMessage(operationParam.getWebSocketMessage());
             operation = doCommonExceptionHandling(ses, operationParam);
 
         } catch (Exception e) {
             String error = operationClass.getName() + " " +
               (operationParam.isCreateUpdate() ? operationParam.getWebSocketMessage().toString() : " parameter:" + operationParam.getParameter());
-            UtlsLogUtil.error(this.getClass(), "Something went wrong while executing the operation:" + e.getMessage() + " " + error);
+            UtlsLogUtil.error(this.getClass(),
+              "Something went wrong while executing the operation:",
+              e.getMessage(), " ", error);
             operation = doCommonExceptionHandling(ses, operationParam);
         } finally {
             if (ses != null) {
@@ -69,7 +71,7 @@ public class OperationDAO {
             T notOk = (T) OperationFactory.getNotOkResultOperation(operationParam);
             return notOk;
         } catch (Exception e) {
-            UtlsLogUtil.error(this.getClass(), "Something went really wrong! Couldnt create notOkResultOperation due to:" + e.getMessage());
+            UtlsLogUtil.error(this.getClass(), "Something went really wrong! Couldnt create notOkResultOperation due to:", e.getMessage());
             throw new RuntimeException("Something went really wrong! Couldnt create notOkResultOperation due to:" + e.getMessage());
         }
     }
@@ -79,7 +81,7 @@ public class OperationDAO {
         Operation operation;
         if (operationParam.isCreateUpdate()) {
             if(ConnectionFactory.getInstance().isTableLocked(operationParam.getWebSocketMessage())){
-                UtlsLogUtil.debug(OperationDAO.class, " the table is locked:" + operationParam.getWebSocketMessage().getMessType());
+                UtlsLogUtil.debug(OperationDAO.class, " the table is locked:", operationParam.getWebSocketMessage().getMessType());
                 throw new SQLException(" the table is locked:" + operationParam.getWebSocketMessage().getMessType());
             }
             operation = OperationFactory.getCreateUpdateOperation(ses, operationParam);

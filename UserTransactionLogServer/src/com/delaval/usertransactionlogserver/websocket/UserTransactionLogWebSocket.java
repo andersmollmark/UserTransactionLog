@@ -12,8 +12,7 @@ import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -24,49 +23,52 @@ import java.util.List;
 public class UserTransactionLogWebSocket {
 
     private Session mySession;
+    private SessionController sessionController = SessionController.getInstance();
 
     @OnWebSocketConnect
     public void onconnect(Session session) {
         mySession = session;
-
-        UtlsLogUtil.info(this.getClass(), "CONNECTING session:" + getRemoteAddress(mySession));
-        UtlsLogUtil.sessions.put(mySession, new Date());
-        List<Session> sessionList = UtlsLogUtil.sessionsPerHost.get(getRemoteAddress(mySession));
-        if (sessionList == null) {
-            sessionList = new ArrayList<>();
-            UtlsLogUtil.sessionsPerHost.put(getRemoteAddress(mySession), sessionList);
-        }
-        sessionList.add(mySession);
-        checkSessionPerHost(sessionList);
+        UtlsLogUtil.info(this.getClass(), "CONNECTING session:", sessionController.getRemoteAddress(mySession));
+        sessionController.add(mySession);
+        checkSessionPerHost();
     }
 
     @OnWebSocketError
     public void onError(Throwable t) {
-        UtlsLogUtil.error(this.getClass(), "WebSocketError, reason:" + t.toString());
+        UtlsLogUtil.error(this.getClass(), "WebSocketError, reason:", t.toString());
     }
 
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
-        UtlsLogUtil.info(this.getClass(), "CLOSING websocket: " + getRemoteAddress(mySession) + ", status:" + statusCode + " reason:" + reason + " session.isOpen?" + mySession.isOpen());
-        UtlsLogUtil.sessions.remove(mySession);
-        List<Session> sessionList = UtlsLogUtil.sessionsPerHost.get(getRemoteAddress(mySession));
-        sessionList.remove(mySession);
-        checkSessionPerHost(sessionList);
+        UtlsLogUtil.info(this.getClass(),
+          "CLOSING websocket:",
+          sessionController.getRemoteAddress(mySession),
+          ", status:", Integer.toString(statusCode),
+          " reason:", reason,
+          " session.isOpen?", Boolean.toString(mySession.isOpen()));
+        sessionController.remove(mySession);
+        checkSessionPerHost();
         mySession = null;
     }
 
-    private void checkSessionPerHost(List<Session> sessionList) {
-        UtlsLogUtil.debug(this.getClass(), "number of sessions in host:" + getRemoteAddress(mySession) + " is:" + sessionList.size() + " and they are created as follows:");
-        sessionList.forEach(session ->
-          UtlsLogUtil.debug(this.getClass(), getRemoteAddress(session) + " and port:" + getRemotePort(session) + ", created:" + DateUtil.formatTimeStamp(UtlsLogUtil.sessions.get(session)) + " isOpen?" + session.isOpen()));
-    }
+    private void checkSessionPerHost() {
+        List<Session> sessionList = sessionController.getSessionsPerHost(mySession);
+        String remoteAddress = sessionController.getRemoteAddress(mySession);
+        String remotePort = sessionController.getRemotePort(mySession);
+        if (UtlsLogUtil.isDebug()) {
+            UtlsLogUtil.debug(this.getClass(),
+              "number of sessions in host:", remoteAddress,
+              " is:", Integer.toString(sessionList.size()),
+              " and they are created as follows:");
+            sessionList.forEach(session -> {
+                UtlsLogUtil.debug(this.getClass(), remoteAddress,
+                  " and port:", remotePort,
+                  ", created:", DateUtil.formatTimeStamp(sessionController.getCreated(session)),
+                  " isOpen?", Boolean.toString(session.isOpen()));
 
-    private String getRemoteAddress(Session session) {
-        return session.getRemoteAddress() != null ? session.getRemoteAddress().getAddress().toString() : session.toString();
-    }
+            });
 
-    private String getRemotePort(Session session) {
-        return session.getRemoteAddress() != null ? "" + session.getRemoteAddress().getPort() : "unknown port";
+        }
     }
 
 
@@ -75,14 +77,10 @@ public class UserTransactionLogWebSocket {
         try {
             WebSocketMessage webSocketMessage = new Gson().fromJson(jsonMessage, WebSocketMessage.class);
             if (MessTypes.IDLE_POLL.isSame(webSocketMessage.getType())) {
-//                if(getRemoteAddress().equals("/10.34.34.82")) {
-//                    UtlsLogUtil.debug(this.getClass(), "Idle poll for:" + getRemoteAddress());
-//                }
                 session.getRemote().sendStringByFuture(jsonMessage);
                 return;
             }
-            UtlsLogUtil.debug(this.getClass(), "Incoming message:" + webSocketMessage.toString());
-            // TODO authorization
+            UtlsLogUtil.debug(this.getClass(), "Incoming message:", webSocketMessage.toString());
             if (MessTypes.CLICK_LOG.isSame(webSocketMessage.getType()) || MessTypes.EVENT_LOG.isSame(webSocketMessage.getType())) {
                 JmsMessageService.getInstance().createJmsMessage(webSocketMessage, jsonMessage);
             } else if (MessTypes.SYSTEM_PROPERTY.isSame(webSocketMessage.getType())) {
@@ -92,12 +90,13 @@ public class UserTransactionLogWebSocket {
                 FetchAllEventLogsService logsService = new FetchAllEventLogsService();
                 session.getRemote().sendStringByFuture(logsService.getJsonDumpMessage());
             } else {
-                UtlsLogUtil.info(this.getClass(), "Unknown message:" + webSocketMessage.getType());
+                UtlsLogUtil.info(this.getClass(), "Unknown message:", webSocketMessage.getType());
             }
 
         } catch (Exception e) {
-            UtlsLogUtil.info(this.getClass(), "Exception while handle websocketmessage:" + e.getMessage());
+            UtlsLogUtil.info(this.getClass(), "Exception while handle websocketmessage:", e.getMessage());
         }
     }
+
 
 }

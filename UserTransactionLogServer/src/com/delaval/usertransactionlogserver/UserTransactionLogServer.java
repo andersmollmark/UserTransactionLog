@@ -55,7 +55,7 @@ public class UserTransactionLogServer {
         try {
             initDB();
         } catch (Exception e) {
-            UtlsLogUtil.error(this.getClass(), "FATAL ERROR, something went wrong while creating tables in db:" + e.getMessage());
+            UtlsLogUtil.error(this.getClass(), "FATAL ERROR, something went wrong while creating tables in db:", e.getMessage());
             tryToCloseConnectionFactory();
             throw new RuntimeException("FATAL ERROR, something went wrong while creating tables in db:" + e.getMessage());
         }
@@ -88,7 +88,7 @@ public class UserTransactionLogServer {
             server.join();
 
         } catch (Exception e) {
-            UtlsLogUtil.error(this.getClass(), "FATAL ERROR, something happened while starting server, shutting down:" + e.getMessage());
+            UtlsLogUtil.error(this.getClass(), "FATAL ERROR, something happened while starting server, shutting down:", e.getMessage());
             tryToCloseConnectionFactory();
             throw new RuntimeException("FATAL ERROR, something happened while starting server, shutting down:" + e.getMessage());
         }

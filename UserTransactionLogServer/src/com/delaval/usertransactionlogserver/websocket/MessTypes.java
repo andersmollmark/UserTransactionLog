@@ -9,6 +9,7 @@ public enum MessTypes {
     CLICK_LOG("clickLog"),
     SYSTEM_PROPERTY("systemProperty"),
     JSON_DUMP("jsonDump"),
+    BACKUP("backup"),
     EVENT_LOG("eventLog"),
     UNDEFINED("undefined");
 

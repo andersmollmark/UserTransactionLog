@@ -4,10 +4,7 @@ import org.eclipse.jetty.websocket.api.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -18,41 +15,36 @@ public class UtlsLogUtil {
     private static final String SEPARATOR = " | ";
     private static final Pattern LF = Pattern.compile("([^\\r])\\n");
 
-    public static final Map<Session, Date> sessions = new HashMap<>();
-    public static final Map<String, List<Session>> sessionsPerHost = new HashMap<>();
+    private static final Object LOCK = new Object();
 
     private static final Logger LOGGER = LoggerFactory.getLogger("utlserver");
 
-    public static void warn(Class clazz, String mess) {
-        LOGGER.warn(getLogRow(clazz,  ": " + mess));
+    public static void warn(Class clazz, String... mess) {
+        synchronized (LOCK){
+            LOGGER.warn(getLogRow(clazz,  getLogString(mess)));
+        }
     }
 
-    public static void warn(Class clazz, Exception e) {
-        warn(clazz, e.getMessage());
+    public static void info(Class clazz, String... mess) {
+        synchronized (LOCK) {
+            LOGGER.info(getLogRow(clazz, getLogString(mess)));
+        }
     }
 
-    public static void info(Class clazz, String mess) {
-        LOGGER.info(getLogRow(clazz,  ": " + mess));
+    public static void error(Class clazz, String... mess) {
+        synchronized (LOCK) {
+            LOGGER.error(getLogRow(clazz, getLogString(mess)));
+        }
     }
 
-    public static void info(Class clazz, Exception e) {
-        info(clazz, e.getMessage());
+    public static void debug(Class clazz, String... mess) {
+        synchronized (LOCK) {
+            LOGGER.debug(getLogRow(clazz, getLogString(mess)));
+        }
     }
 
-    public static void error(Class clazz, String mess) {
-        LOGGER.error(getLogRow(clazz,  ": " + mess));
-    }
-
-    public static void error(Class clazz, Exception e) {
-        error(clazz, e.getMessage());
-    }
-
-    public static void debug(Class clazz, String mess) {
-        LOGGER.debug(getLogRow(clazz,  ": " + mess));
-    }
-
-    public static void debug(Class clazz, Exception e) {
-        debug(clazz, e.getMessage());
+    public static boolean isDebug(){
+        return LOGGER.isDebugEnabled();
     }
 
     private static String replaceLF(String s) {
@@ -70,6 +62,12 @@ public class UtlsLogUtil {
           .append(lineNr.toString()).append(SEPARATOR)
           .append(replaceLF(msg)).append(" ");
         return sb.toString();
+    }
+
+    private static String getLogString(String... strings){
+        StringBuilder result = new StringBuilder();
+        Arrays.asList(strings).stream().forEach(string -> result.append(string));
+        return result.toString();
     }
 
 }

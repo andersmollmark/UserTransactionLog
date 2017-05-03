@@ -8,6 +8,7 @@ import com.delaval.usertransactionlogserver.persistence.entity.EventLog;
 import com.delaval.usertransactionlogserver.persistence.entity.SystemProperty;
 import com.delaval.usertransactionlogserver.persistence.entity.UserTransactionKey;
 import com.delaval.usertransactionlogserver.persistence.operation.CreateSystemPropertyOperation;
+import com.delaval.usertransactionlogserver.persistence.operation.GetSystemPropertyWithNameOperation;
 import com.delaval.usertransactionlogserver.persistence.operation.OperationFactory;
 import com.delaval.usertransactionlogserver.persistence.operation.OperationParam;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
@@ -41,7 +42,7 @@ public class InitDAO {
     public boolean isCreateTables() throws SQLException {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT * FROM ").append(UserTransactionKey.USER_TRANSACTION_KEY.getTableName());
-        UtlsLogUtil.debug(InitDAO.class, "Checking if db-tables exist:" + sql.toString());
+        UtlsLogUtil.debug(InitDAO.class, "Checking if db-tables exist:", sql.toString());
         Connection connection = ConnectionFactory.getInstance().getConnection();
         PreparedStatement ps = null;
         ResultSet resultSet = null;
@@ -59,14 +60,14 @@ public class InitDAO {
                 try {
                     ps.close();
                 } catch (SQLException e) {
-                    UtlsLogUtil.error(ServerProperties.class, "Couldnt close PreparedStatement:" + e.getMessage());
+                    UtlsLogUtil.error(ServerProperties.class, "Couldnt close PreparedStatement:", e.getMessage());
                 }
             }
             if(resultSet != null){
                 try {
                     resultSet.close();
                 } catch (SQLException e) {
-                    UtlsLogUtil.error(ServerProperties.class, "Couldnt close ResultSet:" + e.getMessage());
+                    UtlsLogUtil.error(ServerProperties.class, "Couldnt close ResultSet:", e.getMessage());
                 }
             }
         }
@@ -85,16 +86,16 @@ public class InitDAO {
 
     public void alterTables() throws SQLException {
         ResultSet clickLogTable = getTableWithName(ClickLog.CLICK_LOG.getTableName());
-        UtlsLogUtil.debug(this.getClass(), ClickLog.CLICK_LOG.getTableName() + " alter table...");
+        UtlsLogUtil.debug(this.getClass(), ClickLog.CLICK_LOG.getTableName(), " alter table...");
         alterTables(clickLogTable, ClickLog.CLICK_LOG.getTableName(), ClickLog.getVarcharColumns());
 
         ResultSet eventLogTable = getTableWithName(EventLog.EVENT_LOG.getTableName());
-        UtlsLogUtil.debug(this.getClass(), EventLog.EVENT_LOG.getTableName() + " alter table...");
+        UtlsLogUtil.debug(this.getClass(), EventLog.EVENT_LOG.getTableName(), " alter table...");
         alterTables(eventLogTable, EventLog.EVENT_LOG.getTableName(), EventLog.getVarcharColumns());
 
-        UtlsLogUtil.debug(this.getClass(), EventLog.EVENT_LOG.getTableName() + " alter timestamps...");
+        UtlsLogUtil.debug(this.getClass(), EventLog.EVENT_LOG.getTableName(), " alter timestamps...");
         alterTimestampColumns(EventLog.EVENT_LOG.getTableName());
-        UtlsLogUtil.debug(this.getClass(), ClickLog.CLICK_LOG.getTableName() + " alter timestamps...");
+        UtlsLogUtil.debug(this.getClass(), ClickLog.CLICK_LOG.getTableName(), " alter timestamps...");
         alterTimestampColumns(ClickLog.CLICK_LOG.getTableName());
 
     }
@@ -114,26 +115,32 @@ public class InitDAO {
             for (SFieldString column : varcharColumns) {
                 boolean exist = false;
                 for (int i = 1; i <= metaData.getColumnCount(); i++) {
-                    UtlsLogUtil.debug(this.getClass(), "checking if column exist table.columnname:" + metaData.getColumnName(i) + " varcharcolumns:" + column.getColumnName());
+                    UtlsLogUtil.debug(this.getClass(),
+                      "checking if column exist table.columnname:", metaData.getColumnName(i),
+                      " varcharcolumns:", column.getColumnName());
                     exist = column.getColumnName().equals(metaData.getColumnName(i));
                     if (exist) {
                         break;
                     }
                 }
                 if (!exist) {
-                    UtlsLogUtil.debug(this.getClass(), "found missing column:" + column.getColumnName());
+                    UtlsLogUtil.debug(this.getClass(), "found missing column:", column.getColumnName());
                     missingColumnnames.add(column);
 
                 }
             }
         } catch (SQLException e) {
-            UtlsLogUtil.error(this.getClass(), "FATAL ERROR, something went wrong while checking columns in table:" + tablename + " " + e.getMessage());
+            UtlsLogUtil.error(this.getClass(),
+              "FATAL ERROR, something went wrong while checking columns in table:", tablename,
+              " ", e.getMessage());
         }
         return missingColumnnames;
     }
 
     private void addMissingVarcharColumn(String tablename, SFieldString missingColumn) throws SQLException {
-        UtlsLogUtil.debug(this.getClass(), "adding missing column:" + missingColumn + " to table:" + tablename);
+        UtlsLogUtil.debug(this.getClass(),
+          "adding missing column:", missingColumn.toString(),
+          " to table:", tablename);
         StringBuilder sqlEvent = new StringBuilder();
         sqlEvent.append("ALTER TABLE ").append(tablename).append(" ADD ").append(missingColumn.getColumnName())
           .append(" VARCHAR(").append(missingColumn.getMaxSize()).append(")");
@@ -142,7 +149,7 @@ public class InitDAO {
     }
 
     private void alterTimestampColumns(String tablename) throws SQLException {
-        UtlsLogUtil.debug(this.getClass(), "altering timestamp in table:" + tablename);
+        UtlsLogUtil.debug(this.getClass(), "altering timestamp in table:", tablename);
         StringBuilder sqlEvent = new StringBuilder();
         sqlEvent.append("ALTER TABLE ").append(tablename)
           .append(" MODIFY timestamp TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)");
@@ -152,7 +159,7 @@ public class InitDAO {
     }
 
     private ResultSet getTableWithName(String tablename) throws SQLException {
-        UtlsLogUtil.debug(this.getClass(), tablename + " getTableWithName...");
+        UtlsLogUtil.debug(this.getClass(), tablename, " getTableWithName...");
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT * FROM ").append(tablename);
         return runSqlCommandAndGetResult(sql, "Something went wrong when 'select * from':" + tablename);
@@ -212,7 +219,7 @@ public class InitDAO {
         createDeleteEventLogEvent();
     }
 
-    public void createDeleteClickLogEvent() throws SQLException {
+    private void createDeleteClickLogEvent() throws SQLException {
 
         String deleteClickLogsIntervalName = ServerProperties.getInstance().getProp(ServerProperties.PropKey.SYSTEM_PROPERTY_NAME_DELETE_CLICK_LOGS_INTERVAL);
         String deleteInterval = getDeleteInterval(deleteClickLogsIntervalName);
@@ -234,7 +241,7 @@ public class InitDAO {
         runSqlCommand(sqlEvent, errorMess);
     }
 
-    public void createDeleteEventLogEvent() throws SQLException {
+    private void createDeleteEventLogEvent() throws SQLException {
 
         String deleteEventLogsIntervalName = ServerProperties.getInstance().getProp(ServerProperties.PropKey.SYSTEM_PROPERTY_NAME_DELETE_EVENT_LOGS_INTERVAL);
         String deleteInterval = getDeleteInterval(deleteEventLogsIntervalName);
@@ -273,91 +280,53 @@ public class InitDAO {
                 ids.add(resultSet.getString("id"));
             }
         } catch (SQLException e) {
-            UtlsLogUtil.error(this.getClass(), "Something went wrong when iterating resultset:" + e.getMessage());
+            UtlsLogUtil.error(this.getClass(), "Something went wrong when iterating resultset:", e.getMessage());
         } finally {
             try {
                 if (resultSet != null) {
                     resultSet.close();
                 }
             } catch (SQLException e) {
-                UtlsLogUtil.error(this.getClass(), "Something went wrong when closing resultset:" + e.getMessage());
+                UtlsLogUtil.error(this.getClass(), "Something went wrong when closing resultset:", e.getMessage());
             }
         }
         return ids;
     }
 
     private String getDeleteInterval(String name) throws SQLException {
-        String sql = "SELECT * FROM SystemProperty WHERE NAME='" + name + "'";
-        Connection connection = ConnectionFactory.getInstance().getConnection();
-        ResultSet resultSet = null;
-        PreparedStatement ps = null;
-        String interval = ServerProperties.getInstance().getProp(ServerProperties.PropKey.DELETE_LOGS_INTERVAL_DEFAULT_IN_DAYS);
-        try {
-            ps = connection.prepareStatement(sql);
-            resultSet = ps.executeQuery();
-            if (resultSet.next()) {
-                String valueFromDB = resultSet.getString(SystemProperty.VALUE_COLUMN);
-                if(!valueFromDB.equals(interval)){
-                    interval = createDeleteInterval(name, resultSet, interval);
-                }
-            } else {
-                interval = createDeleteInterval(name, resultSet, interval);
-            }
+        InternalSystemProperty systemPropertyWithName = getSystemPropertyWithName(name);
+        String interval = ServerProperties.getInstance().getProp(ServerProperties.PropKey.DELETE_LOGS_INTERVAL_DEFAULT_IN_DAYS) != null ?
+          ServerProperties.getInstance().getProp(ServerProperties.PropKey.DELETE_LOGS_INTERVAL_DEFAULT_IN_DAYS): DEFAULT_DELETE_INTERVAL_IN_DAYS;
 
-        } catch (SQLException e) {
-            UtlsLogUtil.error(this.getClass(), "Something went wrong while fetching deleteinterval with name:" + name + ", exception:" + e.getMessage());
-        } finally {
-            try {
-                if(ps != null){
-                    ps.close();
-                }
-            } catch (SQLException e) {
-                UtlsLogUtil.error(this.getClass(), "Something went wrong when closing prepared statement:" + e.getMessage());
-            }
-            try {
-                tryClose(resultSet);
-            } catch (SQLException e) {
-                UtlsLogUtil.error(this.getClass(), "Something went wrong when closing resultset:" + e.getMessage());
-            }
-
+        if(systemPropertyWithName == null || !systemPropertyWithName.getValue().equals(interval)){
+            interval = createSystemProperty(name, interval);
         }
         return interval;
     }
 
-    private String createDeleteInterval(String name, ResultSet resultSet, String interval) {
-        String result = InitDAO.DEFAULT_DELETE_INTERVAL_IN_DAYS;
-        try {
-            tryClose(resultSet);
-            result = createDeleteIntervalProperty(name, interval);
-        } catch (SQLException e) {
-            UtlsLogUtil.error(this.getClass(), "Something went wrong when closing resultset:" + e.getMessage());
+    private InternalSystemProperty getSystemPropertyWithName(String name){
+        OperationParam<GetSystemPropertyWithNameOperation> operationParam = new OperationParam<>(GetSystemPropertyWithNameOperation.class);
+        operationParam.setParameter(name);
+        GetSystemPropertyWithNameOperation systemPropertyWithNameOperation = OperationDAO.getInstance().executeOperation(operationParam);
+        List<InternalSystemProperty> result = systemPropertyWithNameOperation.getResult();
+        if(result.size() > 0){
+            return result.get(0);
         }
-        return result;
+        return null;
     }
 
-    private void tryClose(ResultSet resultSet) throws SQLException {
-        if (resultSet != null && !resultSet.isClosed()) {
-            resultSet.close();
-        }
-    }
-
-    private String createDeleteIntervalProperty(String name, String interval) {
-        if (interval == null) {
-            UtlsLogUtil.error(this.getClass(), "Missing serverproperty: " + name + ", setting " + DEFAULT_DELETE_INTERVAL_IN_DAYS + " as default");
-            interval = DEFAULT_DELETE_INTERVAL_IN_DAYS;
-        }
+    private String createSystemProperty(String name, String value){
         InternalSystemProperty newProperty = new InternalSystemProperty();
         newProperty.setName(name);
-        newProperty.setValue(interval);
+        newProperty.setValue(value);
         newProperty.setTimestamp(new Date());
         OperationParam<CreateSystemPropertyOperation> createSystemPropertyParamForSystem = OperationFactory.getCreateSystemPropertyParamForSystem(newProperty);
         OperationDAO.getInstance().executeOperation(createSystemPropertyParamForSystem);
-        return interval;
+        return value;
     }
 
-
     private void runSqlCommand(StringBuilder sql, String errorMess) throws SQLException {
-        UtlsLogUtil.debug(InitDAO.class, "running sql-command:" + sql.toString());
+        UtlsLogUtil.debug(InitDAO.class, "running sql-command:", sql.toString());
         Connection connection = ConnectionFactory.getInstance().getConnection();
         ResultSet resultSet = null;
         PreparedStatement ps = null;
@@ -366,27 +335,27 @@ public class InitDAO {
             resultSet = ps.executeQuery();
 
         } catch (SQLException e) {
-            UtlsLogUtil.error(this.getClass(), errorMess + e.getMessage());
+            UtlsLogUtil.error(this.getClass(), errorMess, e.getMessage());
         } finally {
             try {
                 if (resultSet != null) {
                     resultSet.close();
                 }
             } catch (SQLException e) {
-                UtlsLogUtil.error(this.getClass(), "Something went wrong when closing resultset:" + e.getMessage());
+                UtlsLogUtil.error(this.getClass(), "Something went wrong when closing resultset:",  e.getMessage());
             }
             try {
                 if(ps != null){
                     ps.close();
                 }
             } catch (SQLException e) {
-                UtlsLogUtil.error(this.getClass(), "Something went wrong when closing prepared statement:" + e.getMessage());
+                UtlsLogUtil.error(this.getClass(), "Something went wrong when closing prepared statement:",  e.getMessage());
             }
         }
     }
 
     private ResultSet runSqlCommandAndGetResult(StringBuilder sql, String errorMess) throws SQLException {
-        UtlsLogUtil.debug(InitDAO.class, "running sql-command and returning result:" + sql.toString());
+        UtlsLogUtil.debug(InitDAO.class, "running sql-command and returning result:",  sql.toString());
         Connection connection = ConnectionFactory.getInstance().getConnection();
         ResultSet resultSet = null;
         PreparedStatement ps = null;
@@ -395,21 +364,21 @@ public class InitDAO {
             resultSet = ps.executeQuery();
 
         } catch (SQLException e) {
-            UtlsLogUtil.error(this.getClass(), errorMess + e.getMessage());
+            UtlsLogUtil.error(this.getClass(), errorMess, e.getMessage());
         }
         finally {
             if(ps != null){
                 try {
                     ps.close();
                 } catch (SQLException e) {
-                    UtlsLogUtil.error(this.getClass(), "Something went wrong when closing prepared statement:" + e.getMessage());
+                    UtlsLogUtil.error(this.getClass(), "Something went wrong when closing prepared statement:", e.getMessage());
                 }
             }
             if (resultSet != null) {
                 try {
                     resultSet.close();
                 } catch (SQLException e) {
-                    UtlsLogUtil.error(this.getClass(), "Something went wrong when closing resultset:" + e.getMessage());
+                    UtlsLogUtil.error(this.getClass(), "Something went wrong when closing resultset:", e.getMessage());
                 }
             }
         }

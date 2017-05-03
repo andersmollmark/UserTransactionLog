@@ -20,7 +20,7 @@ public class JmsMessageCreator implements MessageCreator {
 
     @Override
     public Message createMessage(Session session) throws JMSException {
-        UtlsLogUtil.debug(this.getClass(), "creating message with content:" + message);
+        UtlsLogUtil.debug(this.getClass(), "creating message with content:", message);
         return session.createTextMessage(message);
     }
 }

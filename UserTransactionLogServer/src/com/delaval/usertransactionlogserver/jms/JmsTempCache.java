@@ -38,7 +38,10 @@ public class JmsTempCache {
     public void addLog(WebSocketMessage message, String jsonMessage) {
         synchronized (LOG_LOCK) {
             if (listOfLogs.size() == maxNumberOfLogs) {
-                UtlsLogUtil.error(this.getClass(), "Max number of logs is in cache (" + maxNumberOfLogs + "). No more will be temporary saved in this cache.");
+                UtlsLogUtil.error(this.getClass(),
+                  "Max number of logs is in cache (",
+                  Integer.toString(maxNumberOfLogs),
+                  "). No more will be temporary saved in this cache.");
             } else {
                 listOfLogs.put(message, jsonMessage);
             }
@@ -49,7 +52,10 @@ public class JmsTempCache {
         synchronized (LOG_LOCK) {
             logsCopy = listOfLogs;
             listOfLogs = new ConcurrentHashMap<>();
-            UtlsLogUtil.info(this.getClass(), "Trying to recreate " + logsCopy.size() + " jms-messages");
+            UtlsLogUtil.info(this.getClass(),
+              "Trying to recreate ",
+              Integer.toString(logsCopy.size()),
+              " jms-messages");
         }
         return logsCopy;
     }

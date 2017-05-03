@@ -45,19 +45,25 @@ public class JmsMessageService {
         } else if (MessTypes.EVENT_LOG.isSame(webSocketMessage.getType())) {
             sendJmsTemplate(jsonMessage, ServerProperties.PropKey.JMS_QUEUE_DEST_EVENT, JmsResourceFactory.getEventLogInstance());
         } else {
-            UtlsLogUtil.info(JmsMessageService.class, "Messtype is not one of clicklog or eventlog, so were not creating jms, type:" + webSocketMessage.getType());
+            UtlsLogUtil.info(JmsMessageService.class,
+              "Messtype is not one of clicklog or eventlog, so were not creating jms, type:",
+              webSocketMessage.getType());
         }
     }
 
     public void cacheJmsMessage(WebSocketMessage webSocketMessage) {
         ConnectionTimeoutService.stopJmsAndStartTimer();
-        UtlsLogUtil.info(JmsMessageService.class, "Trying to cache message due to db-problems with type:" + webSocketMessage.getType());
+        UtlsLogUtil.info(JmsMessageService.class,
+          "Trying to cache message due to db-problems with type:",
+          webSocketMessage.getType());
         String jsonMessage = new Gson().toJson(webSocketMessage);
         JmsTempCache.getInstance().addLog(webSocketMessage, jsonMessage);
     }
 
     private void sendJmsTemplate(String jsonMessage, ServerProperties.PropKey jmsDest, JmsResourceFactory jmsResourceFactory) {
-        UtlsLogUtil.debug(JmsMessageService.class, "Create a jms from message:" + jsonMessage + " to dest:" + jmsDest.name());
+        UtlsLogUtil.debug(JmsMessageService.class,
+          "Create a jms from message:", jsonMessage,
+          " to dest:", jmsDest.name());
         JmsMessageCreator messageCreator = new JmsMessageCreator(jsonMessage);
         JmsTemplate jmsTemplate = jmsResourceFactory.getJmsTemplate();
         String jmsDestination = getProp(jmsDest);
