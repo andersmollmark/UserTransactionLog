@@ -1,5 +1,6 @@
 package com.delaval.usertransactionlogserver.websocket;
 
+import com.delaval.usertransactionlogserver.util.DateUtil;
 import org.eclipse.jetty.websocket.api.Session;
 
 import java.util.*;
@@ -52,12 +53,18 @@ public final class SessionController {
         }
     }
 
-    public Date getCreated(Session session){
+    private Date getDateCreated(Session session){
         return sessions.get().get(session);
     }
 
+    public String getCreated(Session session){
+        Date dateCreated = getDateCreated(session);
+        return dateCreated != null ? DateUtil.formatTimeStamp(dateCreated): " unknown creationdate";
+    }
+
     public List<Session> getSessionsPerHost(Session session){
-        return sessionsPerHost.get().get(getRemoteAddress(session));
+        List<Session> sessions = sessionsPerHost.get().get(getRemoteAddress(session));
+        return sessions != null ? sessions : new ArrayList<>();
     }
 
     public String getRemoteAddress(Session session) {

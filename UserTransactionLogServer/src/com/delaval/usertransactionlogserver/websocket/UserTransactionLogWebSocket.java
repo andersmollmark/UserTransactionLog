@@ -22,7 +22,7 @@ import java.util.List;
 @WebSocket(maxTextMessageSize = 64 * 1024, maxIdleTime = 1000000)
 public class UserTransactionLogWebSocket {
 
-    private Session mySession;
+    protected Session mySession;
     private SessionController sessionController = SessionController.getInstance();
 
     @OnWebSocketConnect
@@ -63,7 +63,7 @@ public class UserTransactionLogWebSocket {
             sessionList.forEach(session -> {
                 UtlsLogUtil.debug(this.getClass(), remoteAddress,
                   " and port:", remotePort,
-                  ", created:", DateUtil.formatTimeStamp(sessionController.getCreated(session)),
+                  ", created:", sessionController.getCreated(session),
                   " isOpen?", Boolean.toString(session.isOpen()));
 
             });
