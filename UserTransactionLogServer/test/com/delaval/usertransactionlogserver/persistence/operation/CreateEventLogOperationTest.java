@@ -24,6 +24,7 @@ import simpleorm.sessionjdbc.SSessionJdbc;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -48,7 +49,6 @@ public class CreateEventLogOperationTest {
     WebSocketMessage webSocketMessage = new WebSocketMessage();
     EventLogContent eventLogContent = new EventLogContent();
 
-    @Ignore
     @Test
     public void execute() throws Exception {
         CreateEventLogOperation testOperation = new CreateEventLogOperation();
@@ -58,18 +58,12 @@ public class CreateEventLogOperationTest {
 //        PowerMockito.doNothing().when(UserTransactionKey.findOrCreateKey(mockSession, webSocketMessage));
 //        PowerMockito.doNothing().when(UtlsLogUtil.debug(CreateEventLogOperation.class, Mockito.anyString()));
 
-        /*
-        end("Messtype:").append(getType())
-                .append(", client:").append(getClient())
-                .append(", username:").append(getUsername())
-                .append(", target:").append(getTarget())
-                .append(", Content:").append(getJsonContent());
-         */
-
         String username = "Testuser@Delaval.Com";
         webSocketMessage.setUsername(username);
         webSocketMessage.setClient("client");
-//        webSocketMessage.set
+        webSocketMessage.setTarget("target");
+        webSocketMessage.setMessType("testtype");
+        webSocketMessage.setJsonContent("jsoncontent");
 
         Instant now = Instant.now();
         Timestamp timestamp = Timestamp.from(now);
@@ -81,7 +75,7 @@ public class CreateEventLogOperationTest {
         eventLogContent.setTab("Tab");
 
         Mockito.when(mockSession.create(Mockito.any(SRecordMeta.class), Mockito.anyString())).thenReturn(mockLog);
-
+        Mockito.when(mockLog.getTimestamp()).thenReturn(new Date());
 
         testOperation.jdbcSession = mockSession;
         testOperation.webSocketMessage = webSocketMessage;
