@@ -6,6 +6,7 @@ import com.delaval.usertransactionlogserver.util.DateUtil;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import com.delaval.usertransactionlogserver.websocket.EventLogContent;
 import com.delaval.usertransactionlogserver.websocket.WebSocketMessage;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,6 +48,7 @@ public class CreateEventLogOperationTest {
     WebSocketMessage webSocketMessage = new WebSocketMessage();
     EventLogContent eventLogContent = new EventLogContent();
 
+    @Ignore
     @Test
     public void execute() throws Exception {
         CreateEventLogOperation testOperation = new CreateEventLogOperation();
@@ -56,8 +58,18 @@ public class CreateEventLogOperationTest {
 //        PowerMockito.doNothing().when(UserTransactionKey.findOrCreateKey(mockSession, webSocketMessage));
 //        PowerMockito.doNothing().when(UtlsLogUtil.debug(CreateEventLogOperation.class, Mockito.anyString()));
 
+        /*
+        end("Messtype:").append(getType())
+                .append(", client:").append(getClient())
+                .append(", username:").append(getUsername())
+                .append(", target:").append(getTarget())
+                .append(", Content:").append(getJsonContent());
+         */
+
         String username = "Testuser@Delaval.Com";
         webSocketMessage.setUsername(username);
+        webSocketMessage.setClient("client");
+//        webSocketMessage.set
 
         Instant now = Instant.now();
         Timestamp timestamp = Timestamp.from(now);
