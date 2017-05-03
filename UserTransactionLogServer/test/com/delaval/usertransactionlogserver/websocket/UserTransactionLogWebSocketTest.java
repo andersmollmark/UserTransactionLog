@@ -1,14 +1,11 @@
 package com.delaval.usertransactionlogserver.websocket;
 
-import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
-import org.eclipse.jetty.server.session.*;
 import org.eclipse.jetty.websocket.api.*;
 import org.eclipse.jetty.websocket.api.Session;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import testutils.TestUtils;
+import main.TestUtils;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
