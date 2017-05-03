@@ -18,14 +18,14 @@ public class EventLogListener {
     public static final String NAME_OF_PROCESS_METHOD = "processEventLogMessage";
 
     public void processEventLogMessage(String text) {
-        UtlsLogUtil.debug(this.getClass(), "processing eventLogMessage:" + text);
+        UtlsLogUtil.debug(this.getClass(), "processing eventLogMessage:", text);
         try{
             WebSocketMessage webSocketMessage = new Gson().fromJson(text, WebSocketMessage.class);
             OperationParam<CreateEventLogOperation> operationParam = OperationFactory.getCreateEventLogParam(webSocketMessage);
             OperationDAO.getInstance().executeOperation(operationParam);
         }
         catch (Exception e){
-            UtlsLogUtil.error(this.getClass(), "Something went wrong while parsing eventLog-json from message:" + e.getMessage());
+            UtlsLogUtil.error(this.getClass(), "Something went wrong while parsing eventLog-json from message:", e.getMessage());
         }
     }
 

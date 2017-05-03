@@ -39,7 +39,10 @@ public class CreateEventLogOperation implements CreateUpdateOperation {
 
         eventLogContent = new Gson().fromJson(webSocketMessage.getJsonContent(), EventLogContent.class);
         if(eventLogContent.getEventLabel() != null && eventLogContent.getEventLabel().length() > EventLog.LABEL.getMaxSize()){
-            UtlsLogUtil.info(this.getClass(), "Tried to create a eventlabel with size " + eventLogContent.getEventLabel().length() + ":" + eventLogContent.getEventLabel());
+            UtlsLogUtil.info(this.getClass(),
+              "Tried to create a eventlabel with size ",
+              Integer.toString(eventLogContent.getEventLabel().length()),
+              ":", eventLogContent.getEventLabel());
             String shortenedLabel = eventLogContent.getEventLabel().substring(0, EventLog.LABEL.getMaxSize() - 1);
             eventLogContent.setEventLabel(shortenedLabel);
         }
@@ -57,7 +60,8 @@ public class CreateEventLogOperation implements CreateUpdateOperation {
         newContent.setString(EventLog.LABEL, eventLogContent.getEventLabel());
         newContent.setString(EventLog.TIMESTAMP, DateUtil.formatTimeStamp(timestamp));
         newContent.setString(EventLog.TAB, eventLogContent.getTab());
-        UtlsLogUtil.debug(this.getClass(), newContent.getTimestamp() + ", Creating eventlog with content:" + webSocketMessage.toString());
+        UtlsLogUtil.debug(this.getClass(), newContent.getTimestamp().toString(),
+          ", Creating eventlog with content:", webSocketMessage.toString());
     }
 
 

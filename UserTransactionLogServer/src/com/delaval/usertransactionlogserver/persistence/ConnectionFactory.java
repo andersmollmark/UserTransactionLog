@@ -98,7 +98,7 @@ public class ConnectionFactory {
     private boolean isTableWithNameLocked(String tablename) throws SQLException {
         StringBuilder sql = new StringBuilder();
         sql.append("SHOW OPEN TABLES LIKE '").append(tablename).append("'");
-        UtlsLogUtil.debug(ConnectionFactory.class, "Checking if db-table is locked:" + sql.toString());
+        UtlsLogUtil.debug(ConnectionFactory.class, "Checking if db-table is locked:", sql.toString());
         Connection connection = ConnectionFactory.getInstance().getConnection();
         PreparedStatement ps = null;
         ResultSet resultSet = null;
@@ -110,7 +110,7 @@ public class ConnectionFactory {
                 return in_use == 1;
             }
         } catch (SQLException e) {
-            UtlsLogUtil.error(ServerProperties.class, "Couldnt check if table was locked:" + e.getMessage());
+            UtlsLogUtil.error(ServerProperties.class, "Couldnt check if table was locked:", e.getMessage());
             throw e;
         }
         finally {
@@ -118,14 +118,14 @@ public class ConnectionFactory {
                 try {
                     ps.close();
                 } catch (SQLException e) {
-                    UtlsLogUtil.error(ServerProperties.class, "Couldnt close PreparedStatement:" + e.getMessage());
+                    UtlsLogUtil.error(ServerProperties.class, "Couldnt close PreparedStatement:", e.getMessage());
                 }
             }
             if(resultSet != null){
                 try {
                     resultSet.close();
                 } catch (SQLException e) {
-                    UtlsLogUtil.error(ServerProperties.class, "Couldnt close ResultSet:" + e.getMessage());
+                    UtlsLogUtil.error(ServerProperties.class, "Couldnt close ResultSet:", e.getMessage());
                 }
             }
         }
@@ -151,7 +151,7 @@ public class ConnectionFactory {
                     getConnection().close();
                 }
             } catch (SQLException e) {
-                UtlsLogUtil.error(this.getClass(), "Error while closing connection:" + e.getMessage());
+                UtlsLogUtil.error(this.getClass(), "Error while closing connection:", e.getMessage());
             }
         }
     }
@@ -163,7 +163,7 @@ public class ConnectionFactory {
             }
             return theConnection;
         } catch (SQLException e) {
-            UtlsLogUtil.error(this.getClass(), "Error while fetching connection:" + e.getMessage());
+            UtlsLogUtil.error(this.getClass(), "Error while fetching connection:", e.getMessage());
         }
         return theConnection;
     }
@@ -173,12 +173,12 @@ public class ConnectionFactory {
             String jdbcUrl = "jdbc:mysql://" + getProp(ServerProperties.PropKey.DB_SERVER_HOST) +
               ":" + getProp(ServerProperties.PropKey.DB_SERVER_PORT) + "/" +
               getProp(ServerProperties.PropKey.DB_NAME);
-            UtlsLogUtil.info(this.getClass(), "Creating db-connection:" + jdbcUrl);
+            UtlsLogUtil.info(this.getClass(), "Creating db-connection:", jdbcUrl);
             theConnection = java.sql.DriverManager.getConnection(jdbcUrl, getProp(ServerProperties.PropKey.DB_USER), getProp(ServerProperties.PropKey.DB_PWD));
 
             theConnection.setAutoCommit(false);
         } catch (SQLException e) {
-            UtlsLogUtil.error(this.getClass(), "Error while creating connection:" + e);
+            UtlsLogUtil.error(this.getClass(), "Error while creating connection:", e.getMessage());
             throw e;
         }
     }

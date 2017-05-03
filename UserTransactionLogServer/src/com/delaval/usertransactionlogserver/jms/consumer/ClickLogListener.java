@@ -18,14 +18,14 @@ public class ClickLogListener {
     public static final String NAME_OF_PROCESS_METHOD = "processClickLogMessage";
 
     public void processClickLogMessage(String text) {
-        UtlsLogUtil.debug(this.getClass(), "processing clickLogMessage:" + text);
+        UtlsLogUtil.debug(this.getClass(), "processing clickLogMessage:", text);
         try{
             WebSocketMessage webSocketMessage = new Gson().fromJson(text, WebSocketMessage.class);
             OperationParam<CreateClickLogOperation> operationParam = OperationFactory.getCreateClickLogParam(webSocketMessage);
             OperationDAO.getInstance().executeOperation(operationParam);
         }
         catch (Exception e){
-            UtlsLogUtil.error(this.getClass(), "Something went wrong while parsing clickLog-json from message:" + e.getMessage());
+            UtlsLogUtil.error(this.getClass(), "Something went wrong while parsing clickLog-json from message:", e.getMessage());
         }
     }
 

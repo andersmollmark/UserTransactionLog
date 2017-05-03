@@ -35,7 +35,7 @@ public class GetEventLogsWithUserTransactionKeyOperation implements ReadOperatio
 
     @Override
     public void execute() {
-        UtlsLogUtil.debug(this.getClass(), "Get all eventlogs with usertransactionkey:" + userTransactionKeyId);
+        UtlsLogUtil.debug(this.getClass(), "Get all eventlogs with usertransactionkey:", userTransactionKeyId);
         final List<InternalEventLog> all = new ArrayList<>();
         SQueryResult<EventLog> result = jdbcSession.query(new SQuery(EventLog.EVENT_LOG).eq(EventLog.USER_TRANSACTION_KEY_ID, userTransactionKeyId));
         result.forEach(logContent -> all.add(new com.delaval.usertransactionlogserver.domain.InternalEventLog(logContent)));

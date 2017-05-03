@@ -36,7 +36,7 @@ public class GetSystemPropertyWithNameOperation implements ReadOperation {
 
     @Override
     public void execute() {
-        UtlsLogUtil.debug(this.getClass(), "Get systemproperty with name:" + name);
+        UtlsLogUtil.debug(this.getClass(), "Get systemproperty with name:", name);
         final List<InternalSystemProperty> all = new ArrayList<>();
         SQueryResult<SystemProperty> result = jdbcSession.query(new SQuery(SystemProperty.SYSTEM_PROPERTY).eq(SystemProperty.NAME, name));
         result.forEach(logContent -> all.add(new InternalSystemProperty(logContent)));

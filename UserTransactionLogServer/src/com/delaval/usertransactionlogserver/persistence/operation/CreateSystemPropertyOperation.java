@@ -56,7 +56,8 @@ public class CreateSystemPropertyOperation implements CreateUpdateOperation {
         systemProperty.setString(SystemProperty.VALUE, systemPropertyContent.getValue());
         long timestamp = Long.parseLong(systemPropertyContent.getTimestamp());
         systemProperty.setString(SystemProperty.TIMESTAMP, DateUtil.formatTimeStamp(timestamp));
-        UtlsLogUtil.debug(this.getClass(), systemProperty.getTimestamp() + ", Creating systemproperty with content:" + webSocketMessage.toString());
+        UtlsLogUtil.debug(this.getClass(), systemProperty.getTimestamp().toString(),
+          ", Creating systemproperty with content:", webSocketMessage.toString());
     }
 
 }

@@ -36,7 +36,7 @@ public class GetClickLogsWithUserTransactionKeyOperation implements ReadOperatio
 
     @Override
     public void execute() {
-        UtlsLogUtil.debug(this.getClass(), "Get all clicklogs with usertransactionkey:" + userTransactionKeyId);
+        UtlsLogUtil.debug(this.getClass(), "Get all clicklogs with usertransactionkey:", userTransactionKeyId);
         final List<InternalClickLog> all = new ArrayList<>();
         SQueryResult<ClickLog> result = jdbcSession.query(new SQuery(ClickLog.CLICK_LOG).eq(ClickLog.USER_TRANSACTION_KEY_ID, userTransactionKeyId));
         result.forEach(logContent -> all.add(new InternalClickLog(logContent)));

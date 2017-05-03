@@ -52,7 +52,9 @@ public class CreateClickLogOperation implements CreateUpdateOperation {
         newContent.setString(ClickLog.Y, clickLogContent.getY());
         newContent.setString(ClickLog.TAB, clickLogContent.getTab());
         newContent.setString(ClickLog.HOST, clickLogContent.getHost());
-        UtlsLogUtil.debug(this.getClass(), newContent.getTimestamp() + ", Creating clickLog with content:" + webSocketMessage.toString());
+        UtlsLogUtil.debug(this.getClass(),
+          newContent.getTimestamp().toString(),
+          ", Creating clickLog with content:", webSocketMessage.toString());
     }
 
     private static String getClickLogId(WebSocketMessage webSocketMessage, ClickLogContent clickLogContent){

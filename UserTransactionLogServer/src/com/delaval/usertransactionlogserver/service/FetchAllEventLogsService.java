@@ -34,15 +34,19 @@ public class FetchAllEventLogsService {
     }
 
     public void writeJsonDumpOnFile(String filepath, String filename){
-        UtlsLogUtil.info(this.getClass(), "Writing jsonfile, path:" + filepath + " filename:" + filename);
+        UtlsLogUtil.info(this.getClass(),
+          "Writing jsonfile, path:", filepath,
+          " filename:", filename);
         Path path = Paths.get(filepath + filename);
         try(BufferedWriter writer = Files.newBufferedWriter(path)){
             JsonArray allEventLogsAsJson = getAllEventLogsAsJson();
             Gson gson = new GsonBuilder().setPrettyPrinting().create();
             writer.write(gson.toJson(allEventLogsAsJson));
-            UtlsLogUtil.info(this.getClass(), "Created file, " + filepath + filename + " with db-content in json-format");
+            UtlsLogUtil.info(this.getClass(), "Created file, ", filepath, filename,
+              " with db-content in json-format");
         } catch (IOException e) {
-            UtlsLogUtil.error(this.getClass(), "something went wrong while writing to file:" + filepath + filename + " \nException:" + e.toString());
+            UtlsLogUtil.error(this.getClass(), "something went wrong while writing to file:", filepath, filename,
+              " \nException:" + e.toString());
         }
     }
 
@@ -71,7 +75,7 @@ public class FetchAllEventLogsService {
 
     JsonArray getJsonEventLogsWithUserTransactionId(InternalUserTransactionKey aKey){
         List<InternalEventLog> eventLogsWithUserTransactionId = getEventLogsWithUserTransactionId(aKey);
-        UtlsLogUtil.info(this.getClass(), "Number of eventlogs found:" + eventLogsWithUserTransactionId.size());
+        UtlsLogUtil.info(this.getClass(), "Number of eventlogs found:", Integer.toString(eventLogsWithUserTransactionId.size()));
         eventLogsWithUserTransactionId.forEach(log -> {
             log.setUsername(aKey.getUsername());
             log.setTarget(aKey.getTarget());
