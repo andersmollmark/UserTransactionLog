@@ -117,14 +117,14 @@ public class ServerProperties {
                 try {
                     fIn.close();
                 } catch (IOException e) {
-                    UtlsLogUtil.error(ServerProperties.class, "Couldnt close FileInputStream:" + e.getMessage());
+                    UtlsLogUtil.error(ServerProperties.class, "Couldnt close FileInputStream:", e.getMessage());
                 }
             }
             if(fOut != null){
                 try {
                     fOut.close();
                 } catch (IOException e) {
-                    UtlsLogUtil.error(ServerProperties.class, "Couldnt close FileOutputStream:" + e.getMessage());
+                    UtlsLogUtil.error(ServerProperties.class, "Couldnt close FileOutputStream:", e.getMessage());
                 }
             }
         }
