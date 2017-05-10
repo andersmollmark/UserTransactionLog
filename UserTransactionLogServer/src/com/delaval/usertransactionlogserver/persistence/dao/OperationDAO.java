@@ -1,9 +1,7 @@
 package com.delaval.usertransactionlogserver.persistence.dao;
 
 import com.delaval.usertransactionlogserver.persistence.ConnectionFactory;
-import com.delaval.usertransactionlogserver.persistence.operation.Operation;
-import com.delaval.usertransactionlogserver.persistence.operation.OperationFactory;
-import com.delaval.usertransactionlogserver.persistence.operation.OperationParam;
+import com.delaval.usertransactionlogserver.persistence.operation.*;
 import com.delaval.usertransactionlogserver.service.JmsMessageService;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import simpleorm.sessionjdbc.SSessionJdbc;
@@ -18,6 +16,8 @@ public class OperationDAO {
 
     private static final String LOG_SERVER_CONN_NAME = "LogServer";
 
+    private Object LOCK = new Object();
+
     private static OperationDAO _instance;
 
     private OperationDAO() {
@@ -31,7 +31,21 @@ public class OperationDAO {
         return _instance;
     }
 
-    public synchronized <T extends Operation> T executeOperation(OperationParam<T> operationParam) {
+    public <T extends CreateUpdateOperation> void doCreateUpdate(OperationParam<T> operationParam) {
+        synchronized (LOCK) {
+            executeOperation(operationParam);
+        }
+    }
+
+    public <T extends ReadOperation> T doRead(OperationParam<T> operationParam) {
+        synchronized (LOCK) {
+            Class<T> operationClass = operationParam.getOperationClass();
+            T operation = executeOperation(operationParam);
+            return operationClass.cast(operation);
+        }
+    }
+
+    private <T extends Operation> T executeOperation(OperationParam<T> operationParam) {
         SSessionJdbc ses = null;
         Class<T> operationClass = operationParam.getOperationClass();
         Operation operation = null;
@@ -62,7 +76,7 @@ public class OperationDAO {
         return operationClass.cast(operation);
     }
 
-    private <T extends Operation> T doCommonExceptionHandling(SSessionJdbc ses, OperationParam<T> operationParam){
+    private <T extends Operation> T doCommonExceptionHandling(SSessionJdbc ses, OperationParam<T> operationParam) {
         try {
             if (ses != null) {
                 ses.rollback();
@@ -80,7 +94,7 @@ public class OperationDAO {
     private Operation doExecute(OperationParam operationParam, SSessionJdbc ses) throws InstantiationException, IllegalAccessException, SQLException {
         Operation operation;
         if (operationParam.isCreateUpdate()) {
-            if(ConnectionFactory.getInstance().isTableLocked(operationParam.getWebSocketMessage())){
+            if (ConnectionFactory.getInstance().isTableLocked(operationParam.getWebSocketMessage())) {
                 UtlsLogUtil.debug(OperationDAO.class, " the table is locked:", operationParam.getWebSocketMessage().getMessType());
                 throw new SQLException(" the table is locked:" + operationParam.getWebSocketMessage().getMessType());
             }

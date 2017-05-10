@@ -7,10 +7,7 @@ import com.delaval.usertransactionlogserver.persistence.entity.ClickLog;
 import com.delaval.usertransactionlogserver.persistence.entity.EventLog;
 import com.delaval.usertransactionlogserver.persistence.entity.SystemProperty;
 import com.delaval.usertransactionlogserver.persistence.entity.UserTransactionKey;
-import com.delaval.usertransactionlogserver.persistence.operation.CreateSystemPropertyOperation;
-import com.delaval.usertransactionlogserver.persistence.operation.GetSystemPropertyWithNameOperation;
-import com.delaval.usertransactionlogserver.persistence.operation.OperationFactory;
-import com.delaval.usertransactionlogserver.persistence.operation.OperationParam;
+import com.delaval.usertransactionlogserver.persistence.operation.*;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import simpleorm.dataset.SFieldString;
 import simpleorm.sessionjdbc.SSessionJdbc;
@@ -85,25 +82,34 @@ public class InitDAO {
     }
 
     public void alterTables() throws SQLException {
-        ResultSet clickLogTable = getTableWithName(ClickLog.CLICK_LOG.getTableName());
         UtlsLogUtil.debug(this.getClass(), ClickLog.CLICK_LOG.getTableName(), " alter table...");
+        ResultSet clickLogTable = getTableWithName(ClickLog.CLICK_LOG.getTableName());
         alterTables(clickLogTable, ClickLog.CLICK_LOG.getTableName(), ClickLog.getVarcharColumns());
 
-        ResultSet eventLogTable = getTableWithName(EventLog.EVENT_LOG.getTableName());
         UtlsLogUtil.debug(this.getClass(), EventLog.EVENT_LOG.getTableName(), " alter table...");
+        ResultSet eventLogTable = getTableWithName(EventLog.EVENT_LOG.getTableName());
         alterTables(eventLogTable, EventLog.EVENT_LOG.getTableName(), EventLog.getVarcharColumns());
+
+        UtlsLogUtil.debug(this.getClass(), SystemProperty.SYSTEM_PROPERTY.getTableName(), " alter table...");
+        ResultSet systemPropTable = getTableWithName(SystemProperty.SYSTEM_PROPERTY.getTableName());
+        alterTables(systemPropTable, SystemProperty.SYSTEM_PROPERTY.getTableName(), SystemProperty.getVarcharColumns());
 
         UtlsLogUtil.debug(this.getClass(), EventLog.EVENT_LOG.getTableName(), " alter timestamps...");
         alterTimestampColumns(EventLog.EVENT_LOG.getTableName());
         UtlsLogUtil.debug(this.getClass(), ClickLog.CLICK_LOG.getTableName(), " alter timestamps...");
         alterTimestampColumns(ClickLog.CLICK_LOG.getTableName());
-
+        UtlsLogUtil.debug(this.getClass(), SystemProperty.SYSTEM_PROPERTY.getTableName(), " alter timestamps...");
+        alterTimestampColumns(SystemProperty.SYSTEM_PROPERTY.getTableName());
     }
 
     private void alterTables(ResultSet table, String tablename, List<SFieldString> varcharColumns) throws SQLException {
         List<SFieldString> missingColumns = getMissingVarcharColumns(table, varcharColumns, tablename);
         for (SFieldString missingColumn : missingColumns) {
             addMissingVarcharColumn(tablename, missingColumn);
+        }
+        List<SFieldString> varcharColumnsWithBiggerColumnSize = getVarcharColumnsWithBiggerColumnSize(table, varcharColumns, tablename);
+        for(SFieldString columnWithBiggerSize : varcharColumnsWithBiggerColumnSize){
+            alterSizeOfColumn(tablename, columnWithBiggerSize);
         }
     }
 
@@ -137,6 +143,36 @@ public class InitDAO {
         return missingColumnnames;
     }
 
+    private List<SFieldString> getVarcharColumnsWithBiggerColumnSize(ResultSet table, List<SFieldString> varcharColumns, String tablename) {
+        List<SFieldString> changedColumnSize = new ArrayList<>();
+        UtlsLogUtil.debug(this.getClass(), "checking size of columns...");
+        try {
+            ResultSetMetaData metaData = table.getMetaData();
+            for (SFieldString column : varcharColumns) {
+                boolean changedSize = false;
+                for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                    UtlsLogUtil.debug(this.getClass(),
+                      "checking if column size is changed, columnname:", metaData.getColumnName(i),
+                      " varcharcolumns:", column.getColumnName());
+                    changedSize = column.getMaxSize() > metaData.getColumnDisplaySize(i);
+                    if (!changedSize) {
+                        break;
+                    }
+                }
+                if (changedSize) {
+                    UtlsLogUtil.debug(this.getClass(), "found column with changed size:", column.getColumnName());
+                    changedColumnSize.add(column);
+
+                }
+            }
+        } catch (SQLException e) {
+            UtlsLogUtil.error(this.getClass(),
+              "FATAL ERROR, something went wrong while checking columnsize in table:", tablename,
+              " ", e.getMessage());
+        }
+        return changedColumnSize;
+    }
+
     private void addMissingVarcharColumn(String tablename, SFieldString missingColumn) throws SQLException {
         UtlsLogUtil.debug(this.getClass(),
           "adding missing column:", missingColumn.toString(),
@@ -147,6 +183,18 @@ public class InitDAO {
         String errorMess = "Something went wrong when adding missing column, " + missingColumn.getColumnName() + " to table:" + tablename + " with maxsize:" + missingColumn.getMaxSize();
         runSqlCommand(sqlEvent, errorMess);
     }
+
+    private void alterSizeOfColumn(String tablename, SFieldString column) throws SQLException {
+        UtlsLogUtil.debug(this.getClass(),
+          " changing size of column:", column.toString(),
+          " to table:", tablename, " to size:", Integer.toString(column.getMaxSize()));
+        StringBuilder sqlEvent = new StringBuilder();
+        sqlEvent.append("ALTER TABLE ").append(tablename).append(" MODIFY ").append(column.getColumnName())
+          .append(" VARCHAR(").append(column.getMaxSize()).append(")");
+        String errorMess = "Something went wrong when adding missing column, " + column.getColumnName() + " to table:" + tablename + " with maxsize:" + column.getMaxSize();
+        runSqlCommand(sqlEvent, errorMess);
+    }
+
 
     private void alterTimestampColumns(String tablename) throws SQLException {
         UtlsLogUtil.debug(this.getClass(), "altering timestamp in table:", tablename);
@@ -212,6 +260,7 @@ public class InitDAO {
 
 
     public void createDeleteLogEvent() throws SQLException {
+        UtlsLogUtil.debug(this.getClass(), "createDeleteLogEvent");
         StringBuilder sql = new StringBuilder("SET GLOBAL event_scheduler = ON");
         String errorMessSchedule = "Something went wrong when creating delete_log-event:";
         runSqlCommand(sql, errorMessSchedule);
@@ -219,8 +268,25 @@ public class InitDAO {
         createDeleteEventLogEvent();
     }
 
-    private void createDeleteClickLogEvent() throws SQLException {
+    public void createFetchLogUsers(){
+        UtlsLogUtil.debug(this.getClass(), " checking if we have to create fetch-log-users");
+        String delproUser = ServerProperties.getInstance().getProp(ServerProperties.PropKey.FETCH_LOG_USER_DELPRO);
+        String toolUser = ServerProperties.getInstance().getProp(ServerProperties.PropKey.FETCH_LOG_USER_TOOL);
+        InternalSystemProperty delproUserProperty = getSystemPropertyWithName(delproUser);
+        InternalSystemProperty toolUserProperty = getSystemPropertyWithName(toolUser);
+        if(delproUserProperty == null || !delproUserProperty.getValue().equals(delproUser)){
+            UtlsLogUtil.debug(this.getClass(), " creating delpro fetch-log-user as a systemproperty");
+            createSystemProperty(delproUser, delproUser);
+        }
+        if(toolUserProperty == null || !toolUserProperty.getValue().equals(toolUser)){
+            UtlsLogUtil.debug(this.getClass(), " creating utls-tool fetch-log-user as a systemproperty");
+            createSystemProperty(toolUser, toolUser);
+        }
 
+    }
+
+    private void createDeleteClickLogEvent() throws SQLException {
+        UtlsLogUtil.debug(this.getClass(), " create deleteClickLogEvent");
         String deleteClickLogsIntervalName = ServerProperties.getInstance().getProp(ServerProperties.PropKey.SYSTEM_PROPERTY_NAME_DELETE_CLICK_LOGS_INTERVAL);
         String deleteInterval = getDeleteInterval(deleteClickLogsIntervalName);
 
@@ -242,7 +308,7 @@ public class InitDAO {
     }
 
     private void createDeleteEventLogEvent() throws SQLException {
-
+        UtlsLogUtil.debug(this.getClass(), " create deleteEventLogEvent");
         String deleteEventLogsIntervalName = ServerProperties.getInstance().getProp(ServerProperties.PropKey.SYSTEM_PROPERTY_NAME_DELETE_EVENT_LOGS_INTERVAL);
         String deleteInterval = getDeleteInterval(deleteEventLogsIntervalName);
 
@@ -265,7 +331,7 @@ public class InitDAO {
     }
 
     public List<String> getAllUserTransactionKeysThatLacksLogs() {
-
+        UtlsLogUtil.debug(this.getClass(), "getAllUserTransactionKeysThatLacksLogs");
         ResultSet resultSet = null;
         List<String> ids = new ArrayList<>();
         try {
@@ -294,6 +360,7 @@ public class InitDAO {
     }
 
     private String getDeleteInterval(String name) throws SQLException {
+        UtlsLogUtil.debug(this.getClass(), " getDeleteInterval with name:" + name);
         InternalSystemProperty systemPropertyWithName = getSystemPropertyWithName(name);
         String interval = ServerProperties.getInstance().getProp(ServerProperties.PropKey.DELETE_LOGS_INTERVAL_DEFAULT_IN_DAYS) != null ?
           ServerProperties.getInstance().getProp(ServerProperties.PropKey.DELETE_LOGS_INTERVAL_DEFAULT_IN_DAYS): DEFAULT_DELETE_INTERVAL_IN_DAYS;
@@ -305,9 +372,9 @@ public class InitDAO {
     }
 
     private InternalSystemProperty getSystemPropertyWithName(String name){
-        OperationParam<GetSystemPropertyWithNameOperation> operationParam = new OperationParam<>(GetSystemPropertyWithNameOperation.class);
-        operationParam.setParameter(name);
-        GetSystemPropertyWithNameOperation systemPropertyWithNameOperation = OperationDAO.getInstance().executeOperation(operationParam);
+        UtlsLogUtil.debug(this.getClass(), " fetching systemproperty with name:" + name);
+        OperationParam<GetSystemPropertyWithNameOperation> systemPropertyWithNameParam = OperationFactory.getSystemPropertyWithNameParam(name);
+        GetSystemPropertyWithNameOperation systemPropertyWithNameOperation = OperationDAO.getInstance().doRead(systemPropertyWithNameParam);
         List<InternalSystemProperty> result = systemPropertyWithNameOperation.getResult();
         if(result.size() > 0){
             return result.get(0);
@@ -321,7 +388,7 @@ public class InitDAO {
         newProperty.setValue(value);
         newProperty.setTimestamp(new Date());
         OperationParam<CreateSystemPropertyOperation> createSystemPropertyParamForSystem = OperationFactory.getCreateSystemPropertyParamForSystem(newProperty);
-        OperationDAO.getInstance().executeOperation(createSystemPropertyParamForSystem);
+        OperationDAO.getInstance().doCreateUpdate(createSystemPropertyParamForSystem);
         return value;
     }
 

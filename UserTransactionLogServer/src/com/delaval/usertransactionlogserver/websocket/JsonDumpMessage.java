@@ -9,7 +9,9 @@ public class JsonDumpMessage {
 
     String jsondump;
 
+
     public void setJsondump(String json){
         jsondump = json;
     }
+
 }

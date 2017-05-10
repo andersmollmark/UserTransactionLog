@@ -1,6 +1,7 @@
 package com.delaval.usertransactionlogserver.persistence.operation;
 
 import com.delaval.usertransactionlogserver.domain.InternalSystemProperty;
+import com.delaval.usertransactionlogserver.domain.InternalUserTransactionKey;
 import com.delaval.usertransactionlogserver.persistence.entity.SystemProperty;
 import com.delaval.usertransactionlogserver.websocket.MessTypes;
 import com.delaval.usertransactionlogserver.websocket.SystemPropertyContent;
@@ -61,6 +62,22 @@ public class OperationFactory {
 
     public static OperationParam<CreateClickLogOperation> getCreateClickLogParam(WebSocketMessage webSocketMessage){
         return new OperationParam<>(CreateClickLogOperation.class, webSocketMessage);
+    }
+
+    public static OperationParam<GetSystemPropertyWithNameOperation> getSystemPropertyWithNameParam(String name){
+        OperationParam<GetSystemPropertyWithNameOperation> operationParam = new OperationParam<>(GetSystemPropertyWithNameOperation.class);
+        operationParam.setParameter(name);
+        return operationParam;
+    }
+
+    public static OperationParam<GetAllUserTransactionKeysOperation> getAllUserTransactionKeyParam(){
+        return new OperationParam<>(GetAllUserTransactionKeysOperation.class);
+    }
+
+    public static OperationParam<GetEventLogsWithUserTransactionKeyOperation> getEventLogsWithUserTransactionKeyParam(InternalUserTransactionKey userTransactionKey){
+        OperationParam<GetEventLogsWithUserTransactionKeyOperation> operationParam = new OperationParam<>(GetEventLogsWithUserTransactionKeyOperation.class);
+        operationParam.setParameter(userTransactionKey.getId());
+        return operationParam;
     }
 
 }

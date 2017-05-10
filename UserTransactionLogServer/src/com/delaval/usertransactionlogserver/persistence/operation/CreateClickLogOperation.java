@@ -39,6 +39,7 @@ public class CreateClickLogOperation implements CreateUpdateOperation {
 
     @Override
     public void execute() {
+        UtlsLogUtil.debug(this.getClass(), "execute CreateClickLogOperation");
         UserTransactionKey.findOrCreateKey(jdbcSession, webSocketMessage);
         ClickLogContent clickLogContent = new Gson().fromJson(webSocketMessage.getJsonContent(), ClickLogContent.class);
         ClickLog newContent = (ClickLog) jdbcSession.create(ClickLog.CLICK_LOG, getClickLogId(webSocketMessage, clickLogContent));

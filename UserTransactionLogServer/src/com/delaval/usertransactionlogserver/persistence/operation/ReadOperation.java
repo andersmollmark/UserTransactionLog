@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by delaval on 1/18/2016.
  */
-public interface ReadOperation<T extends AbstractEntity> extends Operation {
+    public interface ReadOperation<T extends AbstractEntity> extends Operation {
 
     void setReadParameter(String parameter);
 

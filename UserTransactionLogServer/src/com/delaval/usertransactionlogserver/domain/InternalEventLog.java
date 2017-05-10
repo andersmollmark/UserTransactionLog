@@ -2,6 +2,11 @@ package com.delaval.usertransactionlogserver.domain;
 
 import com.delaval.usertransactionlogserver.persistence.entity.EventLog;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.IllegalBlockSizeException;
+import java.io.*;
 import java.util.Date;
 
 /**
@@ -33,11 +38,11 @@ public class InternalEventLog {
         host = eventLog.getHost();
     }
 
-    public void setUsername(String username){
+    public void setUsername(String username) {
         this.username = username;
     }
 
-    public String getUsername(){
+    public String getUsername() {
         return username;
     }
 
@@ -84,6 +89,28 @@ public class InternalEventLog {
     public String getHost() {
         return host;
     }
+
+    public void encrypt(FetchLogCriteria criteria) throws Exception {
+        if (criteria.isEncrypt()) {
+            id = doEncrypt(id, criteria.aesCipher);
+            username = doEncrypt(username, criteria.aesCipher);
+            userTransactionKeyId = doEncrypt(userTransactionKeyId, criteria.aesCipher);
+            label = doEncrypt(label, criteria.aesCipher);
+            host = doEncrypt(host, criteria.aesCipher);
+        }
+    }
+
+
+    private String doEncrypt(String origValue, Cipher aesCipher) throws BadPaddingException, IllegalBlockSizeException, FileNotFoundException {
+//        return new String(cipher.doFinal(origValue.getBytes()));
+        InputStream orig = new ByteArrayInputStream(origValue.getBytes());
+        OutputStream encrypted = new ByteArrayOutputStream();
+        CipherOutputStream cipherOutputStream = new CipherOutputStream(encrypted, aesCipher);
+        return "dumm";
+
+    }
+
+
 
     @Override
     public int hashCode() {

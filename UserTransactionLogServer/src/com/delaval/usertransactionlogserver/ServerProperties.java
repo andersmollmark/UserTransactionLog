@@ -35,6 +35,12 @@ public class ServerProperties {
         SYSTEM_PROPERTY_NAME_DELETE_EVENT_LOGS_INTERVAL("deleteEventLogsIntervalName"),
         CONNECTION_TIMEOUT_IN_SECONDS("connectionTimeoutInSeconds"),
         UTLS_LOG_CACHE_MAX_SIZE("utlsLogCacheMaxSize"),
+        FETCH_LOG_USER_DELPRO("fetchLogUserDelpro"),
+        FETCH_LOG_USER_TOOL("fetchLogUserTool"),
+        RSA_ALGORITHM("rsaAlgorithm"),
+        RSA_KEY_GEN("rsaKeyGen"),
+        AES_SECRET_KEY_ALGORITHM("AES"),
+        AES_CIPHER_ALGORITHM("AES_CIPHER_ALGORITHM"),
         WEBSOCKET_PORT("websocketPort");
 
         private String myValue;
@@ -107,6 +113,12 @@ public class ServerProperties {
                 set(PropKey.SYSTEM_PROPERTY_NAME_DELETE_EVENT_LOGS_INTERVAL, "deleteEventLogsIntervalName");
                 set(PropKey.CONNECTION_TIMEOUT_IN_SECONDS, "10");
                 set(PropKey.UTLS_LOG_CACHE_MAX_SIZE, "500");
+                set(PropKey.FETCH_LOG_USER_DELPRO, "delPr0backup2017"); // 0 is a zero
+                set(PropKey.FETCH_LOG_USER_TOOL, "utlsT00l2017rule"); // 0 is zeros
+                set(PropKey.RSA_ALGORITHM, "RSA/ECB/PKCS1Padding");
+                set(PropKey.RSA_KEY_GEN, "RSA");
+                set(PropKey.AES_SECRET_KEY_ALGORITHM, "AES");
+                set(PropKey.AES_CIPHER_ALGORITHM, "AES/ECB/PKCS5Padding");
                 prop.store(fOut, "Serverproperties needed");
             } catch (IOException e) {
                 System.out.println("Got problem creating " + PROP_FILE_NAME + " file! ");

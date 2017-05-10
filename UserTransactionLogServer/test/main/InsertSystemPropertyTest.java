@@ -2,10 +2,7 @@ package main;
 
 import com.delaval.usertransactionlogserver.domain.InternalSystemProperty;
 import com.delaval.usertransactionlogserver.persistence.dao.OperationDAO;
-import com.delaval.usertransactionlogserver.persistence.operation.CreateSystemPropertyOperation;
-import com.delaval.usertransactionlogserver.persistence.operation.GetSystemPropertyWithNameOperation;
-import com.delaval.usertransactionlogserver.persistence.operation.Operation;
-import com.delaval.usertransactionlogserver.persistence.operation.OperationParam;
+import com.delaval.usertransactionlogserver.persistence.operation.*;
 import com.delaval.usertransactionlogserver.websocket.MessTypes;
 import com.delaval.usertransactionlogserver.websocket.WebSocketMessage;
 import com.google.gson.Gson;
@@ -25,7 +22,7 @@ public class InsertSystemPropertyTest {
     void testGetSystemProperty(){
         OperationParam<GetSystemPropertyWithNameOperation> operationParam = new OperationParam<>(GetSystemPropertyWithNameOperation.class);
         operationParam.setParameter("propName");
-        GetSystemPropertyWithNameOperation getSystemPropertyWithNameOperation = OperationDAO.getInstance().executeOperation(operationParam);
+        GetSystemPropertyWithNameOperation getSystemPropertyWithNameOperation = OperationDAO.getInstance().doRead(operationParam);
         List<InternalSystemProperty> result = getSystemPropertyWithNameOperation.getResult();
         Assert.assertNotNull(result);
         Assert.assertTrue(result.size()>0);
@@ -50,10 +47,10 @@ public class InsertSystemPropertyTest {
         doInsert(CreateSystemPropertyOperation.class, webSocketMessage);
     }
 
-    private <T extends Operation> void doInsert(Class<T> clazz, WebSocketMessage webSocketMessage) {
+    private <T extends CreateUpdateOperation> void doInsert(Class<T> clazz, WebSocketMessage webSocketMessage) {
         OperationParam<T> operationParam = new OperationParam<>(clazz, webSocketMessage);
         OperationDAO operationDAO = OperationDAO.getInstance();
-        operationDAO.executeOperation(operationParam);
+        operationDAO.doCreateUpdate(operationParam);
     }
 
     private static class MyWebSocketMessage extends WebSocketMessage {

@@ -22,7 +22,7 @@ public class ClickLogListener {
         try{
             WebSocketMessage webSocketMessage = new Gson().fromJson(text, WebSocketMessage.class);
             OperationParam<CreateClickLogOperation> operationParam = OperationFactory.getCreateClickLogParam(webSocketMessage);
-            OperationDAO.getInstance().executeOperation(operationParam);
+            OperationDAO.getInstance().doCreateUpdate(operationParam);
         }
         catch (Exception e){
             UtlsLogUtil.error(this.getClass(), "Something went wrong while parsing clickLog-json from message:", e.getMessage());

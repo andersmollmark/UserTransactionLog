@@ -27,7 +27,7 @@ public class SimpleORMTest {
         testInsertClickLogs();
         OperationParam operationParam = new OperationParam<GetClickLogsWithUserTransactionKeyOperation>(GetClickLogsWithUserTransactionKeyOperation.class);
         operationParam.setParameter("LEIF USERklientenIpad");
-        GetClickLogsWithUserTransactionKeyOperation operation = (GetClickLogsWithUserTransactionKeyOperation)OperationDAO.getInstance().executeOperation(operationParam);
+        GetClickLogsWithUserTransactionKeyOperation operation = (GetClickLogsWithUserTransactionKeyOperation)OperationDAO.getInstance().doRead(operationParam);
         List<InternalClickLog> allLogs = operation.getResult();
         for (InternalClickLog l : allLogs) {
             System.out.println("ClickLog:\n");
@@ -45,7 +45,7 @@ public class SimpleORMTest {
         testInsertEventLogs();
         OperationParam<GetEventLogsWithUserTransactionKeyOperation> operationParam = new OperationParam<>(GetEventLogsWithUserTransactionKeyOperation.class);
         operationParam.setParameter("LEIF USERklientenIpad");
-        GetEventLogsWithUserTransactionKeyOperation operation = OperationDAO.getInstance().executeOperation(operationParam);
+        GetEventLogsWithUserTransactionKeyOperation operation = OperationDAO.getInstance().doRead(operationParam);
         List<InternalEventLog> allLogs = operation.getResult();
         for (InternalEventLog l : allLogs) {
             System.out.println("EventLog:\n");
@@ -63,7 +63,7 @@ public class SimpleORMTest {
 
     void testGetUserTransactionKey() {
         OperationParam<GetAllUserTransactionKeysOperation> operationParam = new OperationParam<>(GetAllUserTransactionKeysOperation.class);
-        GetAllUserTransactionKeysOperation operation = OperationDAO.getInstance().executeOperation(operationParam);
+        GetAllUserTransactionKeysOperation operation = OperationDAO.getInstance().doRead(operationParam);
         List<InternalUserTransactionKey> allUserTransactionKeys = operation.getResult();
         String firstId = null;
         for (InternalUserTransactionKey l : allUserTransactionKeys) {
@@ -82,7 +82,7 @@ public class SimpleORMTest {
         if (firstId != null) {
             OperationParam<GetClickLogsWithUserTransactionKeyOperation> clickParams = new OperationParam<>(GetClickLogsWithUserTransactionKeyOperation.class);
             clickParams.setParameter(firstId);
-            GetClickLogsWithUserTransactionKeyOperation getClickLogsWithUserTransactionKey = OperationDAO.getInstance().executeOperation(clickParams);
+            GetClickLogsWithUserTransactionKeyOperation getClickLogsWithUserTransactionKey = OperationDAO.getInstance().doRead(clickParams);
             List<InternalClickLog> contents = getClickLogsWithUserTransactionKey.getResult();
             for (InternalClickLog content : contents) {
                 System.out.println("LogContent:\n");
@@ -143,10 +143,10 @@ public class SimpleORMTest {
     }
 
 
-    private <T extends Operation> void doInsert(Class<T> clazz, WebSocketMessage webSocketMessage) {
+    private <T extends CreateUpdateOperation> void doInsert(Class<T> clazz, WebSocketMessage webSocketMessage) {
         OperationParam<T> operationParam = new OperationParam<>(clazz, webSocketMessage);
         OperationDAO operationDAO = OperationDAO.getInstance();
-        operationDAO.executeOperation(operationParam);
+        operationDAO.doCreateUpdate(operationParam);
     }
 
     private static class MyWebSocketMessage extends WebSocketMessage {

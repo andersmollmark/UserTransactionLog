@@ -9,8 +9,9 @@ import ch.qos.logback.classic.Level;
 import com.delaval.usertransactionlogserver.jms.JmsResourceFactory;
 import com.delaval.usertransactionlogserver.persistence.ConnectionFactory;
 import com.delaval.usertransactionlogserver.persistence.dao.InitDAO;
+import com.delaval.usertransactionlogserver.service.CryptoKeyService;
 import com.delaval.usertransactionlogserver.service.FetchAllEventLogsService;
-import com.delaval.usertransactionlogserver.servlet.*;
+import com.delaval.usertransactionlogserver.servlet.LogWebSocketServlet;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
@@ -68,7 +69,10 @@ public class UserTransactionLogServer {
             initDAO.createTables();
         }
         initDAO.createDeleteLogEvent();
+        initDAO.createFetchLogUsers();
         initDAO.alterTables();
+        CryptoKeyService.init();
+
     }
 
     private void initServer() {
@@ -111,14 +115,6 @@ public class UserTransactionLogServer {
         context.setInitParameter("cacheControl", "no-cache");
         context.setClassLoader(Thread.currentThread().getContextClassLoader());
         context.addServlet(DefaultServlet.class, "/");
-        context.addServlet(StartServlet.class, "/servlet");
-        context.addServlet(CreateTestLogServlet.class, "/servlet/testServlet");
-        context.addServlet(SaveTestLogServlet.class, "/servlet/saveTestLog");
-        context.addServlet(GetUserTransactionKeyServlet.class, "/servlet/getUserTransactionKey");
-        context.addServlet(GetLogContentServlet.class, "/servlet/getLogContent");
-        context.addServlet(ChangeDeleteLogEventServlet.class, "/servlet/changeDeleteLogEvent");
-
-
         ServletHolder ws = context.addServlet(LogWebSocketServlet.class, "/ws");
         ws.setInitParameter("classpath", context.getClassPath());
         return context;

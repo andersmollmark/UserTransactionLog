@@ -50,6 +50,7 @@ public class CreateEventLogOperation implements CreateUpdateOperation {
 
     @Override
     public void execute() {
+        UtlsLogUtil.debug(this.getClass(), "execute CreateEventLogOperation");
         UserTransactionKey.findOrCreateKey(jdbcSession, webSocketMessage);
         EventLog newContent = (EventLog) jdbcSession.create(EventLog.EVENT_LOG, getEventLogId(webSocketMessage, eventLogContent));
         newContent.createUserTransactionId(webSocketMessage);

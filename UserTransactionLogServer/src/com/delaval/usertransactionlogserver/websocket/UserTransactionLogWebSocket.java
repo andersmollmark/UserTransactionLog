@@ -4,15 +4,14 @@ import com.delaval.usertransactionlogserver.persistence.dao.OperationDAO;
 import com.delaval.usertransactionlogserver.persistence.operation.CreateSystemPropertyOperation;
 import com.delaval.usertransactionlogserver.persistence.operation.OperationFactory;
 import com.delaval.usertransactionlogserver.persistence.operation.OperationParam;
+import com.delaval.usertransactionlogserver.service.CryptoKeyService;
 import com.delaval.usertransactionlogserver.service.FetchAllEventLogsService;
 import com.delaval.usertransactionlogserver.service.JmsMessageService;
-import com.delaval.usertransactionlogserver.util.DateUtil;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -75,22 +74,32 @@ public class UserTransactionLogWebSocket {
     @OnWebSocketMessage
     public void handleMessage(Session session, String jsonMessage) {
         try {
-            WebSocketMessage webSocketMessage = new Gson().fromJson(jsonMessage, WebSocketMessage.class);
-            if (MessTypes.IDLE_POLL.isSame(webSocketMessage.getType())) {
+            WebSocketType webSocketType = new Gson().fromJson(jsonMessage, WebSocketType.class);
+            if (MessTypes.IDLE_POLL.isSame(webSocketType.getType())) {
                 session.getRemote().sendStringByFuture(jsonMessage);
                 return;
             }
-            UtlsLogUtil.debug(this.getClass(), "Incoming message:", webSocketMessage.toString());
-            if (MessTypes.CLICK_LOG.isSame(webSocketMessage.getType()) || MessTypes.EVENT_LOG.isSame(webSocketMessage.getType())) {
+            UtlsLogUtil.debug(this.getClass(), "Incoming message:", webSocketType.toString());
+            if (MessTypes.CLICK_LOG.isSame(webSocketType.getType()) || MessTypes.EVENT_LOG.isSame(webSocketType.getType())) {
+                WebSocketMessage webSocketMessage = new Gson().fromJson(jsonMessage, WebSocketMessage.class);
                 JmsMessageService.getInstance().createJmsMessage(webSocketMessage, jsonMessage);
-            } else if (MessTypes.SYSTEM_PROPERTY.isSame(webSocketMessage.getType())) {
+            } else if (MessTypes.SYSTEM_PROPERTY.isSame(webSocketType.getType())) {
+                WebSocketMessage webSocketMessage = new Gson().fromJson(jsonMessage, WebSocketMessage.class);
                 OperationParam<CreateSystemPropertyOperation> createSystemPropertyParam = OperationFactory.getCreateSystemPropertyParam(webSocketMessage);
-                OperationDAO.getInstance().executeOperation(createSystemPropertyParam);
-            } else if (MessTypes.JSON_DUMP.isSame(webSocketMessage.getType())) {
+                OperationDAO.getInstance().doCreateUpdate(createSystemPropertyParam);
+            } else if (MessTypes.JSON_DUMP.isSame(webSocketType.getType())) {
                 FetchAllEventLogsService logsService = new FetchAllEventLogsService();
                 session.getRemote().sendStringByFuture(logsService.getJsonDumpMessage());
-            } else {
-                UtlsLogUtil.info(this.getClass(), "Unknown message:", webSocketMessage.getType());
+            }else if (MessTypes.GET_PUBLIC_KEY.isSame(webSocketType.getType())) {
+                session.getRemote().sendStringByFuture(CryptoKeyService.getInstance().getPublicKeyAsJson());
+            }
+            else if (MessTypes.FETCH_LOGS.isSame(webSocketType.getType())) {
+                WebSocketFetchLogMessage webSocketFetchLogMessage = new Gson().fromJson(jsonMessage, WebSocketFetchLogMessage.class);
+                FetchAllEventLogsService logsService = new FetchAllEventLogsService();
+                session.getRemote().sendStringByFuture(logsService.getEncryptedJsonLogs(webSocketFetchLogMessage.getEncryptedClientKey()));
+            }
+            else {
+                UtlsLogUtil.info(this.getClass(), "Unknown message:", webSocketType.getType());
             }
 
         } catch (Exception e) {

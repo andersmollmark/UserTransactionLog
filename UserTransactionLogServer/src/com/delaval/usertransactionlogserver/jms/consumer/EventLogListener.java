@@ -22,7 +22,7 @@ public class EventLogListener {
         try{
             WebSocketMessage webSocketMessage = new Gson().fromJson(text, WebSocketMessage.class);
             OperationParam<CreateEventLogOperation> operationParam = OperationFactory.getCreateEventLogParam(webSocketMessage);
-            OperationDAO.getInstance().executeOperation(operationParam);
+            OperationDAO.getInstance().doCreateUpdate(operationParam);
         }
         catch (Exception e){
             UtlsLogUtil.error(this.getClass(), "Something went wrong while parsing eventLog-json from message:", e.getMessage());

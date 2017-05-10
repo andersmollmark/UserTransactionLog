@@ -41,6 +41,7 @@ public class CreateSystemPropertyOperation implements CreateUpdateOperation {
 
     @Override
     public void execute() {
+        UtlsLogUtil.debug(this.getClass(), "execute CreateSystemPropertyOperation");
         UserTransactionKey.findOrCreateKey(jdbcSession, webSocketMessage);
         SystemPropertyContent systemPropertyContent = new Gson().fromJson(webSocketMessage.getJsonContent(), SystemPropertyContent.class);
         Optional<SystemProperty> optSystemProperty = SystemProperty.find(jdbcSession, systemPropertyContent.getName());
