@@ -1,4 +1,4 @@
-import {Component, OnInit, NgZone} from "@angular/core";
+import {Component, NgZone, OnInit} from "@angular/core";
 import {UtlsFileService} from "./utls-file.service";
 import {UtlsLog} from "./log";
 import {Observable} from "rxjs/Observable";
@@ -8,13 +8,12 @@ import * as _ from "lodash";
 import {TimeFilterService} from "./timefilter.service";
 import {SortingObject} from "./sortingObject";
 import {UtlserverService} from "./utlserver.service";
+import {View} from "./view";
 
 const electron = require('electron');
 const remote = electron.remote;
 
-
 let {dialog} = remote;
-
 
 @Component({
     selector: 'my-app',
@@ -29,6 +28,7 @@ export class AppComponent implements OnInit {
     columnSortObject: SortingObject = new SortingObject();
     public isLoaded: boolean;
     public sortBy = "";
+    logfileName: string = '';
 
     // Select-column-filter
     selectedColumnDefaultChoice = "--- Select column ---";
@@ -46,15 +46,24 @@ export class AppComponent implements OnInit {
     selectedContentDefaultChoice = "--- Select ---";
     public selectedContent = this.selectedContentDefaultChoice;
     allContent = AppConstants.STR_ALL;
+    constants = AppConstants;
     columnContent: Dto[];
 
-    showSettings: boolean = false;
-    showLogs: boolean = false;
-
+    oldViewname: string;
+    activeViewname: string = AppConstants.VIEW_EMPTY;
+    views: View[] = new Array<View>();
 
     constructor(private utlsFileService: UtlsFileService, private timeFilterService: TimeFilterService,
                 private utlserverService: UtlserverService, private zone: NgZone) {
         this.isLoaded = false;
+        this.initViews();
+    }
+
+    private initViews() {
+        this.views[AppConstants.VIEW_LOGS] = new View(AppConstants.VIEW_LOGS, false);
+        this.views[AppConstants.VIEW_SETTINGS] = new View(AppConstants.VIEW_SETTINGS, false);
+        this.views[AppConstants.VIEW_EMPTY] = new View(AppConstants.VIEW_EMPTY, false);
+        this.views[AppConstants.VIEW_WAIT] = new View(AppConstants.VIEW_WAIT, false);
     }
 
     ngOnInit(): void {
@@ -71,17 +80,30 @@ export class AppComponent implements OnInit {
                     }
                 },
                 {
-                    label: 'Change ip for utlserver (now:'.concat(self.utlserverService.getUtlsIp()).concat(')'),
+                    label: 'Change ip for utlserver (now: '.concat(self.utlserverService.getUtlsIp()).concat(')'),
                     click: function () {
-                        self.zone.run(() => self.setShowSettings(true));
+                        self.zone.run(() => self.showView(AppConstants.VIEW_SETTINGS));
                     }
                 },
                 {
                     label: 'Fetch logfile',
                     click: function () {
                         self.zone.run(() => {
-                                self.utlsFileService.fetchLogs();
-                                self.setShowSettings(false);
+                                self.showView(AppConstants.VIEW_WAIT);
+                                let observableResult = self.utlsFileService.fetchLogs();
+                                observableResult.subscribe(
+                                    result => {
+                                        if(result.isOk){
+                                            console.log('Logfile with name :' + result.value + ' is saved');
+                                            alert('Logfile with name :' + result.value + ' is saved');
+                                        }
+                                        else{
+                                            console.log(result.value);
+                                            alert(result.value);
+                                        }
+                                        self.zone.run(() => self.showView(self.oldViewname));
+                                    }
+                                );
                             }
                         );
                     }
@@ -89,9 +111,11 @@ export class AppComponent implements OnInit {
             ]
         }]);
         remote.Menu.setApplicationMenu(menu);
+
     }
 
     ngDoCheck() {
+        console.log('ngdocheck...');
         this.filterQuery = this.timeFilterService.getFilterQuery();
         if (this.utlsFileService.isColumnContentChanged()) {
             this.changeColumnValueAndContentValues(this.selectedColumn);
@@ -99,19 +123,20 @@ export class AppComponent implements OnInit {
     }
 
     closeSettings(): void {
-        this.setShowSettings(false);
+        this.showView(this.oldViewname);
     }
 
-    setShowSettings(show: boolean): void {
-        this.showSettings = show;
-        this.showLogs = !show;
-        console.log("showLogs:" + this.showLogs + " showSettings:" + this.showSettings);
+    showView(viewname: string) {
+        console.log('show ' + viewname + ' and active now is:' + this.activeViewname + ' and oldactive is:' + this.oldViewname);
+        if (this.activeViewname !== viewname) {
+            this.oldViewname = this.activeViewname;
+        }
+        for (let key in this.views) {
+            let aView = this.views[key];
+            aView.show = viewname === aView.name;
+        }
+        this.activeViewname = viewname;
     }
-
-    setShowLogs(show: boolean): void {
-        this.setShowSettings(!show);
-    }
-
 
     public handleFile = (fileNamesArr: Array<any>) => {
         if (!fileNamesArr) {
@@ -120,6 +145,7 @@ export class AppComponent implements OnInit {
         else {
             console.log("filename selected:" + fileNamesArr[0]);
             this.init();
+            this.logfileName = fileNamesArr[0];
             this.logs$ = this.utlsFileService.createLogs(fileNamesArr[0]);
             let timestampFrom;
             let timestampTo;
@@ -147,7 +173,7 @@ export class AppComponent implements OnInit {
                         self.timeFilterService.getLastSelectedTimefilterTo().asString());
                 });
             });
-            this.setShowLogs(true);
+            this.showView(AppConstants.VIEW_LOGS);
             this.isLoaded = true;
         }
     }
@@ -182,7 +208,7 @@ export class AppComponent implements OnInit {
     }
 
     private changeColumnValueAndContentValues(newColumn) {
-        if(!_.isEqual(this.lastSelectedColumn, newColumn)){
+        if (!_.isEqual(this.lastSelectedColumn, newColumn)) {
             this.lastSelectedColumn = newColumn;
             this.selectedColumn = newColumn;
             if (this.allColumns !== newColumn && this.selectedColumnDefaultChoice !== newColumn) {

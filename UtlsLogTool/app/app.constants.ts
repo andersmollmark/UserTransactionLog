@@ -17,12 +17,17 @@ export class AppConstants {
     public static UTL_SERVER_URL_SUFFIX = '/ws';
     public static UTL_LOG_DUMPMESSAGE = 'jsonDump';
 
-    public static IPC_OPEN_UTL_SETTINGS = 'openUtlSettings';
-    public static IPC_CLOSE_UTL_SETTINGS = 'closeUtlSettings';
+    public static IPC_CLOSE_WAIT_VIEW = 'closeWait';
 
     public static UTL_SERVER_PORT = '8085';
     public static UTL_SERVER_DEFAULT_IP = '192.168.168.1';
     public static UTL_SERVER_IP_KEY = 'utlServerIpKey';
+
+    public static VIEW_SETTINGS = 'viewSettings';
+    public static VIEW_LOGS = 'viewLogs';
+    public static VIEW_WAIT = 'viewWait';
+    public static VIEW_EMPTY = 'viewEmpty';
+
 
 
 }

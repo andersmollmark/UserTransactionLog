@@ -6,7 +6,9 @@ import {Dto} from "./dto";
 import * as _ from "lodash";
 import {AppConstants} from "./app.constants";
 import {UtlserverService} from "./utlserver.service";
+import {Result} from "./result";
 import moment = require("moment");
+
 let fileSystem = require('fs');
 
 @Injectable()
@@ -16,6 +18,7 @@ export class UtlsFileService {
     partOfLogContent: Observable<UtlsLog[]>;
 
     columnContentHasChanged: boolean = false;
+    private logfileIsFetched: boolean = false;
 
     usersInLogContent: Dto[] = [];
     categoriesInLogContent: Dto[] = [];
@@ -49,25 +52,36 @@ export class UtlsFileService {
         return this.activeLogContent;
     }
 
-    fetchLogs(): void{
-        this.init();
-        this.utlsserverService.connectAndFetchDump();
-        this.utlsserverService.utlServerWebsocket.subscribe(dump => {
-            console.log('dump received in utls-file-service');
-            if(dump){
-                let jsondata = JSON.parse(dump);
-                let prettyPrint = JSON.stringify(jsondata, null, '\t');
-                let fileSuffix = moment().format('YYYY_MM_DD_HHmmss');
-                let filename = 'dump' + fileSuffix;
-                console.log('writing file:' + filename);
-                fileSystem.writeFile(filename, prettyPrint, (err) => {
-                    if(err) throw err;
-                    console.log('file ' + filename + ' is saved');
-                    alert('Logfile with name :' + filename + ' is saved');
-                });
+    fetchLogs(): Observable<Result>{
+        let result = new Observable(observer => {
+            this.init();
+            this.utlsserverService.connectAndFetchDump();
+            this.utlsserverService.utlServerWebsocket.subscribe(dump => {
+                console.log('dump received in utls-file-service');
+                if(dump){
+                    let jsondata = JSON.parse(dump);
+                    let prettyPrint = JSON.stringify(jsondata, null, '\t');
+                    let fileSuffix = moment().format('YYYY_MM_DD_HHmmss');
+                    let filename = 'dump' + fileSuffix;
+                    console.log('writing file:' + filename);
+                    fileSystem.writeFile(filename, prettyPrint, (err) => {
+                        if(err) {
+                            observer.next(new Result('something went wrong:' + err, false));
+                            throw err;
+                        }
+                        console.log('file ' + filename + ' is saved');
+                        observer.next(new Result(filename, true));
+                    });
 
-            }
+                }
+                else{
+                    observer.next(new Result('no dump is received', false));
+                }
+
+            });
+
         });
+        return result;
     }
 
     private init() {

@@ -67,6 +67,12 @@
     display: inline-flex;
 }
 
+.utls-discrete-text{
+    font-size: 12px;
+    display: inline-flex;
+    color: white;
+}
+
 
 .utls-select{
     width: 350px;
