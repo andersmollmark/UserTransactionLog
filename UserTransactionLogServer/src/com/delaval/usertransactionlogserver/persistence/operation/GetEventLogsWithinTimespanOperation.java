@@ -59,8 +59,8 @@ public class GetEventLogsWithinTimespanOperation implements ReadOperation<Intern
 
     private Map<String, UserTransactionKey> getUserTransactionIdsWithinTimespan() {
         SQuery<UserTransactionKey> idsWithinTime = new SQuery<>(UserTransactionKey.USER_TRANSACTION_KEY)
-          .gt(UserTransactionKey.TIMESTAMP, from)
-          .lt(UserTransactionKey.TIMESTAMP, to);
+          .ge(UserTransactionKey.TIMESTAMP, from)
+          .le(UserTransactionKey.TIMESTAMP, to);
 
         SQueryResult<UserTransactionKey> result = jdbcSession.query(idsWithinTime);
         Map<String, UserTransactionKey> userTransactionKeyMap = result.stream().collect(
@@ -70,8 +70,8 @@ public class GetEventLogsWithinTimespanOperation implements ReadOperation<Intern
 
     private SQueryResult<EventLog> getLogsWithinTimespan() {
         SQuery<EventLog> theQuery = new SQuery<>(EventLog.EVENT_LOG)
-          .gt(EventLog.TIMESTAMP, from)
-          .lt(EventLog.TIMESTAMP, to)
+          .ge(EventLog.TIMESTAMP, from)
+          .le(EventLog.TIMESTAMP, to)
           .ascending(EventLog.USER_TRANSACTION_KEY_ID);
         return jdbcSession.query(theQuery);
     }
