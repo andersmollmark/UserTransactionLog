@@ -45,7 +45,7 @@ public class GetEventLogsWithinTimespanOperation implements ReadOperation<Intern
     public void execute() {
         UtlsLogUtil.debug(this.getClass(), "Get all eventlogs between two dates:", " from:", from, " to:", to);
 
-        Map<String, UserTransactionKey> allUserTransactionIds = getUserTransactionIdsWithinTimespan();
+        Map<String, UserTransactionKey> allUserTransactionIds = getUserTransactionIds();
         final List<InternalEventLog> all = new ArrayList<>();
         SQueryResult<EventLog> result = getLogsWithinTimespan();
         result.forEach(logContent -> all.add(new InternalEventLog(logContent, allUserTransactionIds.get(logContent.getUserTransactionKeyId()))));
@@ -57,12 +57,8 @@ public class GetEventLogsWithinTimespanOperation implements ReadOperation<Intern
         this.readParameters = readParameters;
     }
 
-    private Map<String, UserTransactionKey> getUserTransactionIdsWithinTimespan() {
-        SQuery<UserTransactionKey> idsWithinTime = new SQuery<>(UserTransactionKey.USER_TRANSACTION_KEY)
-          .ge(UserTransactionKey.TIMESTAMP, from)
-          .le(UserTransactionKey.TIMESTAMP, to);
-
-        SQueryResult<UserTransactionKey> result = jdbcSession.query(idsWithinTime);
+    private Map<String, UserTransactionKey> getUserTransactionIds() {
+        SQueryResult<UserTransactionKey> result = jdbcSession.query(new SQuery(UserTransactionKey.USER_TRANSACTION_KEY));
         Map<String, UserTransactionKey> userTransactionKeyMap = result.stream().collect(
           Collectors.toMap(key -> key.getId(), key -> key));
         return userTransactionKeyMap;
