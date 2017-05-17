@@ -25,7 +25,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.powermock.api.mockito.PowerMockito;
-import org.powermock.api.mockito.repackaged.cglib.core.Local;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
@@ -55,9 +54,6 @@ public class FetchAllEventLogsServiceTest {
 
     @Mock
     GetAllUserTransactionKeysOperation getAllUserTransactionKeysOperationMock;
-
-    @Mock
-    OperationParam<GetAllUserTransactionKeysOperation> mockParam;
 
     @Mock
     OperationDAO operationDAO;

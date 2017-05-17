@@ -3,7 +3,6 @@ package com.delaval.usertransactionlogserver.jms.consumer;
 import com.delaval.usertransactionlogserver.persistence.dao.OperationDAO;
 import com.delaval.usertransactionlogserver.persistence.operation.CreateClickLogOperation;
 import com.delaval.usertransactionlogserver.persistence.operation.OperationFactory;
-import com.delaval.usertransactionlogserver.persistence.operation.OperationParam;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import com.delaval.usertransactionlogserver.websocket.WebSocketMessage;
 import com.google.gson.Gson;
