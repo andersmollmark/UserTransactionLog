@@ -16,68 +16,7 @@ import static org.hamcrest.Matchers.*;
  */
 public class OperationFactoryTest {
 
-    @Test
-    public void testGetCreateUpdateOperationWithCreateSystemProperty() throws Exception {
-        OperationParam<CreateSystemPropertyOperation> test = new OperationParam<>(CreateSystemPropertyOperation.class, new WebSocketMessage());
-        CreateUpdateOperation createUpdateOperation = OperationFactory.getCreateUpdateOperation(null, test);
-        assertThat(createUpdateOperation instanceof CreateSystemPropertyOperation, is(true));
-    }
 
-    @Test
-    public void testGetCreateUpdateOperationWithCreateEventLog() throws Exception {
-        OperationParam<CreateEventLogOperation> test = new OperationParam<>(CreateEventLogOperation.class, new WebSocketMessage());
-        CreateUpdateOperation createUpdateOperation = OperationFactory.getCreateUpdateOperation(null, test);
-        assertThat(createUpdateOperation instanceof CreateEventLogOperation, is(true));
-    }
-
-    @Test
-    public void testGetCreateUpdateOperationWithCreateClickLog() throws Exception {
-        OperationParam<CreateClickLogOperation> test = new OperationParam<>(CreateClickLogOperation.class, new WebSocketMessage());
-        CreateUpdateOperation createUpdateOperation = OperationFactory.getCreateUpdateOperation(null, test);
-        assertThat(createUpdateOperation instanceof CreateClickLogOperation, is(true));
-    }
-
-
-    @Test
-    public void testGetReadOperationWithSystemProperty() throws Exception {
-        OperationParam<GetSystemPropertyWithNameOperation> test = new OperationParam<>(GetSystemPropertyWithNameOperation.class, new WebSocketMessage());
-        ReadOperation readOperation = OperationFactory.getReadOperation(null, test);
-        assertThat(readOperation instanceof GetSystemPropertyWithNameOperation, is(true));
-    }
-
-    @Test
-    public void testGetReadOperationWithClickLog() throws Exception {
-        OperationParam<GetClickLogsWithUserTransactionKeyOperation> test = new OperationParam<>(GetClickLogsWithUserTransactionKeyOperation.class, new WebSocketMessage());
-        ReadOperation readOperation = OperationFactory.getReadOperation(null, test);
-        assertThat(readOperation instanceof GetClickLogsWithUserTransactionKeyOperation, is(true));
-    }
-
-    @Test
-    public void testGetReadOperationWithEventLog() throws Exception {
-        OperationParam<GetEventLogsWithUserTransactionKeyOperation> test = new OperationParam<>(GetEventLogsWithUserTransactionKeyOperation.class, new WebSocketMessage());
-        ReadOperation readOperation = OperationFactory.getReadOperation(null, test);
-        assertThat(readOperation instanceof GetEventLogsWithUserTransactionKeyOperation, is(true));
-    }
-
-    @Test
-    public void testGetReadOperationWithUserInteractionKey() throws Exception {
-        OperationParam<GetAllUserTransactionKeysOperation> test = new OperationParam<>(GetAllUserTransactionKeysOperation.class, new WebSocketMessage());
-        ReadOperation readOperation = OperationFactory.getReadOperation(null, test);
-        assertThat(readOperation instanceof GetAllUserTransactionKeysOperation, is(true));
-    }
-
-    @Test
-    public void testGetCreateSystemPropertyParam() throws Exception {
-        String name = "Name";
-        String value = "Value";
-        SystemPropertyContent content = getSystemPropertyContent(name, value);
-        WebSocketMessage websocketMessage = getWebsocketMessage(content);
-        OperationParam<CreateSystemPropertyOperation> createSystemPropertyParam = OperationFactory.getCreateSystemPropertyParam(websocketMessage);
-        assertThat(createSystemPropertyParam.getParameter(), nullValue());
-        SystemPropertyContent contentFromJson = new Gson().fromJson(createSystemPropertyParam.getWebSocketMessage().getJsonContent(), SystemPropertyContent.class);
-        assertThat(contentFromJson.getName(), is(name));
-        assertThat(contentFromJson.getValue(), is(value));
-    }
 
     @Test
     public void testGetCreateSystemPropertyParamForSystem() throws Exception {
@@ -90,12 +29,11 @@ public class OperationFactoryTest {
         systemProperty.setValue(value);
         systemProperty.setId(id);
 
-        OperationParam<CreateSystemPropertyOperation> createSystemPropertyParam = OperationFactory.getCreateSystemPropertyParamForSystem(systemProperty);
-        assertThat(createSystemPropertyParam.getParameter(), nullValue());
-        SystemPropertyContent contentFromJson = new Gson().fromJson(createSystemPropertyParam.getWebSocketMessage().getJsonContent(), SystemPropertyContent.class);
+        CreateSystemPropertyOperation operation = OperationFactory.getCreateSystemPropertyForSystem(systemProperty);
+        SystemPropertyContent contentFromJson = new Gson().fromJson(operation.getWebSocketMessage().getJsonContent(), SystemPropertyContent.class);
         assertThat(contentFromJson.getName(), is(name));
         assertThat(contentFromJson.getValue(), is(value));
-        WebSocketMessage webSocketMessage = createSystemPropertyParam.getWebSocketMessage();
+        WebSocketMessage webSocketMessage = operation.getWebSocketMessage();
         assertThat(webSocketMessage.getClient(), is(system));
         assertThat(webSocketMessage.getTarget(), is(system));
         assertThat(webSocketMessage.getUsername(), is(system.toLowerCase()));
@@ -104,17 +42,15 @@ public class OperationFactoryTest {
     @Test
     public void testGetCreateEventLogParam() throws Exception {
         WebSocketMessage websocketMessage = getWebsocketMessage(getEventLogContent());
-        OperationParam<CreateEventLogOperation> createEventLogParam = OperationFactory.getCreateEventLogParam(websocketMessage);
-        assertThat(createEventLogParam.getParameter(), is(nullValue()));
-        assertThat(createEventLogParam.getWebSocketMessage(), is(notNullValue()));
+        CreateEventLogOperation operation = OperationFactory.getCreateEventLog(websocketMessage);
+        assertThat(operation.getWebSocketMessage(), is(notNullValue()));
     }
 
     @Test
     public void testGetCreateClickLogParam() throws Exception {
         WebSocketMessage websocketMessage = getWebsocketMessage(getClickLogContent());
-        OperationParam<CreateClickLogOperation> createClickLogParam = OperationFactory.getCreateClickLogParam(websocketMessage);
-        assertThat(createClickLogParam.getParameter(), is(nullValue()));
-        assertThat(createClickLogParam.getWebSocketMessage(), is(notNullValue()));
+        CreateClickLogOperation operation = OperationFactory.getCreateClickLog(websocketMessage);
+        assertThat(operation.getWebSocketMessage(), is(notNullValue()));
     }
 
     private EventLogContent getEventLogContent(){

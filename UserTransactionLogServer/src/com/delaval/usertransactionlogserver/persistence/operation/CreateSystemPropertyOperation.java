@@ -30,6 +30,11 @@ public class CreateSystemPropertyOperation implements CreateUpdateOperation {
     }
 
     @Override
+    public WebSocketMessage getWebSocketMessage() {
+        return webSocketMessage;
+    }
+
+    @Override
     public void validate() {
         if(webSocketMessage == null){
             throw new IllegalStateException("The operation-instance cant have null as a websocketmessage");

@@ -7,7 +7,10 @@ import com.delaval.usertransactionlogserver.persistence.entity.ClickLog;
 import com.delaval.usertransactionlogserver.persistence.entity.EventLog;
 import com.delaval.usertransactionlogserver.persistence.entity.SystemProperty;
 import com.delaval.usertransactionlogserver.persistence.entity.UserTransactionKey;
-import com.delaval.usertransactionlogserver.persistence.operation.*;
+import com.delaval.usertransactionlogserver.persistence.operation.CreateSystemPropertyOperation;
+import com.delaval.usertransactionlogserver.persistence.operation.GetSystemPropertyWithNameOperation;
+import com.delaval.usertransactionlogserver.persistence.operation.OperationFactory;
+import com.delaval.usertransactionlogserver.persistence.operation.OperationResult;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import simpleorm.dataset.SFieldString;
 import simpleorm.sessionjdbc.SSessionJdbc;
@@ -373,9 +376,9 @@ public class InitDAO {
 
     private InternalSystemProperty getSystemPropertyWithName(String name){
         UtlsLogUtil.debug(this.getClass(), " fetching systemproperty with name:" + name);
-        OperationParam<GetSystemPropertyWithNameOperation> systemPropertyWithNameParam = OperationFactory.getSystemPropertyWithNameParam(name);
-        GetSystemPropertyWithNameOperation systemPropertyWithNameOperation = OperationDAO.getInstance().doRead(systemPropertyWithNameParam);
-        List<InternalSystemProperty> result = systemPropertyWithNameOperation.getResult();
+        GetSystemPropertyWithNameOperation operation = OperationFactory.getSystemPropertyWithName(name);
+        OperationResult<InternalSystemProperty> operationResult = OperationDAO.getInstance().doRead(operation);
+        List<InternalSystemProperty> result = operationResult.getResult();
         if(result.size() > 0){
             return result.get(0);
         }
@@ -387,8 +390,8 @@ public class InitDAO {
         newProperty.setName(name);
         newProperty.setValue(value);
         newProperty.setTimestamp(new Date());
-        OperationParam<CreateSystemPropertyOperation> createSystemPropertyParamForSystem = OperationFactory.getCreateSystemPropertyParamForSystem(newProperty);
-        OperationDAO.getInstance().doCreateUpdate(createSystemPropertyParamForSystem);
+        CreateSystemPropertyOperation operation = OperationFactory.getCreateSystemPropertyForSystem(newProperty);
+        OperationDAO.getInstance().doCreateUpdate(operation);
         return value;
     }
 

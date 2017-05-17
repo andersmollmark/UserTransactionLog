@@ -27,6 +27,12 @@ public class CreateClickLogOperation implements CreateUpdateOperation {
         this.webSocketMessage = message;
     }
 
+
+    @Override
+    public WebSocketMessage getWebSocketMessage() {
+        return webSocketMessage;
+    }
+
     @Override
     public void validate() {
         if(webSocketMessage == null){

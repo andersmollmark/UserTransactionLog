@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * Internal represantation of a SystemProperty-entity
  */
-public class InternalSystemProperty {
+public class InternalSystemProperty implements InternalEntityRepresentation {
 
     private String id;
     private String name;

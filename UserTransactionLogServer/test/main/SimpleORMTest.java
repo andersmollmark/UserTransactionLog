@@ -25,10 +25,11 @@ public class SimpleORMTest {
 
     void testGetClickLogs() {
         testInsertClickLogs();
-        OperationParam operationParam = new OperationParam<GetClickLogsWithUserTransactionKeyOperation>(GetClickLogsWithUserTransactionKeyOperation.class);
-        operationParam.setParameter("LEIF USERklientenIpad");
-        GetClickLogsWithUserTransactionKeyOperation operation = (GetClickLogsWithUserTransactionKeyOperation)OperationDAO.getInstance().doRead(operationParam);
-        List<InternalClickLog> allLogs = operation.getResult();
+
+        GetClickLogsWithUserTransactionKeyOperation operation = new GetClickLogsWithUserTransactionKeyOperation();
+        operation.setOperationParameter(new StringParameter("LEIF USERklientenIpad"));
+        OperationResult<InternalClickLog> operationResult = OperationDAO.getInstance().doRead(operation);
+        List<InternalClickLog> allLogs = operationResult.getResult();
         for (InternalClickLog l : allLogs) {
             System.out.println("ClickLog:\n");
             StringBuilder sb = new StringBuilder();
@@ -43,10 +44,12 @@ public class SimpleORMTest {
 
     void testGetEventLogs() {
         testInsertEventLogs();
-        OperationParam<GetEventLogsWithUserTransactionKeyOperation> operationParam = new OperationParam<>(GetEventLogsWithUserTransactionKeyOperation.class);
-        operationParam.setParameter("LEIF USERklientenIpad");
-        GetEventLogsWithUserTransactionKeyOperation operation = OperationDAO.getInstance().doRead(operationParam);
-        List<InternalEventLog> allLogs = operation.getResult();
+
+        GetEventLogsWithUserTransactionKeyOperation operation = new GetEventLogsWithUserTransactionKeyOperation();
+        operation.setOperationParameter(new StringParameter("LEIF USERklientenIpad"));
+
+        OperationResult<InternalEventLog> operationResult = OperationDAO.getInstance().doRead(operation);
+        List<InternalEventLog> allLogs = operationResult.getResult();
         for (InternalEventLog l : allLogs) {
             System.out.println("EventLog:\n");
             StringBuilder sb = new StringBuilder();
@@ -62,9 +65,10 @@ public class SimpleORMTest {
 
 
     void testGetUserTransactionKey() {
-        OperationParam<GetAllUserTransactionKeysOperation> operationParam = new OperationParam<>(GetAllUserTransactionKeysOperation.class);
-        GetAllUserTransactionKeysOperation operation = OperationDAO.getInstance().doRead(operationParam);
-        List<InternalUserTransactionKey> allUserTransactionKeys = operation.getResult();
+        GetAllUserTransactionKeysOperation operation = new GetAllUserTransactionKeysOperation();
+        OperationResult<InternalUserTransactionKey> operationResult = OperationDAO.getInstance().doRead(operation);
+
+        List<InternalUserTransactionKey> allUserTransactionKeys = operationResult.getResult();
         String firstId = null;
         for (InternalUserTransactionKey l : allUserTransactionKeys) {
             System.out.println("UserTransactionKey:\n");
@@ -80,10 +84,10 @@ public class SimpleORMTest {
         }
 
         if (firstId != null) {
-            OperationParam<GetClickLogsWithUserTransactionKeyOperation> clickParams = new OperationParam<>(GetClickLogsWithUserTransactionKeyOperation.class);
-            clickParams.setParameter(firstId);
-            GetClickLogsWithUserTransactionKeyOperation getClickLogsWithUserTransactionKey = OperationDAO.getInstance().doRead(clickParams);
-            List<InternalClickLog> contents = getClickLogsWithUserTransactionKey.getResult();
+            GetClickLogsWithUserTransactionKeyOperation clickOperation = new GetClickLogsWithUserTransactionKeyOperation();
+            clickOperation.setOperationParameter(new StringParameter(firstId));
+            OperationResult<InternalClickLog> clickLogOperationResult = OperationDAO.getInstance().doRead(clickOperation);
+            List<InternalClickLog> contents = clickLogOperationResult.getResult();
             for (InternalClickLog content : contents) {
                 System.out.println("LogContent:\n");
                 StringBuilder sb = new StringBuilder();
@@ -116,7 +120,7 @@ public class SimpleORMTest {
             testContent.setTimestamp(Long.toString(date.getTime()));
             String jsonContent = new Gson().toJson(testContent);
             webSocketMessage.setJsonContent(jsonContent);
-            doInsert(CreateClickLogOperation.class, webSocketMessage);
+            doInsert(new CreateClickLogOperation(), webSocketMessage);
 //        }
 
     }
@@ -139,14 +143,14 @@ public class SimpleORMTest {
         testContent.setTimestamp(Long.toString(date.getTime()));
         String jsonContent = new Gson().toJson(testContent);
         webSocketMessage.setJsonContent(jsonContent);
-        doInsert(CreateEventLogOperation.class, webSocketMessage);
+
+        doInsert(new CreateEventLogOperation(), webSocketMessage);
     }
 
 
-    private <T extends CreateUpdateOperation> void doInsert(Class<T> clazz, WebSocketMessage webSocketMessage) {
-        OperationParam<T> operationParam = new OperationParam<>(clazz, webSocketMessage);
-        OperationDAO operationDAO = OperationDAO.getInstance();
-        operationDAO.doCreateUpdate(operationParam);
+    private <T extends CreateUpdateOperation> void doInsert(T crudOperation, WebSocketMessage webSocketMessage) {
+        crudOperation.setMessage(webSocketMessage);
+        OperationDAO.getInstance().doCreateUpdate(crudOperation);
     }
 
     private static class MyWebSocketMessage extends WebSocketMessage {

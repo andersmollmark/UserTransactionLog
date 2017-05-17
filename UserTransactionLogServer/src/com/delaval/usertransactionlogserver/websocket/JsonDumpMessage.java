@@ -5,10 +5,13 @@ package com.delaval.usertransactionlogserver.websocket;
  */
 public class JsonDumpMessage {
 
-    String messType = MessTypes.JSON_DUMP.getMyValue();
+    String messType;
 
     String jsondump;
 
+    public JsonDumpMessage(MessTypes messTypes){
+        messType = messTypes.getMyValue();
+    }
 
     public void setJsondump(String json){
         jsondump = json;

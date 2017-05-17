@@ -4,9 +4,7 @@ import com.delaval.usertransactionlogserver.ServerProperties;
 import com.delaval.usertransactionlogserver.domain.InternalSystemProperty;
 import com.delaval.usertransactionlogserver.persistence.dao.OperationDAO;
 import com.delaval.usertransactionlogserver.persistence.operation.CreateSystemPropertyOperation;
-import com.delaval.usertransactionlogserver.persistence.operation.GetSystemPropertyWithNameOperation;
 import com.delaval.usertransactionlogserver.persistence.operation.OperationFactory;
-import com.delaval.usertransactionlogserver.persistence.operation.OperationParam;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import com.delaval.usertransactionlogserver.websocket.PublicKeyAsJsonMessage;
 import com.google.gson.Gson;
@@ -86,8 +84,8 @@ public class CryptoKeyService {
         keyProperty.setName(name);
         keyProperty.setValue(new String(key));
         keyProperty.setTimestamp(new Date());
-        OperationParam<CreateSystemPropertyOperation> createKeyForSystem = OperationFactory.getCreateSystemPropertyParamForSystem(keyProperty);
-        OperationDAO.getInstance().doCreateUpdate(createKeyForSystem);
+        CreateSystemPropertyOperation operation = OperationFactory.getCreateSystemPropertyForSystem(keyProperty);
+        OperationDAO.getInstance().doCreateUpdate(operation);
     }
 
 

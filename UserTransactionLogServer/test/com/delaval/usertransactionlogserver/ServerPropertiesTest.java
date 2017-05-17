@@ -1,5 +1,7 @@
 package com.delaval.usertransactionlogserver;
 
+import main.ParametersFactory;
+import main.TestUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,11 +17,11 @@ public class ServerPropertiesTest {
     }
 
     @Test
-    public void testGetNewProp() throws Exception {
+    public void testIsMissing() throws Exception {
         ServerProperties instance = ServerProperties.getInstance();
         String expectedProp = "dummy";
-        instance.set(ServerProperties.PropKey.JMS_CONNECTION, expectedProp);
-        Assert.assertEquals(expectedProp, ServerProperties.getInstance().getProp(ServerProperties.PropKey.JMS_CONNECTION));
+        boolean result = TestUtils.runMethod("isMissing", instance, ParametersFactory.getArgs(ServerProperties.PropKey.JMS_CONNECTION));
+        Assert.assertFalse(result);
 
     }
 

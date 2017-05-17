@@ -1,5 +1,6 @@
 package com.delaval.usertransactionlogserver.persistence.dao;
 
+import com.delaval.usertransactionlogserver.domain.InternalEntityRepresentation;
 import com.delaval.usertransactionlogserver.persistence.ConnectionFactory;
 import com.delaval.usertransactionlogserver.persistence.operation.*;
 import com.delaval.usertransactionlogserver.service.JmsMessageService;
@@ -7,6 +8,7 @@ import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import simpleorm.sessionjdbc.SSessionJdbc;
 
 import java.sql.SQLException;
+import java.util.stream.Collectors;
 
 /**
  * Singleton.
@@ -31,59 +33,69 @@ public class OperationDAO {
         return _instance;
     }
 
-    public <T extends CreateUpdateOperation> void doCreateUpdate(OperationParam<T> operationParam) {
+    public void doCreateUpdate(CreateUpdateOperation operation) {
         synchronized (LOCK) {
-            executeOperation(operationParam);
+            executeOperation(operation);
         }
     }
 
-    public <T extends ReadOperation> T doRead(OperationParam<T> operationParam) {
+    public <T extends InternalEntityRepresentation> OperationResult<T> doRead(ReadOperation<T> readOperation) {
         synchronized (LOCK) {
-            Class<T> operationClass = operationParam.getOperationClass();
-            T operation = executeOperation(operationParam);
-            return operationClass.cast(operation);
+            executeOperation(readOperation);
+            return readOperation.getResult();
         }
     }
 
-    private <T extends Operation> T executeOperation(OperationParam<T> operationParam) {
+    private <T extends InternalEntityRepresentation> void executeOperation(Operation<T> operation) {
         SSessionJdbc ses = null;
-        Class<T> operationClass = operationParam.getOperationClass();
-        Operation operation = null;
         try {
             ConnectionFactory.checkIfConnectionIsOk();
             ses = ConnectionFactory.getInstance().getSession(LOG_SERVER_CONN_NAME);
             ses.getStatistics();
-            operation = doExecute(operationParam, ses);
+            doExecute(operation, ses);
         } catch (SQLException sqlException) {
-            String error = operationClass.getName() + " " +
-              (operationParam.isCreateUpdate() ? operationParam.getWebSocketMessage().toString() : " parameter:" + operationParam.getParameter());
-            UtlsLogUtil.error(this.getClass(), "Something went wrong in db-communication:", sqlException.getMessage(), " ", error);
-            JmsMessageService.getInstance().cacheJmsMessage(operationParam.getWebSocketMessage());
-            operation = doCommonExceptionHandling(ses, operationParam);
+            logException(sqlException, "Something went wrong in db-communication:", operation);
+            if(operation.isCreateUpdate()){
+                JmsMessageService.getInstance().cacheJmsMessage(((CreateUpdateOperation)operation).getWebSocketMessage());
+            }
+            doCommonExceptionHandling(ses, operation);
 
         } catch (Exception e) {
-            String error = operationClass.getName() + " " +
-              (operationParam.isCreateUpdate() ? operationParam.getWebSocketMessage().toString() : " parameter:" + operationParam.getParameter());
-            UtlsLogUtil.error(this.getClass(),
-              "Something went wrong while executing the operation:",
-              e.getMessage(), " ", error);
-            operation = doCommonExceptionHandling(ses, operationParam);
+            logException(e, "Something went wrong while executing the operation:", operation);
+            doCommonExceptionHandling(ses, operation);
         } finally {
             if (ses != null) {
                 ses.close();
             }
         }
-        return operationClass.cast(operation);
     }
 
-    private <T extends Operation> T doCommonExceptionHandling(SSessionJdbc ses, OperationParam<T> operationParam) {
+    private <T extends InternalEntityRepresentation> void logException(Exception e, String mess, Operation<T> operation){
+        String error = "";
+        if(operation instanceof ReadOperation){
+            ReadOperation<T> readOperation = (ReadOperation<T>) operation;
+            String parameterString = readOperation.getOperationParameters()
+              .stream()
+              .map(param -> param.getValue())
+              .collect(Collectors.joining(","));
+            error = operation.getClass().getName() + " " + parameterString;
+        }
+
+        UtlsLogUtil.error(this.getClass(),
+          mess,
+          e.getMessage(), " ", error);
+
+    }
+
+    private <T extends InternalEntityRepresentation> void doCommonExceptionHandling(SSessionJdbc ses, Operation<T> operation) {
         try {
             if (ses != null) {
                 ses.rollback();
             }
+            if(!operation.isCreateUpdate()){
+                ((ReadOperation<T>)operation).setNotOkResult(OperationFactory.getNotOkResult(operation));
+            }
 
-            T notOk = (T) OperationFactory.getNotOkResultOperation(operationParam);
-            return notOk;
         } catch (Exception e) {
             UtlsLogUtil.error(this.getClass(), "Something went really wrong! Couldnt create notOkResultOperation due to:", e.getMessage());
             throw new RuntimeException("Something went really wrong! Couldnt create notOkResultOperation due to:" + e.getMessage());
@@ -91,17 +103,16 @@ public class OperationDAO {
     }
 
 
-    private Operation doExecute(OperationParam operationParam, SSessionJdbc ses) throws InstantiationException, IllegalAccessException, SQLException {
-        Operation operation;
-        if (operationParam.isCreateUpdate()) {
-            if (ConnectionFactory.getInstance().isTableLocked(operationParam.getWebSocketMessage())) {
-                UtlsLogUtil.debug(OperationDAO.class, " the table is locked:", operationParam.getWebSocketMessage().getMessType());
-                throw new SQLException(" the table is locked:" + operationParam.getWebSocketMessage().getMessType());
+    private void doExecute(Operation operation, SSessionJdbc ses) throws InstantiationException, IllegalAccessException, SQLException {
+        if (operation.isCreateUpdate()) {
+            CreateUpdateOperation crudOperation = (CreateUpdateOperation)operation;
+            if (ConnectionFactory.getInstance().isTableLocked(crudOperation.getWebSocketMessage())) {
+                UtlsLogUtil.debug(OperationDAO.class, " the table is locked:", crudOperation.getMesstype());
+                throw new SQLException(" the table is locked:" + crudOperation.getMesstype());
             }
-            operation = OperationFactory.getCreateUpdateOperation(ses, operationParam);
-        } else {
-            operation = OperationFactory.getReadOperation(ses, operationParam);
+
         }
+        operation.setJdbcSession(ses);
         operation.validate();
         try {
             ses.begin();
@@ -110,7 +121,6 @@ public class OperationDAO {
             ses.flush();
             ses.commit();
         }
-        return operation;
     }
 
 

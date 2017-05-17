@@ -13,10 +13,10 @@ import java.util.List;
 /**
  * Returns all Clicklogs that exist in db with a certain usertransactionkey
  */
-public class GetClickLogsWithUserTransactionKeyOperation implements ReadOperation {
+public class GetClickLogsWithUserTransactionKeyOperation implements ReadOperation<InternalClickLog> {
 
     private SSessionJdbc jdbcSession;
-    private List<InternalClickLog> operationResult;
+    private OperationResult<InternalClickLog> operationResult;
     private String userTransactionKeyId;
 
 
@@ -40,23 +40,23 @@ public class GetClickLogsWithUserTransactionKeyOperation implements ReadOperatio
         final List<InternalClickLog> all = new ArrayList<>();
         SQueryResult<ClickLog> result = jdbcSession.query(new SQuery(ClickLog.CLICK_LOG).eq(ClickLog.USER_TRANSACTION_KEY_ID, userTransactionKeyId));
         result.forEach(logContent -> all.add(new InternalClickLog(logContent)));
-        operationResult = all;
+        operationResult = new OperationResult<>(all);
     }
 
     @Override
-    public void setReadParameter(String parameter) {
-        this.userTransactionKeyId = parameter;
+    public void setOperationParameter(OperationParameter parameter) {
+        this.userTransactionKeyId = parameter.getValue();
+    }
+
+    @Override
+    public void setNotOkResult(OperationResult<InternalClickLog> notOkResult) {
+        operationResult = notOkResult;
     }
 
 
     @Override
-    public List<InternalClickLog> getResult() {
-        return isResultOk() ? operationResult : new ArrayList<>();
-    }
-
-    @Override
-    public boolean isResultOk() {
-        return operationResult != null;
+    public OperationResult<InternalClickLog> getResult() {
+        return operationResult;
     }
 
 }

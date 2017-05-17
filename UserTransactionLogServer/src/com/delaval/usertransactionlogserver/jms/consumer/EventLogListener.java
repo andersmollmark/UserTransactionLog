@@ -3,7 +3,6 @@ package com.delaval.usertransactionlogserver.jms.consumer;
 import com.delaval.usertransactionlogserver.persistence.dao.OperationDAO;
 import com.delaval.usertransactionlogserver.persistence.operation.CreateEventLogOperation;
 import com.delaval.usertransactionlogserver.persistence.operation.OperationFactory;
-import com.delaval.usertransactionlogserver.persistence.operation.OperationParam;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import com.delaval.usertransactionlogserver.websocket.WebSocketMessage;
 import com.google.gson.Gson;
@@ -21,8 +20,8 @@ public class EventLogListener {
         UtlsLogUtil.debug(this.getClass(), "processing eventLogMessage:", text);
         try{
             WebSocketMessage webSocketMessage = new Gson().fromJson(text, WebSocketMessage.class);
-            OperationParam<CreateEventLogOperation> operationParam = OperationFactory.getCreateEventLogParam(webSocketMessage);
-            OperationDAO.getInstance().doCreateUpdate(operationParam);
+            CreateEventLogOperation operation = OperationFactory.getCreateEventLog(webSocketMessage);
+            OperationDAO.getInstance().doCreateUpdate(operation);
         }
         catch (Exception e){
             UtlsLogUtil.error(this.getClass(), "Something went wrong while parsing eventLog-json from message:", e.getMessage());

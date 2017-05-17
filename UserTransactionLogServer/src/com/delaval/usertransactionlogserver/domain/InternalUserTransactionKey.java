@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * Created by delaval on 12/8/2015.
  */
-public class InternalUserTransactionKey {
+public class InternalUserTransactionKey implements InternalEntityRepresentation{
 
 
     private String id;

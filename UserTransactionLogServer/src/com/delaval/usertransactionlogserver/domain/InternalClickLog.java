@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * Created by delaval on 12/9/2015.
  */
-public class InternalClickLog {
+public class InternalClickLog implements InternalEntityRepresentation {
 
 
     private final String id;

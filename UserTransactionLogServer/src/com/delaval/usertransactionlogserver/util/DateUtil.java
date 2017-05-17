@@ -1,6 +1,8 @@
 package com.delaval.usertransactionlogserver.util;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 /**
@@ -8,6 +10,8 @@ import java.util.Date;
  */
 public class DateUtil {
 
+
+    private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
 
     /**
      * Formats miliseconds since 1970 for SFieldTimestamp
@@ -26,4 +30,7 @@ public class DateUtil {
         return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(d);
     }
 
+    public static String formatLocalDateTime(LocalDateTime ldt){
+        return ldt.format(dtf);
+    }
 }

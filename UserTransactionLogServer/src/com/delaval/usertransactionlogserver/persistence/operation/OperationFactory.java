@@ -1,47 +1,28 @@
 package com.delaval.usertransactionlogserver.persistence.operation;
 
+import com.delaval.usertransactionlogserver.domain.InternalEntityRepresentation;
 import com.delaval.usertransactionlogserver.domain.InternalSystemProperty;
 import com.delaval.usertransactionlogserver.domain.InternalUserTransactionKey;
 import com.delaval.usertransactionlogserver.persistence.entity.SystemProperty;
+import com.delaval.usertransactionlogserver.util.DateUtil;
 import com.delaval.usertransactionlogserver.websocket.MessTypes;
 import com.delaval.usertransactionlogserver.websocket.SystemPropertyContent;
 import com.delaval.usertransactionlogserver.websocket.WebSocketMessage;
 import com.google.gson.Gson;
-import simpleorm.sessionjdbc.SSessionJdbc;
+
+import java.time.LocalDateTime;
+import java.util.Arrays;
 
 /**
  * Created by delaval on 1/13/2016.
  */
 public class OperationFactory {
 
-    public static <T extends CreateUpdateOperation> CreateUpdateOperation getCreateUpdateOperation(SSessionJdbc jdbcSession, OperationParam<T> operationParam) throws IllegalAccessException, InstantiationException {
-        Class<T> operationClass = operationParam.getOperationClass();
-        T t = operationClass.newInstance();
-        t.setJdbcSession(jdbcSession);
-        t.setMessage(operationParam.getWebSocketMessage());
-        return t;
+    public static <T extends InternalEntityRepresentation> OperationResult<T> getNotOkResult(Operation<T> operation) throws IllegalAccessException, InstantiationException {
+        return new OperationResult<T>(null);
     }
 
-    public static <T extends ReadOperation> ReadOperation getReadOperation(SSessionJdbc jdbcSession, OperationParam<T> operationParam) throws IllegalAccessException, InstantiationException {
-        Class<T> readOperationClass = operationParam.getOperationClass();
-        T t = readOperationClass.newInstance();
-        t.setReadParameter(operationParam.getParameter());
-        t.setJdbcSession(jdbcSession);
-        return t;
-    }
-
-    public static <T extends Operation> Operation getNotOkResultOperation(OperationParam<T> operationParam) throws IllegalAccessException, InstantiationException {
-        Class<T> operationClass = operationParam.getOperationClass();
-        T t = operationClass.newInstance();
-        return t;
-    }
-
-
-    public static OperationParam<CreateSystemPropertyOperation> getCreateSystemPropertyParam(WebSocketMessage webSocketMessage){
-        return new OperationParam<>(CreateSystemPropertyOperation.class, webSocketMessage);
-    }
-
-    public static OperationParam<CreateSystemPropertyOperation> getCreateSystemPropertyParamForSystem(InternalSystemProperty internalSystemProperty){
+    public static CreateSystemPropertyOperation getCreateSystemPropertyForSystem(InternalSystemProperty internalSystemProperty) {
         SystemPropertyContent content = new SystemPropertyContent();
         content.setValue(internalSystemProperty.getValue());
         content.setName(internalSystemProperty.getName());
@@ -52,32 +33,46 @@ public class OperationFactory {
         webSocketMessage.setTarget(SystemProperty.SYSTEM_USER);
         webSocketMessage.setUsername(SystemProperty.SYSTEM_USER);
         webSocketMessage.setJsonContent(new Gson().toJson(content));
-        return new OperationParam<>(CreateSystemPropertyOperation.class, webSocketMessage);
+        CreateSystemPropertyOperation operation = new CreateSystemPropertyOperation();
+        operation.setMessage(webSocketMessage);
+        return operation;
     }
 
 
-    public static OperationParam<CreateEventLogOperation> getCreateEventLogParam(WebSocketMessage webSocketMessage){
-        return new OperationParam<>(CreateEventLogOperation.class, webSocketMessage);
+    public static CreateEventLogOperation getCreateEventLog(WebSocketMessage webSocketMessage) {
+        CreateEventLogOperation operation = new CreateEventLogOperation();
+        operation.setMessage(webSocketMessage);
+        return operation;
     }
 
-    public static OperationParam<CreateClickLogOperation> getCreateClickLogParam(WebSocketMessage webSocketMessage){
-        return new OperationParam<>(CreateClickLogOperation.class, webSocketMessage);
+    public static CreateClickLogOperation getCreateClickLog(WebSocketMessage webSocketMessage) {
+        CreateClickLogOperation operation = new CreateClickLogOperation();
+        operation.setMessage(webSocketMessage);
+        return operation;
     }
 
-    public static OperationParam<GetSystemPropertyWithNameOperation> getSystemPropertyWithNameParam(String name){
-        OperationParam<GetSystemPropertyWithNameOperation> operationParam = new OperationParam<>(GetSystemPropertyWithNameOperation.class);
-        operationParam.setParameter(name);
-        return operationParam;
+    public static GetSystemPropertyWithNameOperation getSystemPropertyWithName(String name) {
+        GetSystemPropertyWithNameOperation operation = new GetSystemPropertyWithNameOperation();
+        operation.setOperationParameter(new StringParameter(name));
+        return operation;
     }
 
-    public static OperationParam<GetAllUserTransactionKeysOperation> getAllUserTransactionKeyParam(){
-        return new OperationParam<>(GetAllUserTransactionKeysOperation.class);
+    public static GetAllUserTransactionKeysOperation getAllUserTransactionKeys() {
+        return new GetAllUserTransactionKeysOperation();
     }
 
-    public static OperationParam<GetEventLogsWithUserTransactionKeyOperation> getEventLogsWithUserTransactionKeyParam(InternalUserTransactionKey userTransactionKey){
-        OperationParam<GetEventLogsWithUserTransactionKeyOperation> operationParam = new OperationParam<>(GetEventLogsWithUserTransactionKeyOperation.class);
-        operationParam.setParameter(userTransactionKey.getId());
-        return operationParam;
+    public static GetEventLogsWithUserTransactionKeyOperation getEventLogsWithUserTransactionKey(InternalUserTransactionKey userTransactionKey) {
+        GetEventLogsWithUserTransactionKeyOperation operation = new GetEventLogsWithUserTransactionKeyOperation();
+        operation.setOperationParameter(new StringParameter(userTransactionKey.getId()));
+        return operation;
+    }
+
+    public static GetEventLogsWithinTimespanOperation getEventLogsWithinTimespan(LocalDateTime from, LocalDateTime to) {
+        GetEventLogsWithinTimespanOperation operation = new GetEventLogsWithinTimespanOperation();
+        StringParameter fromParam = new StringParameter(DateUtil.formatLocalDateTime(from));
+        StringParameter toParam = new StringParameter(DateUtil.formatLocalDateTime(to));
+        operation.setOperationParameters(Arrays.asList(fromParam, toParam));
+        return operation;
     }
 
 }

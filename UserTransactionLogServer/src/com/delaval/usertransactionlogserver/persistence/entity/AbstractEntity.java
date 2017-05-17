@@ -29,7 +29,7 @@ public abstract class AbstractEntity extends SRecordInstance {
 
     protected static String getUserTransactionKeyId(WebSocketMessage webSocketMessage) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(webSocketMessage.getUsername()).
+        stringBuilder.append(webSocketMessage.getUsername().toLowerCase()).
                 append(webSocketMessage.getClient()).
                 append(webSocketMessage.getTarget());
         return stringBuilder.toString();

@@ -8,4 +8,16 @@ import com.delaval.usertransactionlogserver.websocket.WebSocketMessage;
 public interface CreateUpdateOperation extends Operation {
     void setMessage(WebSocketMessage message);
 
+    WebSocketMessage getWebSocketMessage();
+
+    @Override
+    default boolean isCreateUpdate(){
+        return true;
+    }
+
+    default String getMesstype() {
+        return getWebSocketMessage() != null ? getWebSocketMessage().getMessType() : null;
+    }
+
+
 }

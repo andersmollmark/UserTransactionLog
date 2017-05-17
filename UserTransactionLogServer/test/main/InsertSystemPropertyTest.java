@@ -19,13 +19,14 @@ public class InsertSystemPropertyTest {
     public InsertSystemPropertyTest() {
     }
 
-    void testGetSystemProperty(){
-        OperationParam<GetSystemPropertyWithNameOperation> operationParam = new OperationParam<>(GetSystemPropertyWithNameOperation.class);
-        operationParam.setParameter("propName");
-        GetSystemPropertyWithNameOperation getSystemPropertyWithNameOperation = OperationDAO.getInstance().doRead(operationParam);
-        List<InternalSystemProperty> result = getSystemPropertyWithNameOperation.getResult();
+    void testGetSystemProperty() {
+        String name = "propName";
+        GetSystemPropertyWithNameOperation operation = new GetSystemPropertyWithNameOperation();
+        operation.setOperationParameter(new StringParameter(name));
+        OperationResult<InternalSystemProperty> operationResult = OperationDAO.getInstance().doRead(operation);
+        List<InternalSystemProperty> result = operationResult.getResult();
         Assert.assertNotNull(result);
-        Assert.assertTrue(result.size()>0);
+        Assert.assertTrue(result.size() > 0);
     }
 
     void testInsertSystemProperty() {
@@ -44,13 +45,11 @@ public class InsertSystemPropertyTest {
         testContent.setTimestamp(Long.toString(date.getTime()));
         String jsonContent = new Gson().toJson(testContent);
         webSocketMessage.setJsonContent(jsonContent);
-        doInsert(CreateSystemPropertyOperation.class, webSocketMessage);
-    }
 
-    private <T extends CreateUpdateOperation> void doInsert(Class<T> clazz, WebSocketMessage webSocketMessage) {
-        OperationParam<T> operationParam = new OperationParam<>(clazz, webSocketMessage);
-        OperationDAO operationDAO = OperationDAO.getInstance();
-        operationDAO.doCreateUpdate(operationParam);
+        CreateSystemPropertyOperation operation = new CreateSystemPropertyOperation();
+        operation.setMessage(webSocketMessage);
+
+        OperationDAO.getInstance().doCreateUpdate(operation);
     }
 
     private static class MyWebSocketMessage extends WebSocketMessage {

@@ -1,6 +1,7 @@
 package com.delaval.usertransactionlogserver.domain;
 
 import com.delaval.usertransactionlogserver.persistence.entity.EventLog;
+import com.delaval.usertransactionlogserver.persistence.entity.UserTransactionKey;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -12,7 +13,7 @@ import java.util.Date;
 /**
  * Created by delaval on 12/9/2015.
  */
-public class InternalEventLog {
+public class InternalEventLog implements InternalEntityRepresentation {
 
     private String id;
     private String username;
@@ -36,6 +37,23 @@ public class InternalEventLog {
         timestampAsDate = eventLog.getTimestamp();
         timestamp = eventLog.getTimestamp().getTime();
         host = eventLog.getHost();
+        username = "unknown";
+        target = "unknown";
+    }
+
+    public InternalEventLog(EventLog eventLog, UserTransactionKey myKey) {
+        id = eventLog.getId();
+        name = eventLog.getName();
+        category = eventLog.getCategory();
+        label = eventLog.getLabel();
+        tab = eventLog.getTab();
+        userTransactionKeyId = eventLog.getUserTransactionKeyId();
+        timestampAsDate = eventLog.getTimestamp();
+        timestamp = eventLog.getTimestamp().getTime();
+        host = eventLog.getHost();
+
+        username = myKey.getUsername();
+        target = myKey.getTarget();
     }
 
     public void setUsername(String username) {
@@ -89,27 +107,6 @@ public class InternalEventLog {
     public String getHost() {
         return host;
     }
-
-    public void encrypt(FetchLogCriteria criteria) throws Exception {
-        if (criteria.isEncrypt()) {
-            id = doEncrypt(id, criteria.aesCipher);
-            username = doEncrypt(username, criteria.aesCipher);
-            userTransactionKeyId = doEncrypt(userTransactionKeyId, criteria.aesCipher);
-            label = doEncrypt(label, criteria.aesCipher);
-            host = doEncrypt(host, criteria.aesCipher);
-        }
-    }
-
-
-    private String doEncrypt(String origValue, Cipher aesCipher) throws BadPaddingException, IllegalBlockSizeException, FileNotFoundException {
-//        return new String(cipher.doFinal(origValue.getBytes()));
-        InputStream orig = new ByteArrayInputStream(origValue.getBytes());
-        OutputStream encrypted = new ByteArrayOutputStream();
-        CipherOutputStream cipherOutputStream = new CipherOutputStream(encrypted, aesCipher);
-        return "dumm";
-
-    }
-
 
 
     @Override

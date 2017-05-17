@@ -1,9 +1,5 @@
 package com.delaval.usertransactionlogserver.websocket;
 
-import com.delaval.usertransactionlogserver.persistence.dao.OperationDAO;
-import com.delaval.usertransactionlogserver.persistence.operation.CreateSystemPropertyOperation;
-import com.delaval.usertransactionlogserver.persistence.operation.OperationFactory;
-import com.delaval.usertransactionlogserver.persistence.operation.OperationParam;
 import com.delaval.usertransactionlogserver.service.CryptoKeyService;
 import com.delaval.usertransactionlogserver.service.FetchAllEventLogsService;
 import com.delaval.usertransactionlogserver.service.JmsMessageService;
@@ -83,20 +79,16 @@ public class UserTransactionLogWebSocket {
             if (MessTypes.CLICK_LOG.isSame(webSocketType.getType()) || MessTypes.EVENT_LOG.isSame(webSocketType.getType())) {
                 WebSocketMessage webSocketMessage = new Gson().fromJson(jsonMessage, WebSocketMessage.class);
                 JmsMessageService.getInstance().createJmsMessage(webSocketMessage, jsonMessage);
-            } else if (MessTypes.SYSTEM_PROPERTY.isSame(webSocketType.getType())) {
-                WebSocketMessage webSocketMessage = new Gson().fromJson(jsonMessage, WebSocketMessage.class);
-                OperationParam<CreateSystemPropertyOperation> createSystemPropertyParam = OperationFactory.getCreateSystemPropertyParam(webSocketMessage);
-                OperationDAO.getInstance().doCreateUpdate(createSystemPropertyParam);
-            } else if (MessTypes.JSON_DUMP.isSame(webSocketType.getType())) {
+            }  else if (MessTypes.JSON_DUMP.isSame(webSocketType.getType())) {
                 FetchAllEventLogsService logsService = new FetchAllEventLogsService();
                 session.getRemote().sendStringByFuture(logsService.getJsonDumpMessage());
             }else if (MessTypes.GET_PUBLIC_KEY.isSame(webSocketType.getType())) {
                 session.getRemote().sendStringByFuture(CryptoKeyService.getInstance().getPublicKeyAsJson());
             }
-            else if (MessTypes.FETCH_LOGS.isSame(webSocketType.getType())) {
+            else if (MessTypes.FETCH_ENCRYPTED_LOGS.isSame(webSocketType.getType())) {
                 WebSocketFetchLogMessage webSocketFetchLogMessage = new Gson().fromJson(jsonMessage, WebSocketFetchLogMessage.class);
                 FetchAllEventLogsService logsService = new FetchAllEventLogsService();
-                session.getRemote().sendStringByFuture(logsService.getEncryptedJsonLogs(webSocketFetchLogMessage.getEncryptedClientKey()));
+                session.getRemote().sendStringByFuture(logsService.getEncryptedJsonLogs(webSocketFetchLogMessage.getFrom(), webSocketFetchLogMessage.getTo()));
             }
             else {
                 UtlsLogUtil.info(this.getClass(), "Unknown message:", webSocketType.getType());

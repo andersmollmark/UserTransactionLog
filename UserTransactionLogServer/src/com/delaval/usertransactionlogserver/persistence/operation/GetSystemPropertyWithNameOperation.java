@@ -13,11 +13,11 @@ import java.util.List;
 /**
  * Returns all Clicklogs that exist in db with a certain usertransactionkey
  */
-public class GetSystemPropertyWithNameOperation implements ReadOperation {
+public class GetSystemPropertyWithNameOperation implements ReadOperation<InternalSystemProperty> {
 
     private SSessionJdbc jdbcSession;
-    private List<InternalSystemProperty> operationResult;
     private String name;
+    private OperationResult<InternalSystemProperty> operationResult;
 
 
     @Override
@@ -40,23 +40,22 @@ public class GetSystemPropertyWithNameOperation implements ReadOperation {
         final List<InternalSystemProperty> all = new ArrayList<>();
         SQueryResult<SystemProperty> result = jdbcSession.query(new SQuery(SystemProperty.SYSTEM_PROPERTY).eq(SystemProperty.NAME, name));
         result.forEach(logContent -> all.add(new InternalSystemProperty(logContent)));
-        operationResult = all;
+        operationResult = new OperationResult<>(all);
     }
 
     @Override
-    public void setReadParameter(String parameter) {
-        this.name = parameter;
+    public void setOperationParameter(OperationParameter readParameter) {
+        this.name = readParameter.getValue();
+    }
+
+    @Override
+    public void setNotOkResult(OperationResult<InternalSystemProperty> notOkResult) {
+        operationResult = notOkResult;
     }
 
 
     @Override
-    public List<InternalSystemProperty> getResult() {
-        return isResultOk() ? operationResult : new ArrayList<>();
+    public OperationResult<InternalSystemProperty> getResult() {
+        return operationResult;
     }
-
-    @Override
-    public boolean isResultOk() {
-        return operationResult != null;
-    }
-
 }

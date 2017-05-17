@@ -52,12 +52,14 @@ public class JmsMessageService {
     }
 
     public void cacheJmsMessage(WebSocketMessage webSocketMessage) {
-        ConnectionTimeoutService.stopJmsAndStartTimer();
-        UtlsLogUtil.info(JmsMessageService.class,
-          "Trying to cache message due to db-problems with type:",
-          webSocketMessage.getType());
-        String jsonMessage = new Gson().toJson(webSocketMessage);
-        JmsTempCache.getInstance().addLog(webSocketMessage, jsonMessage);
+        if(webSocketMessage != null){
+            ConnectionTimeoutService.stopJmsAndStartTimer();
+            UtlsLogUtil.info(JmsMessageService.class,
+              "Trying to cache message due to db-problems with type:",
+              webSocketMessage.getType());
+            String jsonMessage = new Gson().toJson(webSocketMessage);
+            JmsTempCache.getInstance().addLog(webSocketMessage, jsonMessage);
+        }
     }
 
     private void sendJmsTemplate(String jsonMessage, ServerProperties.PropKey jmsDest, JmsResourceFactory jmsResourceFactory) {

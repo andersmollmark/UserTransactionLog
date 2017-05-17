@@ -15,10 +15,10 @@ import java.util.stream.Collectors;
 /**
  * Returns all UserTransactionKey that exist in db
  */
-public class GetAllUserTransactionKeysOperation implements ReadOperation {
+public class GetAllUserTransactionKeysOperation implements ReadOperation<InternalUserTransactionKey> {
 
     private SSessionJdbc jdbcSession;
-    private List<InternalUserTransactionKey> operationResult;
+    private OperationResult<InternalUserTransactionKey> operationResult;
 
     @Override
     public void setJdbcSession(SSessionJdbc session) {
@@ -45,22 +45,18 @@ public class GetAllUserTransactionKeysOperation implements ReadOperation {
           .map(keyThatHasLogs -> new InternalUserTransactionKey(keyThatHasLogs))
           .collect(Collectors.toList());
 
-        operationResult = allWithLogs;
+        operationResult = new OperationResult<>(allWithLogs);
+    }
+
+
+    @Override
+    public OperationResult<InternalUserTransactionKey> getResult() {
+        return operationResult;
     }
 
     @Override
-    public void setReadParameter(String parameter) {
-        // does nothing
-    }
-
-    @Override
-    public List<InternalUserTransactionKey> getResult() {
-        return isResultOk() ? operationResult : new ArrayList<>();
-    }
-
-    @Override
-    public boolean isResultOk() {
-        return operationResult != null;
+    public void setNotOkResult(OperationResult<InternalUserTransactionKey> notOkResult) {
+        operationResult = notOkResult;
     }
 
 }

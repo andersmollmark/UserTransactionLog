@@ -173,7 +173,7 @@ public class ConnectionFactory {
             String jdbcUrl = "jdbc:mysql://" + getProp(ServerProperties.PropKey.DB_SERVER_HOST) +
               ":" + getProp(ServerProperties.PropKey.DB_SERVER_PORT) + "/" +
               getProp(ServerProperties.PropKey.DB_NAME);
-            UtlsLogUtil.info(this.getClass(), "Creating db-connection:", jdbcUrl);
+            UtlsLogUtil.debug(this.getClass(), "Creating db-connection:", jdbcUrl);
             theConnection = java.sql.DriverManager.getConnection(jdbcUrl, getProp(ServerProperties.PropKey.DB_USER), getProp(ServerProperties.PropKey.DB_PWD));
 
             theConnection.setAutoCommit(false);
