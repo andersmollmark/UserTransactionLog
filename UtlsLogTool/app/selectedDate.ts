@@ -2,7 +2,7 @@ import moment = require("moment");
 export class SelectedDate {
 
     public FORMAT_MMM_D_YYY_H_MM_A: string = 'MMM D YYYY, h:mm a';
-    value: Date;
+    private value: Date;
 
     private constructor(val: Date) {
         this.value = val;
@@ -15,6 +15,10 @@ export class SelectedDate {
 
     public static getFromDate(val: Date): SelectedDate {
         return new SelectedDate(val);
+    }
+
+    public getValue(): Date{
+        return this.value;
     }
 
     asString(): string {

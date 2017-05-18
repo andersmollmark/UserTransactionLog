@@ -9,6 +9,7 @@ import {TimeFilterService} from "./timefilter.service";
 import {SortingObject} from "./sortingObject";
 import {UtlserverService} from "./utlserver.service";
 import {View} from "./view";
+import {FetchLogParam} from "./fetchLogParam";
 
 const electron = require('electron');
 const remote = electron.remote;
@@ -64,6 +65,7 @@ export class AppComponent implements OnInit {
         this.views[AppConstants.VIEW_SETTINGS] = new View(AppConstants.VIEW_SETTINGS, false);
         this.views[AppConstants.VIEW_EMPTY] = new View(AppConstants.VIEW_EMPTY, false);
         this.views[AppConstants.VIEW_WAIT] = new View(AppConstants.VIEW_WAIT, false);
+        this.views[AppConstants.VIEW_FETCH_LOGS] = new View(AppConstants.VIEW_FETCH_LOGS, false);
     }
 
     ngOnInit(): void {
@@ -75,7 +77,7 @@ export class AppComponent implements OnInit {
                     label: 'Open logfile',
                     click: function () {
                         self.zone.run(() => {
-                            dialog.showOpenDialog(self.handleFile);
+                            dialog.showOpenDialog(self.checkFilenameAndHandleFile);
                         });
                     }
                 },
@@ -88,24 +90,15 @@ export class AppComponent implements OnInit {
                 {
                     label: 'Fetch logfile',
                     click: function () {
-                        self.zone.run(() => {
-                                self.showView(AppConstants.VIEW_WAIT);
-                                let observableResult = self.utlsFileService.fetchLogs();
-                                observableResult.subscribe(
-                                    result => {
-                                        if(result.isOk){
-                                            console.log('Logfile with name :' + result.value + ' is saved');
-                                            alert('Logfile with name :' + result.value + ' is saved');
-                                        }
-                                        else{
-                                            console.log(result.value);
-                                            alert(result.value);
-                                        }
-                                        self.zone.run(() => self.showView(self.oldViewname));
-                                    }
-                                );
-                            }
-                        );
+                        self.utlsFileService.setOpenWhenFileIsFetched(false);
+                        self.showView(AppConstants.VIEW_FETCH_LOGS);
+                    }
+                },
+                {
+                    label: 'Fetch and open logfile',
+                    click: function () {
+                        self.utlsFileService.setOpenWhenFileIsFetched(true);
+                        self.showView(AppConstants.VIEW_FETCH_LOGS);
                     }
                 }
             ]
@@ -115,7 +108,7 @@ export class AppComponent implements OnInit {
     }
 
     ngDoCheck() {
-        console.log('ngdocheck...');
+        // console.log('ngdocheck...');
         this.filterQuery = this.timeFilterService.getFilterQuery();
         if (this.utlsFileService.isColumnContentChanged()) {
             this.changeColumnValueAndContentValues(this.selectedColumn);
@@ -126,56 +119,129 @@ export class AppComponent implements OnInit {
         this.showView(this.oldViewname);
     }
 
-    showView(viewname: string) {
-        console.log('show ' + viewname + ' and active now is:' + this.activeViewname + ' and oldactive is:' + this.oldViewname);
-        if (this.activeViewname !== viewname) {
-            this.oldViewname = this.activeViewname;
-        }
-        for (let key in this.views) {
-            let aView = this.views[key];
-            aView.show = viewname === aView.name;
-        }
-        this.activeViewname = viewname;
+    closeFetchLog(): void {
+        this.showView(this.oldViewname);
     }
 
-    public handleFile = (fileNamesArr: Array<any>) => {
+    openFetchLog(openFetchLog: boolean): void{
+        this.utlsFileService.setOpenWhenFileIsFetched(true);
+        this.showView(AppConstants.VIEW_FETCH_LOGS);
+    }
+
+    fetchLogsWithDate(fetchLogParam: FetchLogParam): void {
+        if(fetchLogParam.isOk()){
+            this.fetchLogfile(fetchLogParam.getFrom(), fetchLogParam.getTo());
+        }
+        else{
+            console.error('something went wrong with from and to-parameters...');
+        }
+
+    }
+
+    showView(viewname: string) {
+        let self = this;
+        self.zone.run(() => {
+            if (self.activeViewname !== viewname) {
+                self.oldViewname = self.activeViewname;
+            }
+            for (let key in self.views) {
+                let aView = self.views[key];
+                aView.show = viewname === aView.name;
+            }
+            self.activeViewname = viewname;
+            // console.log('after change, active:' + self.activeViewname + ' and oldactive is:' + self.oldViewname);
+        });
+    }
+
+    fetchLogfile(from: Date, to: Date) {
+        let show = this.utlsFileService.isOpenWhenFileIsFetched();
+        console.log('fetching logfile and will show immediately?' + show);
+        let self = this;
+        self.zone.run(() => {
+                self.showView(AppConstants.VIEW_WAIT);
+                let observableResult = self.utlsFileService.fetchLogs(from, to);
+                let logSubscription = observableResult.subscribe(
+                    result => {
+                        if (result.isOk) {
+                            console.log('Logfile with name :' + result.value + ' is saved');
+                            alert('Logfile with name :' + result.value + ' is saved');
+                        }
+                        else {
+                            console.log(result.value);
+                            alert(result.value);
+                        }
+                        if (show) {
+                            self.createLogContentFromFile(result.value);
+                        }
+                        else {
+                            self.showView(this.oldViewname);
+                        }
+                     logSubscription.unsubscribe();
+                    },
+                    error => {
+                        console.error('app-component, logsubscription error:' + error);
+                        logSubscription.unsubscribe();
+                        self.showView(this.oldViewname);
+                    },
+                    () => {
+                        console.log('app-component, logsubscription done:');
+                        logSubscription.unsubscribe();
+                        self.showView(this.oldViewname);
+                    }
+
+                );
+
+            }
+        );
+    }
+
+    public checkFilenameAndHandleFile = (fileNamesArr: Array<any>) => {
         if (!fileNamesArr) {
             console.log("No file selected");
+            this.showView(this.oldViewname);
         }
         else {
             console.log("filename selected:" + fileNamesArr[0]);
-            this.init();
-            this.logfileName = fileNamesArr[0];
-            this.logs$ = this.utlsFileService.createLogs(fileNamesArr[0]);
-            let timestampFrom;
-            let timestampTo;
-
-            let self = this;
-            self.zone.run(() => {
-                this.logs$.subscribe(logs => {
-                    _.forEach(logs, function (log) {
-                        if (!timestampFrom || timestampFrom > log.timestamp) {
-                            timestampFrom = log.timestamp;
-                        }
-                        else if (!timestampTo || timestampTo < log.timestamp) {
-                            timestampTo = log.timestamp;
-                        }
-                    });
-                    let firstDate = new Date(timestampFrom);
-                    let lastDate = new Date(timestampTo);
-
-                    self.timeFilterService.setFirstDateFromFile(firstDate);
-                    self.timeFilterService.setLastDateFromFile(lastDate);
-
-                    self.timeFilterService.resetTimefilter();
-
-                    console.log('new from:' + self.timeFilterService.getSelectedTimefilterFrom().asString() + ' new to:' +
-                        self.timeFilterService.getLastSelectedTimefilterTo().asString());
-                });
-            });
-            this.showView(AppConstants.VIEW_LOGS);
-            this.isLoaded = true;
+            this.createLogContentFromFile(fileNamesArr[0]);
         }
+    }
+
+    public createLogContentFromFile = (fileName: string) => {
+        console.log("creating logcontent from:" + fileName);
+        this.init();
+        this.logfileName = fileName;
+        this.logs$ = this.utlsFileService.createLogs(fileName);
+        let timestampFrom;
+        let timestampTo;
+
+        let self = this;
+        self.zone.run(() => {
+            let logSubscription = this.logs$.subscribe(logs => {
+                _.forEach(logs, function (log) {
+                    if (!timestampFrom || timestampFrom > log.timestamp) {
+                        timestampFrom = log.timestamp;
+                    }
+                    else if (!timestampTo || timestampTo < log.timestamp) {
+                        timestampTo = log.timestamp;
+                    }
+                });
+                let firstDate = new Date(timestampFrom);
+                let lastDate = new Date(timestampTo);
+
+                self.timeFilterService.setFirstDateFromFile(firstDate);
+                self.timeFilterService.setLastDateFromFile(lastDate);
+
+                self.timeFilterService.resetTimefilter();
+
+                console.log('new from:' + self.timeFilterService.getSelectedTimefilterFrom().asString() + ' new to:' +
+                    self.timeFilterService.getLastSelectedTimefilterTo().asString());
+
+                logSubscription.unsubscribe();
+
+            });
+        });
+        this.showView(AppConstants.VIEW_LOGS);
+        this.isLoaded = true;
     }
 
 

@@ -14,13 +14,16 @@ import {ColumnSortPipe} from "./columnSort.pipe";
 import {WebsocketService} from "./websocket.service";
 import {UtlserverService} from "./utlserver.service";
 import {UtlSettingsComponent} from "./utlSettings.component";
+import {CryptoService} from "./crypto.service";
+import {FetchLogComponent} from "./fetchLog.component";
 
 @NgModule({
     imports:      [ BrowserModule, FormsModule,
         DataTableModule, HttpModule, DatepickerModule.forRoot(), TimepickerModule.forRoot()],
     declarations: [ AppComponent, TimefilterComponent, DataFilterPipe, DtoSortPipe,
-        ColumnSortPipe, UtlSettingsComponent ],
-    providers: [ UtlsFileService, TimeFilterService, WebsocketService, UtlserverService],
+        ColumnSortPipe, UtlSettingsComponent, FetchLogComponent ],
+    providers: [ UtlsFileService, TimeFilterService, WebsocketService, UtlserverService, CryptoService],
     bootstrap:    [ AppComponent ]
 })
+
 export class AppModule { }

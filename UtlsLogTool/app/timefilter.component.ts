@@ -61,7 +61,7 @@ export class TimefilterComponent {
     changeFrom(){
         if(this.selectedDateFrom){
             if(!this.selectedDateFrom.isSame(this.lastSelectedDateFrom)){
-                this.timeFilterService.setLastSelectedTimefilterFrom(this.selectedDateFrom.value);
+                this.timeFilterService.setLastSelectedTimefilterFrom(this.selectedDateFrom.getValue());
                 this.showFrom = false;
                 this.showFromTime = true;
             }
@@ -73,7 +73,7 @@ export class TimefilterComponent {
             if(!this.selectedDateFrom.isSameTime(this.fromTime)){
                 this.selectedDateFrom.setTime(this.fromTime, 0);
             }
-            this.timeFilterService.setSelectedTimefilterFrom(this.selectedDateFrom.value);
+            this.timeFilterService.setSelectedTimefilterFrom(this.selectedDateFrom.getValue());
             this.timeFilterService.setFilterQuery(AppConstants.TIMESTAMP_FILTER_FROM.concat(this.selectedDateFrom.asString()));
             this.showFromTime = false;
         }
@@ -82,7 +82,7 @@ export class TimefilterComponent {
     changeTo(){
         if(this.selectedDateTo){
             if(!this.selectedDateTo.isSame(this.lastSelectedDateTo)){
-                this.timeFilterService.setLastSelectedTimefilterTo(this.selectedDateTo.value);
+                this.timeFilterService.setLastSelectedTimefilterTo(this.selectedDateTo.getValue());
                 this.showTo = false;
                 this.showToTime = true;
             }
@@ -95,7 +95,7 @@ export class TimefilterComponent {
             if(!this.selectedDateTo.isSameTime(this.toTime)){
                 this.selectedDateTo.setTime(this.toTime, 59);
             }
-            this.timeFilterService.setSelectedTimefilterTo(this.selectedDateTo.value);
+            this.timeFilterService.setSelectedTimefilterTo(this.selectedDateTo.getValue());
             this.timeFilterService.setFilterQuery(AppConstants.TIMESTAMP_FILTER_TO.concat(this.selectedDateTo.asString()));
             this.showToTime = false;
         }

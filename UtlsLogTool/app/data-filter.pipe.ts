@@ -17,15 +17,15 @@ export class DataFilterPipe implements PipeTransform {
         let resultArray = array;
         if (query && query.length > 0 && !_.isNil(array)) {
             if(query.includes(AppConstants.TIMESTAMP_FILTER_FROM)) {
-                if (this.filterService.getSelectedTimefilterFrom() && this.filterService.getSelectedTimefilterFrom().value
-                    && this.filterService.getSelectedTimefilterTo() && this.filterService.getSelectedTimefilterTo().value) {
-                    let from = this.filterService.getSelectedTimefilterFrom().value.getTime();
-                    let to = this.filterService.getSelectedTimefilterTo().value.getTime();
+                if (this.filterService.getSelectedTimefilterFrom() && this.filterService.getSelectedTimefilterFrom().getValue()
+                    && this.filterService.getSelectedTimefilterTo() && this.filterService.getSelectedTimefilterTo().getValue()) {
+                    let from = this.filterService.getSelectedTimefilterFrom().getValue().getTime();
+                    let to = this.filterService.getSelectedTimefilterTo().getValue().getTime();
                     console.log('from:' + from + ' to:' + to);
                     resultArray = _.filter(array, row => row.timestamp >= from && row.timestamp <= to);
                 }
                 else if (this.filterService.getSelectedTimefilterFrom()) {
-                    let from = this.filterService.getSelectedTimefilterFrom().value.getTime();
+                    let from = this.filterService.getSelectedTimefilterFrom().getValue().getTime();
                     console.log('from:' + from);
                     resultArray = _.filter(array, row => row.timestamp >= from);
                 }
@@ -33,13 +33,13 @@ export class DataFilterPipe implements PipeTransform {
             }
             else if(query.includes(AppConstants.TIMESTAMP_FILTER_TO)){
                 if (this.filterService.getSelectedTimefilterFrom() && this.filterService.getSelectedTimefilterTo()) {
-                    let from = this.filterService.getSelectedTimefilterFrom().value.getTime();
-                    let to = this.filterService.getSelectedTimefilterTo().value.getTime();
+                    let from = this.filterService.getSelectedTimefilterFrom().getValue().getTime();
+                    let to = this.filterService.getSelectedTimefilterTo().getValue().getTime();
                     console.log('from:' + from + ' to:' + to);
                     resultArray = _.filter(array, row => row.timestamp >= from && row.timestamp <= to);
                 }
                 else if(this.filterService.getSelectedTimefilterTo()){
-                    let to = this.filterService.getSelectedTimefilterTo().value.getTime();
+                    let to = this.filterService.getSelectedTimefilterTo().getValue().getTime();
                     console.log('to:' + to);
                     resultArray = _.filter(array, row => row.timestamp <= to);
                 }

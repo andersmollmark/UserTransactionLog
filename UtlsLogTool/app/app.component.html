@@ -1,6 +1,11 @@
-<div *ngIf="views[constants.VIEW_SETTINGS].show" class="promptDiv">
-    <utlSettings [showMe]="showSettings" (isVisibleEvent)="closeSettings($event)"></utlSettings>
+<div *ngIf="views[constants.VIEW_FETCH_LOGS].show" class="promptDivWide">
+    <fetchLog [showMe]="showFetchLog" (isVisibleEvent)="closeFetchLog($event)" (fetchLogsEvent)="fetchLogsWithDate($event)"></fetchLog>
 </div>
+
+<div *ngIf="views[constants.VIEW_SETTINGS].show" class="promptDiv">
+    <utlSettings [showMe]="showSettings" (fetchLogEvent)="openFetchLog($event)" (isVisibleEvent)="closeSettings($event)"></utlSettings>
+</div>
+
 
 <div *ngIf="views[constants.VIEW_WAIT].show" class="sk-circle">
     <div class="sk-circle1 sk-child"></div>

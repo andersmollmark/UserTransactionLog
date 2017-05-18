@@ -2,6 +2,8 @@ export class AppConstants {
 
     public static STR_ALL = 'All';
 
+    public static CRYPTO_TOOL_NAME = 'utlsT00l2017rule';
+
     public static TIMESTAMP_FILTER_FROM = 'timestampFilterFrom';
     public static TIMESTAMP_FILTER_TO = 'timestampFilterTo';
     public static COLUMN_SORT_ASC = 'columnSortAsc';
@@ -15,7 +17,8 @@ export class AppConstants {
 
     public static UTL_SERVER_URL_PREFIX = 'ws://';
     public static UTL_SERVER_URL_SUFFIX = '/ws';
-    public static UTL_LOG_DUMPMESSAGE = 'jsonDump';
+    // public static UTL_LOG_DUMPMESSAGE = 'jsonDump';
+    public static UTL_LOG_DUMPMESSAGE = 'fetchLogs';
 
     public static IPC_CLOSE_WAIT_VIEW = 'closeWait';
 
@@ -27,6 +30,7 @@ export class AppConstants {
     public static VIEW_LOGS = 'viewLogs';
     public static VIEW_WAIT = 'viewWait';
     public static VIEW_EMPTY = 'viewEmpty';
+    public static VIEW_FETCH_LOGS = 'viewFetchLogs';
 
 
 

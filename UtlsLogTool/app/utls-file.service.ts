@@ -7,6 +7,7 @@ import * as _ from "lodash";
 import {AppConstants} from "./app.constants";
 import {UtlserverService} from "./utlserver.service";
 import {Result} from "./result";
+import {Subject} from "rxjs/Subject";
 import moment = require("moment");
 
 let fileSystem = require('fs');
@@ -19,12 +20,15 @@ export class UtlsFileService {
 
     columnContentHasChanged: boolean = false;
     private logfileIsFetched: boolean = false;
+    private openLogsWhenFileIsFetched: boolean = false;
 
     usersInLogContent: Dto[] = [];
     categoriesInLogContent: Dto[] = [];
     tabsInLogContent: Dto[] = [];
     eventNamesInLogContent: Dto[] = [];
     allColumnContent = [];
+
+    websocketObservable: Subject<any>;
 
     originFromFile = {
         usersInLogContent: [],
@@ -35,6 +39,21 @@ export class UtlsFileService {
     };
 
     constructor(private http: Http, private utlsserverService: UtlserverService) {
+    }
+
+    ngOnDestroy() {
+        console.log('destroying and unsubscribing');
+        if (this.websocketObservable) {
+            this.websocketObservable.unsubscribe();
+        }
+    }
+
+    setOpenWhenFileIsFetched(open: boolean){
+        this.openLogsWhenFileIsFetched = open;
+    }
+
+    isOpenWhenFileIsFetched(): boolean{
+        return this.openLogsWhenFileIsFetched;
     }
 
     createLogs(filename: string): Observable<UtlsLog[]> {
@@ -52,37 +71,51 @@ export class UtlsFileService {
         return this.activeLogContent;
     }
 
-    fetchLogs(): Observable<Result>{
+    fetchLogs(from: Date, to: Date): Observable<Result> {
+        console.log('utls-file-service and fetching logs...');
         let result = new Observable(observer => {
             this.init();
-            this.utlsserverService.connectAndFetchDump();
-            this.utlsserverService.utlServerWebsocket.subscribe(dump => {
-                console.log('dump received in utls-file-service');
-                if(dump){
-                    let jsondata = JSON.parse(dump);
-                    let prettyPrint = JSON.stringify(jsondata, null, '\t');
-                    let fileSuffix = moment().format('YYYY_MM_DD_HHmmss');
-                    let filename = 'dump' + fileSuffix;
-                    console.log('writing file:' + filename);
-                    fileSystem.writeFile(filename, prettyPrint, (err) => {
-                        if(err) {
-                            observer.next(new Result('something went wrong:' + err, false));
-                            throw err;
-                        }
-                        console.log('file ' + filename + ' is saved');
-                        observer.next(new Result(filename, true));
-                    });
+            this.utlsserverService.connectAndFetchEncryptedDump(from, to);
+            this.websocketObservable = this.utlsserverService.utlServerWebsocket;
+            let socketSubscription = this.websocketObservable.subscribe(dump => {
+                    console.log('dump received in utls-file-service');
+                    if (dump) {
+                        let jsondata = JSON.parse(dump);
+                        let prettyPrint = JSON.stringify(jsondata, null, '\t');
+                        let fileSuffix = moment().format('YYYY_MM_DD_HHmmss');
+                        let filename = 'dump' + fileSuffix;
+                        console.log('writing file:' + filename);
+                        fileSystem.writeFile(filename, prettyPrint, (err) => {
+                            if (err) {
+                                observer.next(new Result('something went wrong:' + err, false));
+                                throw err;
+                            }
+                            console.log('file ' + filename + ' is saved');
+                            observer.next(new Result(filename, true));
+                        });
 
+                    }
+                    else {
+                        observer.next(new Result('no dump is received', false));
+                    }
+                    socketSubscription.unsubscribe();
+                },
+                error => {
+                    console.log('***** error on websocket:' + error);
+                    socketSubscription.unsubscribe();
+                    observer.error(new Error('Error on websocket:' + error));
+                },
+                () => {
+                    console.log('***** websocket completed:');
+                    socketSubscription.unsubscribe();
+                    observer.complete();
                 }
-                else{
-                    observer.next(new Result('no dump is received', false));
-                }
-
-            });
+            );
 
         });
         return result;
     }
+
 
     private init() {
         if (this.usersInLogContent && this.usersInLogContent.length > 0) {
@@ -95,7 +128,6 @@ export class UtlsFileService {
     }
 
 
-
     createColumnFilteringValuesForLogs(logarray: any[]) {
         this.createLogContentAndColumn(logarray);
     }
@@ -106,14 +138,14 @@ export class UtlsFileService {
 
     }
 
-    setOriginalStructureFromFile(){
+    setOriginalStructureFromFile() {
         this.originFromFile.allColumnContent[AppConstants.COL_USERNAME] = this.allColumnContent[AppConstants.COL_USERNAME];
         this.originFromFile.allColumnContent[AppConstants.COL_TAB] = this.allColumnContent[AppConstants.COL_TAB];
         this.originFromFile.allColumnContent[AppConstants.COL_CATEGORY] = this.allColumnContent[AppConstants.COL_CATEGORY];
         this.originFromFile.allColumnContent[AppConstants.COL_EVENTNAME] = this.allColumnContent[AppConstants.COL_EVENTNAME];
     }
 
-    resetContentAndColumnToOriginFromFile(){
+    resetContentAndColumnToOriginFromFile() {
         this.usersInLogContent = this.originFromFile.allColumnContent[AppConstants.COL_USERNAME];
         this.tabsInLogContent = this.originFromFile.allColumnContent[AppConstants.COL_TAB];
         this.categoriesInLogContent = this.originFromFile.allColumnContent[AppConstants.COL_CATEGORY];

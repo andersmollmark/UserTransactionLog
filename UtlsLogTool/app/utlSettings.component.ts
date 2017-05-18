@@ -1,4 +1,4 @@
-import {Component, Output, EventEmitter, Input, NgZone} from "@angular/core";
+import {Component, EventEmitter, Input, NgZone, Output} from "@angular/core";
 import {AppConstants} from "./app.constants";
 import {UtlsFileService} from "./utls-file.service";
 
@@ -19,6 +19,9 @@ export class UtlSettingsComponent {
 
     @Output()
     isVisibleEvent: EventEmitter<boolean> = new EventEmitter<boolean>();
+
+    @Output()
+    fetchLogEvent: EventEmitter<boolean> = new EventEmitter<boolean>();
 
     constructor(private utlsFileService: UtlsFileService, private zone: NgZone) {
         let utlIp = localStorage.getItem(AppConstants.UTL_SERVER_IP_KEY);
@@ -41,8 +44,10 @@ export class UtlSettingsComponent {
     }
 
     fetchLogs(): void {
-        this.utlsFileService.fetchLogs();
-        this.show(false);
+        this.zone.run(() => {
+            this.showMe = false;
+            this.fetchLogEvent.emit(true);
+        });
     }
 
     close(): void {

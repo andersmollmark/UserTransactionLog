@@ -13,18 +13,20 @@
 
         </div>
     </div>
-</div>
 
-<div *ngIf="isShowFrom()" class="calendardiv">
-    <datepicker [(ngModel)]="selectedDateFrom.value" [showWeeks]="false" (click)="changeFrom()"></datepicker>
-</div>
-<div *ngIf="isShowFromTime()" class="calendardiv">
-    <div class="timepickerdiv">
-        <timepicker [(ngModel)]="fromTime" [showMeridian]="ismeridian"></timepicker>
-        <button class="btn btn-primary btn-xs" (click)="changeFromTime()">Done</button>
+    <div *ngIf="isShowFrom()" class="calendardiv">
+        <datepicker [(ngModel)]="selectedDateFrom.value" [showWeeks]="false" (click)="changeFrom()"></datepicker>
+    </div>
+    <div *ngIf="isShowFromTime()" class="calendardiv">
+        <div class="timepickerdiv">
+            <timepicker [(ngModel)]="fromTime" [showMeridian]="ismeridian"></timepicker>
+            <button class="btn btn-primary btn-xs" (click)="changeFromTime()">Done</button>
+        </div>
+
     </div>
 
 </div>
+
 
 <div class="utls-logfilter-column">
     <div class="utls-selector-text utls-text">To:</div>
@@ -40,15 +42,16 @@
             </div>
         </div>
     </div>
-</div>
 
-<div *ngIf="isShowTo()" class="calendardiv">
-    <datepicker [(ngModel)]="selectedDateTo.value" [showWeeks]="false" (click)="changeTo($event)"></datepicker>
-</div>
-<div *ngIf="isShowToTime()" class="calendardiv">
-    <div class="timepickerdiv">
-        <timepicker [(ngModel)]="toTime" [showMeridian]="ismeridian"></timepicker>
-        <button class="btn btn-primary btn-xs" (click)="changeToTime()">Done</button>
+    <div *ngIf="isShowTo()" class="calendardiv">
+        <datepicker [(ngModel)]="selectedDateTo.value" [showWeeks]="false" (click)="changeTo($event)"></datepicker>
     </div>
+    <div *ngIf="isShowToTime()" class="calendardiv">
+        <div class="timepickerdiv">
+            <timepicker [(ngModel)]="toTime" [showMeridian]="ismeridian"></timepicker>
+            <button class="btn btn-primary btn-xs" (click)="changeToTime()">Done</button>
+        </div>
 
+    </div>
 </div>
+

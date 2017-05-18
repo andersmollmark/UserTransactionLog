@@ -102,6 +102,10 @@
     border-style: solid;
 }
 
+.fetchLogDiv{
+    padding: 5px;
+}
+
 .calendarIconBundle{
     display: inline-block;
 }
@@ -123,5 +127,10 @@
 
 .promptDiv{
     width: 10%;
+    padding: 10px;
+}
+
+.promptDivWide{
+    width: 50%;
     padding: 10px;
 }

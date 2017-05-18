@@ -1,14 +1,9 @@
 import {Injectable} from "@angular/core";
 import {WebsocketService} from "./websocket.service";
-import * as Rx from 'rxjs/Rx';
 import {Subject} from "rxjs";
-import {Message} from "@angular/compiler/src/i18n/i18n_ast";
 import {AppConstants} from "./app.constants";
+import {CryptoService} from "./crypto.service";
 
-export interface UtlsLogMessage {
-    messType: string,
-    jsondump: string
-}
 
 @Injectable()
 export class UtlserverService {
@@ -20,30 +15,35 @@ export class UtlserverService {
     private ipAddr: string = '';
     private port: string = '';
 
-    constructor(private websocketService: WebsocketService) {
+    private from: Date;
+    private to: Date;
+
+    constructor(private websocketService: WebsocketService, private cryptoService: CryptoService) {
         this.setIpAndPort();
     }
 
-    connectAndFetchDump(): void {
+    connectAndFetchEncryptedDump(from: Date, to: Date): void {
         this.setIpAndPort();
-        if(this.ipAddr && this.port && this.ipAddr.length > 0 && this.port.length > 0){
+        if (this.ipAddr && this.port && this.ipAddr.length > 0 && this.port.length > 0) {
             this.utlURL = AppConstants.UTL_SERVER_URL_PREFIX.concat(this.ipAddr).concat(':').concat(this.port).concat(AppConstants.UTL_SERVER_URL_SUFFIX);
 
+            this.from = from;
+            this.to = to;
             this.utlServerWebsocket = <Subject<any>>this.websocketService
                 .connect(this.utlURL, this.fetchDump.bind(this))
                 .map((response: MessageEvent): any => {
-                    if(response && response.data){
-                        let data = JSON.parse(response.data);
-                        if (AppConstants.UTL_LOG_DUMPMESSAGE === data.messType) {
+                    if (response && response.data) {
+                        let jsonMessage = JSON.parse(response.data);
+                        if (AppConstants.UTL_LOG_DUMPMESSAGE === jsonMessage.messType) {
                             console.log('yep, dumpmessage arrived');
-                            return data.jsondump;
+                            return this.cryptoService.doDecryptContent(jsonMessage.jsondump);
                         }
                         console.log('bummer, not dumpmessage arrived');
                     }
                     return undefined;
                 });
         }
-        else{
+        else {
             alert('you have to set ip to utlserver');
         }
     }
@@ -60,11 +60,9 @@ export class UtlserverService {
 
     private fetchDump(): void {
         let socketMessage = {
-            jsonContent: '',
-            client: '',
-            username: '',
+            fromInMillis: this.from.getTime(),
+            toInMillis: this.to.getTime(),
             messType: AppConstants.UTL_LOG_DUMPMESSAGE,
-            target: ''
         };
 
         this.utlServerWebsocket.next(socketMessage);
