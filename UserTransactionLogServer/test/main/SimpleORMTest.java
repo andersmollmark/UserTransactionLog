@@ -1,6 +1,5 @@
 package main;
 
-import com.delaval.usertransactionlogserver.domain.InternalClickLog;
 import com.delaval.usertransactionlogserver.domain.InternalEventLog;
 import com.delaval.usertransactionlogserver.domain.InternalUserTransactionKey;
 import com.delaval.usertransactionlogserver.persistence.dao.OperationDAO;
@@ -23,24 +22,6 @@ public class SimpleORMTest {
 
     }
 
-    void testGetClickLogs() {
-        testInsertClickLogs();
-
-        GetClickLogsWithUserTransactionKeyOperation operation = new GetClickLogsWithUserTransactionKeyOperation();
-        operation.setOperationParameter(new StringParameter("LEIF USERklientenIpad"));
-        OperationResult<InternalClickLog> operationResult = OperationDAO.getInstance().doRead(operation);
-        List<InternalClickLog> allLogs = operationResult.getResult();
-        for (InternalClickLog l : allLogs) {
-            System.out.println("ClickLog:\n");
-            StringBuilder sb = new StringBuilder();
-            sb.append("x:").append(l.getX()).append("\n").
-                    append("tab:").append(l.getTab()).append("\n").
-                    append("y:").append(l.getY()).append("\n").
-                    append("timestamp:").append(l.getTimestamp()).append("\n");
-            System.out.println(sb.toString());
-
-        }
-    }
 
     void testGetEventLogs() {
         testInsertEventLogs();
@@ -83,47 +64,10 @@ public class SimpleORMTest {
 
         }
 
-        if (firstId != null) {
-            GetClickLogsWithUserTransactionKeyOperation clickOperation = new GetClickLogsWithUserTransactionKeyOperation();
-            clickOperation.setOperationParameter(new StringParameter(firstId));
-            OperationResult<InternalClickLog> clickLogOperationResult = OperationDAO.getInstance().doRead(clickOperation);
-            List<InternalClickLog> contents = clickLogOperationResult.getResult();
-            for (InternalClickLog content : contents) {
-                System.out.println("LogContent:\n");
-                StringBuilder sb = new StringBuilder();
-                sb.append("xpos:").append(content.getX()).append("\n").
-                        append("ypos:").append(content.getY()).append("\n").
-                        append("timestamp:").append(content.getTimestamp()).append("\n");
-                System.out.println(sb.toString());
-            }
-        }
-
     }
 
 
-    void testInsertClickLogs() {
-        MyWebSocketMessage webSocketMessage = new MyWebSocketMessage();
-        webSocketMessage.setClient("klienten");
-        webSocketMessage.setUsername("LEIF USER");
-        webSocketMessage.setTarget("Ipad");
-        webSocketMessage.setMessType(MessTypes.CLICK_LOG.getMyValue());
 
-        MyClickLogContent testContent = new MyClickLogContent();
-        testContent.setCssClassName("cssClassName");
-        testContent.setElementId("ettElementId");
-        testContent.setX("x");
-        testContent.setY("y");
-
-
-//        for (int i = 0; i < 10; i++) {
-            java.util.Date date = new java.util.Date();
-            testContent.setTimestamp(Long.toString(date.getTime()));
-            String jsonContent = new Gson().toJson(testContent);
-            webSocketMessage.setJsonContent(jsonContent);
-            doInsert(new CreateClickLogOperation(), webSocketMessage);
-//        }
-
-    }
 
     void testInsertEventLogs() {
         MyWebSocketMessage webSocketMessage = new MyWebSocketMessage();
@@ -311,11 +255,9 @@ public class SimpleORMTest {
     public static void main(String[] args) {
 
         SimpleORMTest test = new SimpleORMTest();
-        test.testInsertClickLogs();
         test.testInsertEventLogs();
         test.testGetUserTransactionKey();
         test.testGetEventLogs();
-        test.testGetClickLogs();
     }
 
 }

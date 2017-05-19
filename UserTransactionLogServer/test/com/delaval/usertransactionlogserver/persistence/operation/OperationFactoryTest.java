@@ -2,14 +2,18 @@ package com.delaval.usertransactionlogserver.persistence.operation;
 
 import com.delaval.usertransactionlogserver.domain.InternalSystemProperty;
 import com.delaval.usertransactionlogserver.util.DateUtil;
-import com.delaval.usertransactionlogserver.websocket.*;
+import com.delaval.usertransactionlogserver.websocket.EventLogContent;
+import com.delaval.usertransactionlogserver.websocket.JsonContent;
+import com.delaval.usertransactionlogserver.websocket.SystemPropertyContent;
+import com.delaval.usertransactionlogserver.websocket.WebSocketMessage;
 import com.google.gson.Gson;
 import org.junit.Test;
 
 import java.util.Date;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
 /**
  * Created by delaval on 2016-01-22.
@@ -46,12 +50,6 @@ public class OperationFactoryTest {
         assertThat(operation.getWebSocketMessage(), is(notNullValue()));
     }
 
-    @Test
-    public void testGetCreateClickLogParam() throws Exception {
-        WebSocketMessage websocketMessage = getWebsocketMessage(getClickLogContent());
-        CreateClickLogOperation operation = OperationFactory.getCreateClickLog(websocketMessage);
-        assertThat(operation.getWebSocketMessage(), is(notNullValue()));
-    }
 
     private EventLogContent getEventLogContent(){
         EventLogContent eventLogContent = new EventLogContent();
@@ -62,15 +60,6 @@ public class OperationFactoryTest {
         return eventLogContent;
     }
 
-    private ClickLogContent getClickLogContent(){
-        ClickLogContent clickLogContent = new ClickLogContent();
-        clickLogContent.setCssClassName("css");
-        clickLogContent.setElementId("elementId");
-        clickLogContent.setTab("tab");
-        clickLogContent.setX("x");
-        clickLogContent.setY("y");
-        return clickLogContent;
-    }
 
     private SystemPropertyContent getSystemPropertyContent(String name, String value) {
         SystemPropertyContent content = new SystemPropertyContent();

@@ -1,7 +1,6 @@
 package com.delaval.usertransactionlogserver.persistence;
 
 import com.delaval.usertransactionlogserver.ServerProperties;
-import com.delaval.usertransactionlogserver.persistence.entity.ClickLog;
 import com.delaval.usertransactionlogserver.persistence.entity.EventLog;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import com.delaval.usertransactionlogserver.websocket.MessTypes;
@@ -22,8 +21,7 @@ public class ConnectionFactory {
     private static final String LOCK_COLUMN_NAME = "In_use";
 
     private enum LogTable{
-        EVENT_LOG_TABLE(MessTypes.EVENT_LOG, EventLog.EVENT_LOG.getTableName()),
-        CLICK_LOG_TABLE(MessTypes.CLICK_LOG, ClickLog.CLICK_LOG.getTableName());
+        EVENT_LOG_TABLE(MessTypes.EVENT_LOG, EventLog.EVENT_LOG.getTableName());
 
         private String myTableName;
         private MessTypes myType;

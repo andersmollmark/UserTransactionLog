@@ -6,7 +6,6 @@ package com.delaval.usertransactionlogserver.websocket;
 public enum MessTypes {
 
     IDLE_POLL("IdlePoll"),
-    CLICK_LOG("clickLog"),
     SYSTEM_PROPERTY("systemProperty"),
     JSON_DUMP("jsonDump"),
     GET_PUBLIC_KEY("getPublicKey"),

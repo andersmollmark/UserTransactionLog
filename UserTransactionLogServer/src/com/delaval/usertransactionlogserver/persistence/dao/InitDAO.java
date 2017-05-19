@@ -3,7 +3,6 @@ package com.delaval.usertransactionlogserver.persistence.dao;
 import com.delaval.usertransactionlogserver.ServerProperties;
 import com.delaval.usertransactionlogserver.domain.InternalSystemProperty;
 import com.delaval.usertransactionlogserver.persistence.ConnectionFactory;
-import com.delaval.usertransactionlogserver.persistence.entity.ClickLog;
 import com.delaval.usertransactionlogserver.persistence.entity.EventLog;
 import com.delaval.usertransactionlogserver.persistence.entity.SystemProperty;
 import com.delaval.usertransactionlogserver.persistence.entity.UserTransactionKey;
@@ -85,10 +84,6 @@ public class InitDAO {
     }
 
     public void alterTables() throws SQLException {
-        UtlsLogUtil.debug(this.getClass(), ClickLog.CLICK_LOG.getTableName(), " alter table...");
-        ResultSet clickLogTable = getTableWithName(ClickLog.CLICK_LOG.getTableName());
-        alterTables(clickLogTable, ClickLog.CLICK_LOG.getTableName(), ClickLog.getVarcharColumns());
-
         UtlsLogUtil.debug(this.getClass(), EventLog.EVENT_LOG.getTableName(), " alter table...");
         ResultSet eventLogTable = getTableWithName(EventLog.EVENT_LOG.getTableName());
         alterTables(eventLogTable, EventLog.EVENT_LOG.getTableName(), EventLog.getVarcharColumns());
@@ -99,8 +94,6 @@ public class InitDAO {
 
         UtlsLogUtil.debug(this.getClass(), EventLog.EVENT_LOG.getTableName(), " alter timestamps...");
         alterTimestampColumns(EventLog.EVENT_LOG.getTableName());
-        UtlsLogUtil.debug(this.getClass(), ClickLog.CLICK_LOG.getTableName(), " alter timestamps...");
-        alterTimestampColumns(ClickLog.CLICK_LOG.getTableName());
         UtlsLogUtil.debug(this.getClass(), SystemProperty.SYSTEM_PROPERTY.getTableName(), " alter timestamps...");
         alterTimestampColumns(SystemProperty.SYSTEM_PROPERTY.getTableName());
     }
@@ -239,7 +232,6 @@ public class InitDAO {
     private void dropAllTables(SSessionJdbc ses) {
         ses.begin();
         dropTableNoError(ses, UserTransactionKey.USER_TRANSACTION_KEY.getTableName());
-        dropTableNoError(ses, ClickLog.CLICK_LOG.getTableName());
         dropTableNoError(ses, EventLog.EVENT_LOG.getTableName());
         dropTableNoError(ses, SystemProperty.SYSTEM_PROPERTY.getTableName());
         ses.commit();
@@ -255,7 +247,6 @@ public class InitDAO {
     private void createTables(SSessionJdbc ses) {
         ses.begin();
         ses.rawUpdateDB(ses.getDriver().createTableSQL(UserTransactionKey.USER_TRANSACTION_KEY));
-        ses.rawUpdateDB(ses.getDriver().createTableSQL(ClickLog.CLICK_LOG));
         ses.rawUpdateDB(ses.getDriver().createTableSQL(EventLog.EVENT_LOG));
         ses.rawUpdateDB(ses.getDriver().createTableSQL(SystemProperty.SYSTEM_PROPERTY));
         ses.commit();
@@ -267,7 +258,6 @@ public class InitDAO {
         StringBuilder sql = new StringBuilder("SET GLOBAL event_scheduler = ON");
         String errorMessSchedule = "Something went wrong when creating delete_log-event:";
         runSqlCommand(sql, errorMessSchedule);
-        createDeleteClickLogEvent();
         createDeleteEventLogEvent();
     }
 
@@ -286,28 +276,6 @@ public class InitDAO {
             createSystemProperty(toolUser, toolUser);
         }
 
-    }
-
-    private void createDeleteClickLogEvent() throws SQLException {
-        UtlsLogUtil.debug(this.getClass(), " create deleteClickLogEvent");
-        String deleteClickLogsIntervalName = ServerProperties.getInstance().getProp(ServerProperties.PropKey.SYSTEM_PROPERTY_NAME_DELETE_CLICK_LOGS_INTERVAL);
-        String deleteInterval = getDeleteInterval(deleteClickLogsIntervalName);
-
-        StringBuilder dropSqlEvent = new StringBuilder();
-        dropSqlEvent.append("DROP EVENT IF EXISTS delete_click_log");
-        String dropErrorMess = "Something went wrong when dropping delete_click_log-event:";
-        runSqlCommand(dropSqlEvent, dropErrorMess);
-
-        StringBuilder sqlEvent = new StringBuilder();
-        sqlEvent.append("CREATE EVENT delete_click_log ")
-          .append("ON SCHEDULE EVERY 1 DAY STARTS ")
-          .append(ServerProperties.getInstance().getProp(ServerProperties.PropKey.DELETE_LOGS_EVENT_START))
-          .append(" ON COMPLETION PRESERVE ")
-          .append("DO DELETE FROM ClickLog WHERE timestamp < DATE_SUB(NOW(), INTERVAL ")
-          .append(deleteInterval)
-          .append(" DAY)");
-        String errorMess = "Something went wrong when creating delete_click_log-event:";
-        runSqlCommand(sqlEvent, errorMess);
     }
 
     private void createDeleteEventLogEvent() throws SQLException {
@@ -340,8 +308,7 @@ public class InitDAO {
         try {
             StringBuilder sqlEvent = new StringBuilder();
             sqlEvent.append("select * from UserTransactionKey u ")
-              .append("where not exists (select * from EventLog el where el.userTransactionKeyId = u.id) ")
-              .append("and not exists (select * from ClickLog cl where cl.userTransactionKeyId = u.id)");
+              .append("where not exists (select * from EventLog el where el.userTransactionKeyId = u.id)");
             String errorMess = "Something went wrong when trying to fetch all usertransactionKeyIds that lacks logs:";
             resultSet = runSqlCommandAndGetResult(sqlEvent, errorMess);
 

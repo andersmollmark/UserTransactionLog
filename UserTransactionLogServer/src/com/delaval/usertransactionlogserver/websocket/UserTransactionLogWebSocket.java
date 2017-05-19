@@ -76,7 +76,7 @@ public class UserTransactionLogWebSocket {
                 return;
             }
             UtlsLogUtil.debug(this.getClass(), "Incoming message:", webSocketType.toString());
-            if (MessTypes.CLICK_LOG.isSame(webSocketType.getType()) || MessTypes.EVENT_LOG.isSame(webSocketType.getType())) {
+            if (MessTypes.EVENT_LOG.isSame(webSocketType.getType())) {
                 WebSocketMessage webSocketMessage = new Gson().fromJson(jsonMessage, WebSocketMessage.class);
                 JmsMessageService.getInstance().createJmsMessage(webSocketMessage, jsonMessage);
             }  else if (MessTypes.JSON_DUMP.isSame(webSocketType.getType())) {

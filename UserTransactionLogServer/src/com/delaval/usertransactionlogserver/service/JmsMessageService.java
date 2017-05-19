@@ -40,8 +40,6 @@ public class JmsMessageService {
         if (JmsResourceFactory.isJmsStopped()) {
             UtlsLogUtil.info(this.getClass(), "sending to jms is stopped, adding jms-message to cache instead");
             JmsTempCache.getInstance().addLog(webSocketMessage, jsonMessage);
-        } else if (MessTypes.CLICK_LOG.isSame(webSocketMessage.getType())) {
-            sendJmsTemplate(jsonMessage, ServerProperties.PropKey.JMS_QUEUE_DEST_CLICK, JmsResourceFactory.getClickLogInstance());
         } else if (MessTypes.EVENT_LOG.isSame(webSocketMessage.getType())) {
             sendJmsTemplate(jsonMessage, ServerProperties.PropKey.JMS_QUEUE_DEST_EVENT, JmsResourceFactory.getEventLogInstance());
         } else {

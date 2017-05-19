@@ -45,12 +45,6 @@ public class OperationFactory {
         return operation;
     }
 
-    public static CreateClickLogOperation getCreateClickLog(WebSocketMessage webSocketMessage) {
-        CreateClickLogOperation operation = new CreateClickLogOperation();
-        operation.setMessage(webSocketMessage);
-        return operation;
-    }
-
     public static GetSystemPropertyWithNameOperation getSystemPropertyWithName(String name) {
         GetSystemPropertyWithNameOperation operation = new GetSystemPropertyWithNameOperation();
         operation.setOperationParameter(new StringParameter(name));

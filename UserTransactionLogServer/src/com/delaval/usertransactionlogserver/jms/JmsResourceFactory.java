@@ -18,20 +18,11 @@ public class JmsResourceFactory {
 
     AnnotationConfigApplicationContext ctx;
 
-    private static JmsResourceFactory _clickLogInstance;
     private static JmsResourceFactory _eventLogInstance;
     private static AtomicReference<Boolean> isStopped = new AtomicReference<>(false);
 
     private JmsResourceFactory() {
         // empty by default
-    }
-
-    public static synchronized JmsResourceFactory getClickLogInstance() {
-        if (_clickLogInstance == null) {
-            _clickLogInstance = new JmsResourceFactory();
-            _clickLogInstance.ctx = new AnnotationConfigApplicationContext(AppConfigClickLog.class);
-        }
-        return _clickLogInstance;
     }
 
     public static synchronized JmsResourceFactory getEventLogInstance() {
@@ -43,7 +34,6 @@ public class JmsResourceFactory {
     }
 
     public static void initApplicationContext() {
-        getClickLogInstance();
         getEventLogInstance();
     }
 
