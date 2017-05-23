@@ -2,6 +2,7 @@ package com.delaval.usertransactionlogserver.util;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
@@ -32,5 +33,9 @@ public class DateUtil {
 
     public static String formatLocalDateTime(LocalDateTime ldt){
         return ldt.format(dtf);
+    }
+
+    public static String formatTimeStamp(ZonedDateTime zdt){
+        return zdt.format(dtf);
     }
 }
