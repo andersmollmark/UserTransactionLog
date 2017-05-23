@@ -252,6 +252,17 @@ public class InitDAO {
         ses.commit();
     }
 
+    public void updateSystemUser() throws SQLException {
+        UtlsLogUtil.debug(this.getClass(), "updateSystemUser");
+        StringBuilder sql = new StringBuilder("update SystemProperty set userTransactionKeyId = 'systemsystemsystem' where userTransactionKeyId like('SystemSystemSystem')");
+        String errorMessSchedule = "Something went wrong when updating SystemProperty and systemuser:";
+        runSqlCommand(sql, errorMessSchedule);
+
+        StringBuilder sql_2 = new StringBuilder("update UserTransactionKey set id = 'systemsystemsystem' where id like('SystemSystemSystem')");
+        String errorMessSchedule_2 = "Something went wrong when updating UserTransactionKey and systemuser-id:";
+        runSqlCommand(sql_2, errorMessSchedule_2);
+
+    }
 
     public void createDeleteLogEvent() throws SQLException {
         UtlsLogUtil.debug(this.getClass(), "createDeleteLogEvent");

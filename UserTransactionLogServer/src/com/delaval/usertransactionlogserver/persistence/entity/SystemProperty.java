@@ -27,7 +27,7 @@ public class SystemProperty extends AbstractEntity {
     public static final SFieldTimestamp TIMESTAMP = new SFieldTimestamp(SYSTEM_PROPERTY, "timestamp").overrideSqlDataType("TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)");
 
     public static final String VALUE_COLUMN = "value";
-    public static final String SYSTEM_USER = "System";
+    public static final String SYSTEM_USER = "system";
 
     private static final List<SFieldString> varcharColumns = new ArrayList<>();
 

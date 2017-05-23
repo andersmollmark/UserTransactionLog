@@ -1,6 +1,7 @@
 package com.delaval.usertransactionlogserver.persistence.entity;
 
 import com.delaval.usertransactionlogserver.util.DateUtil;
+import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import com.delaval.usertransactionlogserver.websocket.WebSocketMessage;
 import simpleorm.dataset.SFieldString;
 import simpleorm.dataset.SFieldTimestamp;
@@ -69,16 +70,20 @@ public class UserTransactionKey extends AbstractEntity {
         String logId = getUserTransactionKeyId(webSocketMessage);
         boolean setSessionToBegin = false;
         if(jdbcSession.hasBegun()) {
+            UtlsLogUtil.debug(UserTransactionKey.class, "session has already begun");
             setSessionToBegin = true;
         }
         else {
+            UtlsLogUtil.debug(UserTransactionKey.class, "session has has to begin");
             jdbcSession.begin();
         }
         Optional<UserTransactionKey> persistedUserTransactionKey = find(jdbcSession, logId);
+        UtlsLogUtil.debug(UserTransactionKey.class, "usertransactionkey with userTransactionKeyId:", logId, " exist?", Boolean.toString(persistedUserTransactionKey.isPresent()));
         UserTransactionKey userTransactionKey = persistedUserTransactionKey.isPresent() ? persistedUserTransactionKey.get() : create(webSocketMessage, jdbcSession);
         jdbcSession.flush();
         jdbcSession.commit();
         if(setSessionToBegin){
+            UtlsLogUtil.debug(UserTransactionKey.class, "session has to begin again");
             jdbcSession.begin();
         }
         return userTransactionKey;

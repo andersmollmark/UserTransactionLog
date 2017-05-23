@@ -68,6 +68,7 @@ public class UserTransactionLogServer {
         if (initDAO.isCreateTables()) {
             initDAO.createTables();
         }
+        initDAO.updateSystemUser();
         initDAO.createDeleteLogEvent();
         initDAO.createFetchLogUsers();
         initDAO.alterTables();
