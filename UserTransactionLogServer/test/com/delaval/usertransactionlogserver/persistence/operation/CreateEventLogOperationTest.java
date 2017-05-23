@@ -24,6 +24,8 @@ import simpleorm.sessionjdbc.SSessionJdbc;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -103,13 +105,14 @@ public class CreateEventLogOperationTest {
         assertNotNull(capturedMessage);
         assertEquals(capturedMessage.getUsername(), username.toLowerCase());
 
+        ZonedDateTime expectedTimestamp = Instant.ofEpochMilli(timestamp.getTime()).atZone(ZoneOffset.UTC);
 
         List<String> valueCaptorAllValues = valueCaptor.getAllValues();
         assertEquals(eventLogContent.getEventName(), valueCaptorAllValues.get((0)));
         assertEquals(eventLogContent.getEventCategory(), valueCaptorAllValues.get((1)));
         assertEquals(eventLogContent.getHost(), valueCaptorAllValues.get((2)));
         assertEquals(eventLogContent.getEventLabel(), valueCaptorAllValues.get((3)));
-        assertEquals(DateUtil.formatTimeStamp(timestamp.getTime()), valueCaptorAllValues.get((4)));
+        assertEquals(DateUtil.formatTimeStamp(expectedTimestamp), valueCaptorAllValues.get((4)));
         assertEquals(eventLogContent.getTab(), valueCaptorAllValues.get((5)));
     }
 

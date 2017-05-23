@@ -90,6 +90,11 @@ public class UserTransactionLogWebSocket {
                 FetchAllEventLogsService logsService = new FetchAllEventLogsService();
                 session.getRemote().sendStringByFuture(logsService.getEncryptedJsonLogs(webSocketFetchLogMessage.getFrom(), webSocketFetchLogMessage.getTo()));
             }
+            else if (MessTypes.FETCH_ENCRYPTED_LOGS_WITH_TIMEZONE.isSame(webSocketType.getType())) {
+                WebSocketFetchLogMessage webSocketFetchLogMessage = new Gson().fromJson(jsonMessage, WebSocketFetchLogMessage.class);
+                FetchAllEventLogsService logsService = new FetchAllEventLogsService();
+                session.getRemote().sendStringByFuture(logsService.getEncryptedJsonLogs(webSocketFetchLogMessage.getFrom(), webSocketFetchLogMessage.getTo()));
+            }
             else {
                 UtlsLogUtil.info(this.getClass(), "Unknown message:", webSocketType.getType());
             }

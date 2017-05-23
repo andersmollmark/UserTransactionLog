@@ -9,6 +9,10 @@ import com.delaval.usertransactionlogserver.websocket.WebSocketMessage;
 import com.google.gson.Gson;
 import simpleorm.sessionjdbc.SSessionJdbc;
 
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
 /**
  * Created by delaval on 1/13/2016.
  */
@@ -60,11 +64,15 @@ public class CreateEventLogOperation implements CreateUpdateOperation {
         EventLog newContent = (EventLog) jdbcSession.create(EventLog.EVENT_LOG, getEventLogId(webSocketMessage, eventLogContent));
         newContent.createUserTransactionId(webSocketMessage);
         long timestamp = Long.parseLong(eventLogContent.getTimestamp());
+        ZonedDateTime utc = Instant.ofEpochMilli(timestamp).atZone(ZoneOffset.UTC);
+
+        UtlsLogUtil.debug(this.getClass(), "incoming time:", DateUtil.formatTimeStamp(timestamp), " utc time:", DateUtil.formatTimeStamp(utc));
+
         newContent.setString(EventLog.NAME, eventLogContent.getEventName());
         newContent.setString(EventLog.CATEGORY, eventLogContent.getEventCategory());
         newContent.setString(EventLog.HOST, eventLogContent.getHost());
         newContent.setString(EventLog.LABEL, eventLogContent.getEventLabel());
-        newContent.setString(EventLog.TIMESTAMP, DateUtil.formatTimeStamp(timestamp));
+        newContent.setString(EventLog.TIMESTAMP, DateUtil.formatTimeStamp(utc));
         newContent.setString(EventLog.TAB, eventLogContent.getTab());
         UtlsLogUtil.debug(this.getClass(), newContent.getTimestamp().toString(),
           ", Creating eventlog with content:", webSocketMessage.toString());

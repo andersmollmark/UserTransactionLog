@@ -10,6 +10,7 @@ public enum MessTypes {
     JSON_DUMP("jsonDump"),
     GET_PUBLIC_KEY("getPublicKey"),
     FETCH_ENCRYPTED_LOGS("fetchLogs"),
+    FETCH_ENCRYPTED_LOGS_WITH_TIMEZONE("fetchLogsWithTimezone"),
     BACKUP("backup"),
     EVENT_LOG("eventLog"),
     UNDEFINED("undefined");

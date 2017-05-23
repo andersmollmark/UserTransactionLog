@@ -4,7 +4,7 @@ import com.delaval.usertransactionlogserver.util.DateUtil;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 /**
  * Dataholder for the message that fetch logs from the registered log-users (delpro, utls-tool)
@@ -17,7 +17,7 @@ public class WebSocketFetchLogMessage extends WebSocketType{
 
     public LocalDateTime getFrom(){
         LocalDateTime from =
-          Instant.ofEpochMilli(Long.parseLong(fromInMillis)).atZone(ZoneId.systemDefault()).toLocalDateTime();
+          Instant.ofEpochMilli(Long.parseLong(fromInMillis)).atZone(ZoneOffset.UTC).toLocalDateTime();
         return from;
     }
 
@@ -31,7 +31,7 @@ public class WebSocketFetchLogMessage extends WebSocketType{
 
     public LocalDateTime getTo(){
         LocalDateTime to =
-          Instant.ofEpochMilli(Long.parseLong(toInMillis)).atZone(ZoneId.systemDefault()).toLocalDateTime();
+          Instant.ofEpochMilli(Long.parseLong(toInMillis)).atZone(ZoneOffset.UTC).toLocalDateTime();
         return to;
     }
 
