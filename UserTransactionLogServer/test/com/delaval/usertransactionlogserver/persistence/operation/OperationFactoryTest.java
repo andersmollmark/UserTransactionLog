@@ -1,6 +1,7 @@
 package com.delaval.usertransactionlogserver.persistence.operation;
 
 import com.delaval.usertransactionlogserver.domain.InternalSystemProperty;
+import com.delaval.usertransactionlogserver.persistence.entity.SystemProperty;
 import com.delaval.usertransactionlogserver.util.DateUtil;
 import com.delaval.usertransactionlogserver.websocket.EventLogContent;
 import com.delaval.usertransactionlogserver.websocket.JsonContent;
@@ -26,7 +27,7 @@ public class OperationFactoryTest {
     public void testGetCreateSystemPropertyParamForSystem() throws Exception {
         String name = "Name";
         String value = "Value";
-        String system = "System";
+        String system = SystemProperty.SYSTEM_USER;
         String id = "id";
         InternalSystemProperty systemProperty = new InternalSystemProperty();
         systemProperty.setName(name);
