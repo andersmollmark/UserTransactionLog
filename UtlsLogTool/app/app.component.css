@@ -110,7 +110,7 @@
 }
 
 .timefilter-row{
-    display: block;
+    display: inline-block;
 }
 
 .calendardiv{

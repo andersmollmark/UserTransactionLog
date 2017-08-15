@@ -131,16 +131,16 @@ export class AppComponent implements OnInit {
         this.showView(this.oldViewname);
     }
 
-    openFetchLog(openFetchLog: boolean): void{
+    openFetchLog(openFetchLog: boolean): void {
         this.utlsFileService.setOpenWhenFileIsFetched(true);
         this.showView(AppConstants.VIEW_FETCH_LOGS);
     }
 
     fetchLogsWithDate(fetchLogParam: FetchLogParam): void {
-        if(fetchLogParam.isOk()){
+        if (fetchLogParam.isOk()) {
             this.fetchLogfile(fetchLogParam);
         }
-        else{
+        else {
             console.error('something went wrong with from and to-parameters...');
         }
 
@@ -184,7 +184,7 @@ export class AppComponent implements OnInit {
                         else {
                             self.showView(this.oldViewname);
                         }
-                     logSubscription.unsubscribe();
+                        logSubscription.unsubscribe();
                     },
                     error => {
                         console.error('app-component, logsubscription error:' + error);
@@ -196,7 +196,6 @@ export class AppComponent implements OnInit {
                         logSubscription.unsubscribe();
                         self.showView(this.oldViewname);
                     }
-
                 );
 
             }
@@ -209,7 +208,7 @@ export class AppComponent implements OnInit {
             console.log("No file selected");
             this.showView(this.oldViewname);
         }
-        else if(!fileNamesArr[0].endsWith(AppConstants.UTL_FILE_SUFFIX)){
+        else if (!fileNamesArr[0].endsWith(AppConstants.UTL_FILE_SUFFIX)) {
             console.log("File must be encrypted (ends with .utls)");
             this.showView(this.oldViewname);
         }
@@ -225,13 +224,13 @@ export class AppComponent implements OnInit {
             console.log("No file selected");
             this.showView(this.oldViewname);
         }
-        else if(!fileNamesArr[0].endsWith(AppConstants.UTL_ENCRYPTED_FILE_SUFFIX)){
+        else if (!fileNamesArr[0].endsWith(AppConstants.UTL_ENCRYPTED_FILE_SUFFIX)) {
             console.log("File must be encrypted (ends with .encrypted)");
             this.showView(this.oldViewname);
         }
         else {
             console.log("filename selected:" + fileNamesArr[0]);
-            this.createLogContentFromFile(fileNamesArr[0], this.utlsFileService.readEncryptedFile.bind(this.utlsFileService));
+            this.createLogContentFromFile(fileNamesArr[0], this.utlsFileService.createLogsFromEncryptedFile.bind(this.utlsFileService));
         }
     }
 
@@ -239,60 +238,66 @@ export class AppComponent implements OnInit {
         this.init();
         this.logfileName = fileName;
         this.logs$ = fetchLogFunction(fileName);
-        let timestampFrom;
-        let timestampTo;
 
         let self = this;
         self.zone.run(() => {
             let logSubscription = this.logs$.subscribe(logs => {
-                _.forEach(logs, function (log) {
-                    if (!timestampFrom || timestampFrom > log.timestamp) {
-                        timestampFrom = log.timestamp;
-                    }
-                    else if (!timestampTo || timestampTo < log.timestamp) {
-                        timestampTo = log.timestamp;
-                    }
-                });
-                let firstDate = new Date(timestampFrom);
-                let lastDate = new Date(timestampTo);
-
-                self.timeFilterService.setFirstDateFromFile(firstDate);
-                self.timeFilterService.setLastDateFromFile(lastDate);
-
-                self.timeFilterService.resetTimefilter();
-
-                console.log('new from:' + self.timeFilterService.getSelectedTimefilterFrom().asString() + ' new to:' +
-                    self.timeFilterService.getLastSelectedTimefilterTo().asString());
-
+                self.setTimeData(logs);
                 logSubscription.unsubscribe();
-
             });
         });
         this.showView(AppConstants.VIEW_LOGS);
         this.isLoaded = true;
     }
 
+    setTimeData(logs: UtlsLog[]) {
+        let timestampFrom;
+        let timestampTo;
+        _.forEach(logs, function (log) {
+            if (!timestampFrom || timestampFrom > log.timestamp) {
+                timestampFrom = log.timestamp;
+            }
+            else if (!timestampTo || timestampTo < log.timestamp) {
+                timestampTo = log.timestamp;
+            }
+        });
+        let firstDate = new Date(timestampFrom);
+        let lastDate = new Date(timestampTo);
+
+        this.timeFilterService.setFirstDateFromFile(firstDate);
+        this.timeFilterService.setLastDateFromFile(lastDate);
+
+        this.timeFilterService.resetTimefilter();
+
+        console.log('new from:' + this.timeFilterService.getSelectedTimefilterFrom().asString() + ' new to:' +
+            this.timeFilterService.getLastSelectedTimefilterTo().asString());
+    }
 
 
     resetFilter() {
-        this.init();
-        this.timeFilterService.resetTimefilter();
-        this.logs$ = this.utlsFileService.getAllLogs();
+        let self = this;
+        self.zone.run(() => {
+            self.init();
+            self.timeFilterService.resetTimefilter();
+            self.logs$ = self.utlsFileService.getAllLogs();
+        });
     }
 
     init() {
         // this.timeFilterService.resetAllDateValues();
-        this.filterQuery = "";
-        this.selectedColumn = this.selectedColumnDefaultChoice;
-        this.lastSelectedColumn = "";
-        this.selectedContent = this.selectedContentDefaultChoice;
-        this.columnContent = new Array<Dto>();
-        this.columnSortObject = new SortingObject();
-        this.columnSortObject.sortorder = AppConstants.COLUMN_SORT_DESC;
-        this.columnSortObject.sortname = AppConstants.COL_TIMESTAMP;
-        this.columnSortValue = AppConstants.COLUMN_SORT_DESC;
-        this.sortBy = AppConstants.COL_TIMESTAMP;
-
+        let self = this;
+        self.zone.run(() => {
+            this.filterQuery = "";
+            this.selectedColumn = this.selectedColumnDefaultChoice;
+            this.lastSelectedColumn = "";
+            this.selectedContent = this.selectedContentDefaultChoice;
+            this.columnContent = new Array<Dto>();
+            this.columnSortObject = new SortingObject();
+            this.columnSortObject.sortorder = AppConstants.COLUMN_SORT_DESC;
+            this.columnSortObject.sortname = AppConstants.COL_TIMESTAMP;
+            this.columnSortValue = AppConstants.COLUMN_SORT_DESC;
+            this.sortBy = AppConstants.COL_TIMESTAMP;
+        });
     }
 
     changeColumn(newColumn) {

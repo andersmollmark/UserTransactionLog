@@ -77,38 +77,29 @@ export class UtlsFileService {
         return this.activeLogContent;
     }
 
-
-    readEncryptedFile(filename: string): Observable<UtlsLog[]> {
-        let result = new Observable(observer => {
-            this.init();
-            this.encryptedFileContent = this.http.get(filename).map(res => res.json())
-                .catch(error => Observable.throw(error.json ? error.json().error : alert("Error when reading file:" + filename + "," + error) || 'Server error'));
-            this.encryptedFileContent.subscribe(
-                content => {
-                    if (AppConstants.UTL_LOGS_LAST_DAY === content.messType) {
-                        console.log('yep, file read');
-                        let decryptedContent = this.cryptoService.doDecryptContent(content.jsondump);
-                        observer.next(<UtlsLog[]> JSON.parse(decryptedContent));
-                    }
-                    else{
-                        console.log('bummer, no file read, jsonmess:' + content);
-                        observer.next(undefined);
-                    }
-                },
-                error => {
-                    observer.error(new Error('Error while reading encrypted file:' + error));
-                    console.log("something went wrong when mapping logs to columns");
-                },
-                () => {
-                    console.log("done with mapping");
-                    observer.complete();
-                }
-            );
-        });
-        return result;
+    createLogsFromEncryptedFile(filename: string): Observable<UtlsLog[]> {
+        this.init();
+        this.activeLogContent = this.http.get(filename).map(res => {
+            let content = res.json();
+            if (AppConstants.UTL_LOGS_LAST_DAY === content.messType) {
+                console.log('yep, file read');
+                return this.fixEncryptedLogs(content);
+            }
+            else {
+                console.log('bummer, no file read, jsonmess:' + content);
+                return [];
+            }
+        })
+            .catch(error => Observable.throw(error.json ? error.json().error : alert("Error when reading file:" + filename + "," + error) || 'Server error'));
+        return this.activeLogContent;
     }
 
-
+    fixEncryptedLogs(logMessage: LogMessage): UtlsLog[] {
+        let decryptedContent = this.cryptoService.doDecryptContent(logMessage.jsondump);
+        let decryptedLogs = <UtlsLog[]> JSON.parse(decryptedContent);
+        this.mapLogToContentAndColumn(decryptedLogs);
+        return decryptedLogs;
+    }
 
 
     fetchLogs(fetchLogParam: FetchLogParam): Observable<Result> {
