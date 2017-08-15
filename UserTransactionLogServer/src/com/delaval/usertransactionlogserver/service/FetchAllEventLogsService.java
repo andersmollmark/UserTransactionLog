@@ -120,6 +120,7 @@ public class FetchAllEventLogsService {
      * @return JsonDumpMessage with the dump as a encrypted string from logs
      */
     public synchronized String getEncryptedJsonLogsLastDay() {
+        UtlsLogUtil.info(this.getClass(), "get encrypted logs...");
         JsonDumpMessage dump = new JsonDumpMessage(MessTypes.FETCH_ENCRYPTED_LOGS_LAST_DAY);
 
         TimeZone timeZone = TimeZone.getDefault();
@@ -130,6 +131,7 @@ public class FetchAllEventLogsService {
         fetchLogDTO.setFrom(from);
         fetchLogDTO.setTo(to);
         fetchLogDTO.setZoneId(timeZone.toZoneId());
+        UtlsLogUtil.info(this.getClass(), fetchLogDTO.toString());
         dump.setJsondump(getEncryptedDump(fetchLogDTO));
         return new Gson().toJson(dump);
     }
