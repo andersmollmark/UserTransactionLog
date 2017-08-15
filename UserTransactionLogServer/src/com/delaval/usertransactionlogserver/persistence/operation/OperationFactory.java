@@ -1,5 +1,6 @@
 package com.delaval.usertransactionlogserver.persistence.operation;
 
+import com.delaval.usertransactionlogserver.domain.FetchLogDTO;
 import com.delaval.usertransactionlogserver.domain.InternalEntityRepresentation;
 import com.delaval.usertransactionlogserver.domain.InternalSystemProperty;
 import com.delaval.usertransactionlogserver.domain.InternalUserTransactionKey;
@@ -61,11 +62,17 @@ public class OperationFactory {
         return operation;
     }
 
-    public static GetEventLogsWithinTimespanOperation getEventLogsWithinTimespan(LocalDateTime from, LocalDateTime to) {
+    public static GetEventLogsWithinTimespanOperation getEventLogsWithinTimespan(FetchLogDTO fetchLogDTO) {
         GetEventLogsWithinTimespanOperation operation = new GetEventLogsWithinTimespanOperation();
-        StringParameter fromParam = new StringParameter(DateUtil.formatLocalDateTime(from));
-        StringParameter toParam = new StringParameter(DateUtil.formatLocalDateTime(to));
-        operation.setOperationParameters(Arrays.asList(fromParam, toParam));
+        StringParameter fromParam = new StringParameter(DateUtil.formatLocalDateTime(fetchLogDTO.getFrom()));
+        StringParameter toParam = new StringParameter(DateUtil.formatLocalDateTime(fetchLogDTO.getTo()));
+        if(fetchLogDTO.getZoneId() != null){
+            StringParameter zoneId = new StringParameter(fetchLogDTO.getZoneId().getId());
+            operation.setOperationParameters(Arrays.asList(fromParam, toParam, zoneId));
+        }
+        else{
+            operation.setOperationParameters(Arrays.asList(fromParam, toParam));
+        }
         return operation;
     }
 

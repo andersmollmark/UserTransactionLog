@@ -8,6 +8,10 @@ import javax.crypto.Cipher;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.IllegalBlockSizeException;
 import java.io.*;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 /**
@@ -50,6 +54,25 @@ public class InternalEventLog implements InternalEntityRepresentation {
         userTransactionKeyId = eventLog.getUserTransactionKeyId();
         timestampAsDate = eventLog.getTimestamp();
         timestamp = eventLog.getTimestamp().getTime();
+        host = eventLog.getHost();
+
+        username = myKey.getUsername();
+        target = myKey.getTarget();
+    }
+
+    public InternalEventLog(EventLog eventLog, UserTransactionKey myKey, ZoneId localZoneId) {
+        id = eventLog.getId();
+        name = eventLog.getName();
+        category = eventLog.getCategory();
+        label = eventLog.getLabel();
+        tab = eventLog.getTab();
+        userTransactionKeyId = eventLog.getUserTransactionKeyId();
+        timestamp = eventLog.getTimestamp().getTime();
+
+        ZonedDateTime localTime = Instant.ofEpochMilli(timestamp).atZone(localZoneId);
+        timestampAsDate = Date.from(localTime.toInstant());
+        timestamp = timestampAsDate.getTime();
+
         host = eventLog.getHost();
 
         username = myKey.getUsername();

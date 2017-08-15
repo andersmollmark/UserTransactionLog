@@ -17,8 +17,11 @@ export class AppConstants {
 
     public static UTL_SERVER_URL_PREFIX = 'ws://';
     public static UTL_SERVER_URL_SUFFIX = '/ws';
-    // public static UTL_LOG_DUMPMESSAGE = 'jsonDump';
-    public static UTL_LOG_DUMPMESSAGE = 'fetchLogs';
+    public static UTL_LOG_DUMPMESSAGE = 'fetchLogsWithTimezone';
+    public static UTL_LOGS_LAST_DAY = 'fetchLogsLastDay';
+
+    public static UTL_ENCRYPTED_FILE_SUFFIX = '.encrypted';
+    public static UTL_FILE_SUFFIX = '.utls';
 
     public static IPC_CLOSE_WAIT_VIEW = 'closeWait';
 
@@ -31,6 +34,8 @@ export class AppConstants {
     public static VIEW_WAIT = 'viewWait';
     public static VIEW_EMPTY = 'viewEmpty';
     public static VIEW_FETCH_LOGS = 'viewFetchLogs';
+
+    public static TIMEZONE_FAVORITE = 'timezoneFavorite';
 
 
 

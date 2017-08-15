@@ -8,6 +8,9 @@ import {AppConstants} from "./app.constants";
 import {UtlserverService} from "./utlserver.service";
 import {Result} from "./result";
 import {Subject} from "rxjs/Subject";
+import {FetchLogParam} from "./fetchLogParam";
+import {CryptoService} from "./crypto.service";
+import {LogMessage} from "./logMessage";
 import moment = require("moment");
 
 let fileSystem = require('fs');
@@ -17,6 +20,10 @@ export class UtlsFileService {
 
     activeLogContent: Observable<UtlsLog[]>;
     partOfLogContent: Observable<UtlsLog[]>;
+
+    encryptedFileContent: Observable<LogMessage>;
+    public filereaderSubject: Subject<any>;
+
 
     columnContentHasChanged: boolean = false;
     private logfileIsFetched: boolean = false;
@@ -38,7 +45,7 @@ export class UtlsFileService {
         allColumnContent: []
     };
 
-    constructor(private http: Http, private utlsserverService: UtlserverService) {
+    constructor(private http: Http, private utlsserverService: UtlserverService, private cryptoService: CryptoService) {
     }
 
     ngOnDestroy() {
@@ -48,19 +55,18 @@ export class UtlsFileService {
         }
     }
 
-    setOpenWhenFileIsFetched(open: boolean){
+    setOpenWhenFileIsFetched(open: boolean) {
         this.openLogsWhenFileIsFetched = open;
     }
 
-    isOpenWhenFileIsFetched(): boolean{
+    isOpenWhenFileIsFetched(): boolean {
         return this.openLogsWhenFileIsFetched;
     }
 
     createLogs(filename: string): Observable<UtlsLog[]> {
         this.init();
-        this.activeLogContent =
-            this.http.get(filename).map(res => res.json())
-                .catch(error => Observable.throw(error.json ? error.json().error : alert("Error when reading file:" + filename + "," + error) || 'Server error'));
+        this.activeLogContent = this.http.get(filename).map(res => res.json())
+            .catch(error => Observable.throw(error.json ? error.json().error : alert("Error when reading file:" + filename + "," + error) || 'Server error'));
 
         this.activeLogContent.subscribe(
             logs => this.mapLogToContentAndColumn(logs),
@@ -71,18 +77,52 @@ export class UtlsFileService {
         return this.activeLogContent;
     }
 
-    fetchLogs(from: Date, to: Date): Observable<Result> {
+
+    readEncryptedFile(filename: string): Observable<UtlsLog[]> {
+        let result = new Observable(observer => {
+            this.init();
+            this.encryptedFileContent = this.http.get(filename).map(res => res.json())
+                .catch(error => Observable.throw(error.json ? error.json().error : alert("Error when reading file:" + filename + "," + error) || 'Server error'));
+            this.encryptedFileContent.subscribe(
+                content => {
+                    if (AppConstants.UTL_LOGS_LAST_DAY === content.messType) {
+                        console.log('yep, file read');
+                        let decryptedContent = this.cryptoService.doDecryptContent(content.jsondump);
+                        observer.next(<UtlsLog[]> JSON.parse(decryptedContent));
+                    }
+                    else{
+                        console.log('bummer, no file read, jsonmess:' + content);
+                        observer.next(undefined);
+                    }
+                },
+                error => {
+                    observer.error(new Error('Error while reading encrypted file:' + error));
+                    console.log("something went wrong when mapping logs to columns");
+                },
+                () => {
+                    console.log("done with mapping");
+                    observer.complete();
+                }
+            );
+        });
+        return result;
+    }
+
+
+
+
+    fetchLogs(fetchLogParam: FetchLogParam): Observable<Result> {
         console.log('utls-file-service and fetching logs...');
         let result = new Observable(observer => {
             this.init();
-            this.utlsserverService.connectAndFetchEncryptedDump(from, to);
+            this.utlsserverService.connectAndFetchEncryptedDump(fetchLogParam);
             this.websocketObservable = this.utlsserverService.utlServerWebsocket;
             let socketSubscription = this.websocketObservable.subscribe(dump => {
                     console.log('dump received in utls-file-service');
                     if (dump) {
                         let jsondata = JSON.parse(dump);
                         let prettyPrint = JSON.stringify(jsondata, null, '\t');
-                        let fileSuffix = moment().format('YYYY_MM_DD_HHmmss');
+                        let fileSuffix = moment().format('YYYY_MM_DD_HHmmss').concat(AppConstants.UTL_FILE_SUFFIX);
                         let filename = 'dump' + fileSuffix;
                         console.log('writing file:' + filename);
                         fileSystem.writeFile(filename, prettyPrint, (err) => {

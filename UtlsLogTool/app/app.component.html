@@ -26,7 +26,7 @@
 
     <div class="utls-selector-row" *ngIf="isLoaded">
 
-        <div class="utls-logfilter-column">
+        <div class="utls-logfilter-column utls-filter-dropdown">
             <div class="utls-selector-text utls-text">
                 Filter on column:
             </div>
@@ -40,7 +40,7 @@
             </select>
         </div>
 
-        <div class="utls-logfilter-column">
+        <div class="utls-logfilter-column utls-filter-dropdown">
             <div class="utls-selector-text utls-text">
                 Specify columnvalue:
             </div>
@@ -67,7 +67,7 @@
                *ngIf="isLoaded"
                [mfData]="logs$ | async | dataFilter : filterQuery | columnSort : columnSortObject"
                #mf="mfDataTable"
-               [mfRowsOnPage]="20">
+               [mfRowsOnPage]="15">
 
             <thead>
             <tr>

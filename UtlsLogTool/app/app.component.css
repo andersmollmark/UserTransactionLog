@@ -84,8 +84,33 @@
 }
 
 .utls-logfilter-column{
-    float: left;
+    /*float: left;*/
     padding-bottom: 10px;
+}
+
+.utls-filter-dropdown{
+    display: inline-block;
+    width: 30%;
+}
+
+.utls-inline-column{
+    display: inline-block;
+}
+
+.utls-row{
+    display: block;
+}
+
+.fetch-btn-inline{
+    padding-left: 15px;
+}
+
+.fetch-log-timezone{
+
+}
+
+.timefilter-row{
+    display: block;
 }
 
 .calendardiv{
@@ -131,6 +156,6 @@
 }
 
 .promptDivWide{
-    width: 50%;
+    width: 100%;
     padding: 10px;
 }

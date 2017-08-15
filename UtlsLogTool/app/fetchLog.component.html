@@ -2,6 +2,23 @@
 
     <timefilter></timefilter>
 
-    <button class="btn btn-primary btn-sm" (click)="fetchLogs()">Fetch logs</button>
-    <button class="btn btn-primary btn-sm" (click)="close()">Close</button>
+    <div class="utls-logfilter-column">
+        <div class="utls-selector-text utls-text">
+            Choose timezone:
+        </div>
+
+        <div class="fetch-log-timezone">
+            <select class="form-control utls-select" value
+                    [(ngModel)]="chosenTimezone"
+                    (ngModelChange)="choseTimezone($event)">
+                <option>--- Select ---</option>
+                <option *ngFor="let timezone of timezones" [ngValue]="timezone">{{timezone}}</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="utls-row fetch-btn-inline">
+        <button class="btn btn-primary btn-sm" (click)="fetchLogs()">Fetch logs</button>
+        <button class="btn btn-primary btn-sm" (click)="close()">Close</button>
+    </div>
 </div>

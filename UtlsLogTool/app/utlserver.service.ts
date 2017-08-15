@@ -3,6 +3,7 @@ import {WebsocketService} from "./websocket.service";
 import {Subject} from "rxjs";
 import {AppConstants} from "./app.constants";
 import {CryptoService} from "./crypto.service";
+import {FetchLogParam} from "./fetchLogParam";
 
 
 @Injectable()
@@ -17,18 +18,20 @@ export class UtlserverService {
 
     private from: Date;
     private to: Date;
+    private chosenTimezone: string;
 
     constructor(private websocketService: WebsocketService, private cryptoService: CryptoService) {
         this.setIpAndPort();
     }
 
-    connectAndFetchEncryptedDump(from: Date, to: Date): void {
+    connectAndFetchEncryptedDump(fetchLogParam: FetchLogParam): void {
         this.setIpAndPort();
         if (this.ipAddr && this.port && this.ipAddr.length > 0 && this.port.length > 0) {
             this.utlURL = AppConstants.UTL_SERVER_URL_PREFIX.concat(this.ipAddr).concat(':').concat(this.port).concat(AppConstants.UTL_SERVER_URL_SUFFIX);
 
-            this.from = from;
-            this.to = to;
+            this.from = fetchLogParam.getFrom();
+            this.to = fetchLogParam.getTo();
+            this.chosenTimezone = fetchLogParam.getTimezone();
             this.utlServerWebsocket = <Subject<any>>this.websocketService
                 .connect(this.utlURL, this.fetchDump.bind(this))
                 .map((response: MessageEvent): any => {
@@ -62,6 +65,7 @@ export class UtlserverService {
         let socketMessage = {
             fromInMillis: this.from.getTime(),
             toInMillis: this.to.getTime(),
+            timezone: this.chosenTimezone,
             messType: AppConstants.UTL_LOG_DUMPMESSAGE,
         };
 

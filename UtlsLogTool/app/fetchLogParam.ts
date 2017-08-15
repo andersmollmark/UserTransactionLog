@@ -4,9 +4,10 @@ export class FetchLogParam {
 
     from: Date;
     to: Date;
+    timezone: string;
 
     isOk(): boolean{
-        return !_.isNil(this.from) && !_.isNil(this.to);
+        return !_.isNil(this.from) && !_.isNil(this.to) && !_.isNil(this.timezone);
     }
 
     getFrom(): Date{
@@ -15,6 +16,10 @@ export class FetchLogParam {
 
     getTo(): Date{
         return this.to;
+    }
+
+    getTimezone(): string{
+        return this.timezone;
     }
 
 }

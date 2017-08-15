@@ -82,6 +82,14 @@ export class AppComponent implements OnInit {
                     }
                 },
                 {
+                    label: 'Open encrypted logfile',
+                    click: function () {
+                        self.zone.run(() => {
+                            dialog.showOpenDialog(self.checkFilenameAndHandleEncryptedFile);
+                        });
+                    }
+                },
+                {
                     label: 'Change ip for utlserver (now: '.concat(self.utlserverService.getUtlsIp()).concat(')'),
                     click: function () {
                         self.zone.run(() => self.showView(AppConstants.VIEW_SETTINGS));
@@ -130,7 +138,7 @@ export class AppComponent implements OnInit {
 
     fetchLogsWithDate(fetchLogParam: FetchLogParam): void {
         if(fetchLogParam.isOk()){
-            this.fetchLogfile(fetchLogParam.getFrom(), fetchLogParam.getTo());
+            this.fetchLogfile(fetchLogParam);
         }
         else{
             console.error('something went wrong with from and to-parameters...');
@@ -153,13 +161,13 @@ export class AppComponent implements OnInit {
         });
     }
 
-    fetchLogfile(from: Date, to: Date) {
+    fetchLogfile(fetchLogParam: FetchLogParam) {
         let show = this.utlsFileService.isOpenWhenFileIsFetched();
         console.log('fetching logfile and will show immediately?' + show);
         let self = this;
         self.zone.run(() => {
                 self.showView(AppConstants.VIEW_WAIT);
-                let observableResult = self.utlsFileService.fetchLogs(from, to);
+                let observableResult = self.utlsFileService.fetchLogs(fetchLogParam);
                 let logSubscription = observableResult.subscribe(
                     result => {
                         if (result.isOk) {
@@ -171,7 +179,7 @@ export class AppComponent implements OnInit {
                             alert(result.value);
                         }
                         if (show) {
-                            self.createLogContentFromFile(result.value);
+                            self.createLogContentFromFile(result.value, this.utlsFileService.createLogs.bind(this.utlsFileService));
                         }
                         else {
                             self.showView(this.oldViewname);
@@ -195,22 +203,42 @@ export class AppComponent implements OnInit {
         );
     }
 
+    // TODO add errormessages in client
     public checkFilenameAndHandleFile = (fileNamesArr: Array<any>) => {
         if (!fileNamesArr) {
             console.log("No file selected");
             this.showView(this.oldViewname);
         }
+        else if(!fileNamesArr[0].endsWith(AppConstants.UTL_FILE_SUFFIX)){
+            console.log("File must be encrypted (ends with .utls)");
+            this.showView(this.oldViewname);
+        }
         else {
             console.log("filename selected:" + fileNamesArr[0]);
-            this.createLogContentFromFile(fileNamesArr[0]);
+            this.createLogContentFromFile(fileNamesArr[0], this.utlsFileService.createLogs.bind(this.utlsFileService));
         }
     }
 
-    public createLogContentFromFile = (fileName: string) => {
-        console.log("creating logcontent from:" + fileName);
+    // TODO add errormessages in client
+    public checkFilenameAndHandleEncryptedFile = (fileNamesArr: Array<any>) => {
+        if (!fileNamesArr) {
+            console.log("No file selected");
+            this.showView(this.oldViewname);
+        }
+        else if(!fileNamesArr[0].endsWith(AppConstants.UTL_ENCRYPTED_FILE_SUFFIX)){
+            console.log("File must be encrypted (ends with .encrypted)");
+            this.showView(this.oldViewname);
+        }
+        else {
+            console.log("filename selected:" + fileNamesArr[0]);
+            this.createLogContentFromFile(fileNamesArr[0], this.utlsFileService.readEncryptedFile.bind(this.utlsFileService));
+        }
+    }
+
+    public createLogContentFromFile = (fileName: string, fetchLogFunction: Function) => {
         this.init();
         this.logfileName = fileName;
-        this.logs$ = this.utlsFileService.createLogs(fileName);
+        this.logs$ = fetchLogFunction(fileName);
         let timestampFrom;
         let timestampTo;
 
@@ -243,6 +271,7 @@ export class AppComponent implements OnInit {
         this.showView(AppConstants.VIEW_LOGS);
         this.isLoaded = true;
     }
+
 
 
     resetFilter() {

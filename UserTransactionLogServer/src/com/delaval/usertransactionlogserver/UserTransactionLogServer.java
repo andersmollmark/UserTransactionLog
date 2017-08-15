@@ -172,6 +172,10 @@ public class UserTransactionLogServer {
                 }
 
                 System.exit(0);
+            } else if (argsAsList.get(i).startsWith("-getLastDay")) {
+                FetchAllEventLogsService logsService = new FetchAllEventLogsService();
+                logsService.writeLastDayDataOnFile();
+                System.exit(0);
             }
         }
         new UserTransactionLogServer().init();

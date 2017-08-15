@@ -8,6 +8,7 @@ import simpleorm.dataset.SQuery;
 import simpleorm.dataset.SQueryResult;
 import simpleorm.sessionjdbc.SSessionJdbc;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ public class GetEventLogsWithinTimespanOperation implements ReadOperation<Intern
     private OperationResult<InternalEventLog> operationResult;
     private String from;
     private String to;
+    private ZoneId zoneId;
 
 
     @Override
@@ -34,11 +36,15 @@ public class GetEventLogsWithinTimespanOperation implements ReadOperation<Intern
     public void validate() {
         if (jdbcSession == null) {
             throw new IllegalStateException("The operation-instance cant have null as a jdbc-session");
-        } else if (readParameters == null || readParameters.size() != 2) {
+        } else if (readParameters == null || readParameters.size() < 2) {
             throw new IllegalStateException(this.getClass() + ", The operation-instance must have a from- and to-date");
         }
         from = readParameters.get(0).getValue();
         to = readParameters.get(1).getValue();
+        if(readParameters.size() == 3){
+            zoneId = ZoneId.of(readParameters.get(2).getValue());
+        }
+
     }
 
     @Override
@@ -48,7 +54,12 @@ public class GetEventLogsWithinTimespanOperation implements ReadOperation<Intern
         Map<String, UserTransactionKey> allUserTransactionIds = getUserTransactionIds();
         final List<InternalEventLog> all = new ArrayList<>();
         SQueryResult<EventLog> result = getLogsWithinTimespan();
-        result.forEach(logContent -> all.add(new InternalEventLog(logContent, allUserTransactionIds.get(logContent.getUserTransactionKeyId()))));
+        if(zoneId != null){
+            result.forEach(logContent -> all.add(new InternalEventLog(logContent, allUserTransactionIds.get(logContent.getUserTransactionKeyId()), zoneId)));
+        }
+        else{
+            result.forEach(logContent -> all.add(new InternalEventLog(logContent, allUserTransactionIds.get(logContent.getUserTransactionKeyId()))));
+        }
         operationResult = new OperationResult<>(all);
     }
 

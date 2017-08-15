@@ -1,6 +1,7 @@
 package com.delaval.usertransactionlogserver.service;
 
 import com.delaval.usertransactionlogserver.ServerProperties;
+import com.delaval.usertransactionlogserver.domain.FetchLogDTO;
 import com.delaval.usertransactionlogserver.domain.InternalEventLog;
 import com.delaval.usertransactionlogserver.domain.InternalSystemProperty;
 import com.delaval.usertransactionlogserver.domain.InternalUserTransactionKey;
@@ -91,7 +92,7 @@ public class FetchAllEventLogsServiceTest {
         Mockito.when(mockServerProperties.getProp(ServerProperties.PropKey.FETCH_LOG_USER_TOOL)).thenReturn("utlsT00l2017rule");
 
         PowerMockito.mockStatic(OperationFactory.class);
-        Mockito.when(OperationFactory.getEventLogsWithinTimespan(Mockito.any(LocalDateTime.class), Mockito.any(LocalDateTime.class))).thenReturn(mockGetEventLogsOperation);
+        Mockito.when(OperationFactory.getEventLogsWithinTimespan(Mockito.any(FetchLogDTO.class))).thenReturn(mockGetEventLogsOperation);
         Mockito.when(OperationFactory.getSystemPropertyWithName(Mockito.anyString())).thenReturn(mockWithNameOperation);
 
     }

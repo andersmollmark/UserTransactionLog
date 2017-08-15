@@ -12,6 +12,10 @@ import {FetchLogParam} from "./fetchLogParam";
 })
 export class FetchLogComponent {
 
+    private timezonesDefault = '--- Select ---';
+    public timezones = [];
+    private chosenTimezone = this.timezonesDefault;
+
     @Input()
     showMe: boolean = false;
 
@@ -28,17 +32,35 @@ export class FetchLogComponent {
         timefilterService.setFirstDateFromFile(oneMonthAgo);
         timefilterService.setLastDateFromFile(now);
         this.timefilterService.resetTimefilter();
+
+        let favorite = localStorage.getItem(AppConstants.TIMEZONE_FAVORITE);
+
+        let momentTz = require("moment-timezone");
+        this.zone.run(() => {
+            this.timezones = momentTz.tz.names();
+            if(favorite){
+                this.chosenTimezone = favorite;
+            }
+        });
     }
 
     fetchLogs(): void {
-        let from = this.timefilterService.getSelectedTimefilterFrom();
-        let to = this.timefilterService.getSelectedTimefilterTo();
-        this.fetch(from, to);
+        if(this.chosenTimezone && this.chosenTimezone !== this.timezonesDefault){
+            let from = this.timefilterService.getSelectedTimefilterFrom();
+            let to = this.timefilterService.getSelectedTimefilterTo();
+            localStorage.setItem(AppConstants.TIMEZONE_FAVORITE, this.chosenTimezone);
+            this.fetch(from, to);
+        }
     }
 
     close(): void {
         this.showMe = false;
         this.isVisibleEvent.emit(this.showMe);
+    }
+
+    choseTimezone(timezone) {
+        console.log('chosen timezone=' + timezone);
+        this.chosenTimezone = timezone;
     }
 
     private fetch(from: SelectedDate, to: SelectedDate): void {
@@ -47,6 +69,7 @@ export class FetchLogComponent {
             let result = new FetchLogParam();
             result.from = from.getValue();
             result.to = to.getValue();
+            result.timezone = this.chosenTimezone;
             this.fetchLogsEvent.emit(result);
         });
     }
