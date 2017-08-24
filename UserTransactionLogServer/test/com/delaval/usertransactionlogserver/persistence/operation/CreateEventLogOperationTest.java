@@ -90,16 +90,17 @@ public class CreateEventLogOperationTest {
 
         testOperation.execute();
 
-        Mockito.verify(mockLog, Mockito.times(6)).setString(nameFieldCaptor.capture(), valueCaptor.capture());
+        Mockito.verify(mockLog, Mockito.times(7)).setString(nameFieldCaptor.capture(), valueCaptor.capture());
         Mockito.verify(mockLog, Mockito.times(1)).createUserTransactionId(message.capture());
 
         List<SFieldString> nameFieldCaptorAllValues = nameFieldCaptor.getAllValues();
         assertEquals(EventLog.NAME, nameFieldCaptorAllValues.get(0));
         assertEquals(EventLog.CATEGORY, nameFieldCaptorAllValues.get(1));
         assertEquals(EventLog.HOST, nameFieldCaptorAllValues.get(2));
-        assertEquals(EventLog.LABEL, nameFieldCaptorAllValues.get(3));
-        assertEquals(EventLog.TIMESTAMP, nameFieldCaptorAllValues.get(4));
-        assertEquals(EventLog.TAB, nameFieldCaptorAllValues.get(5));
+        assertEquals(EventLog.TARGET_MS, nameFieldCaptorAllValues.get(3));
+        assertEquals(EventLog.LABEL, nameFieldCaptorAllValues.get(4));
+        assertEquals(EventLog.TIMESTAMP, nameFieldCaptorAllValues.get(5));
+        assertEquals(EventLog.TAB, nameFieldCaptorAllValues.get(6));
 
         WebSocketMessage capturedMessage = message.getValue();
         assertNotNull(capturedMessage);
@@ -111,9 +112,10 @@ public class CreateEventLogOperationTest {
         assertEquals(eventLogContent.getEventName(), valueCaptorAllValues.get((0)));
         assertEquals(eventLogContent.getEventCategory(), valueCaptorAllValues.get((1)));
         assertEquals(eventLogContent.getHost(), valueCaptorAllValues.get((2)));
-        assertEquals(eventLogContent.getEventLabel(), valueCaptorAllValues.get((3)));
-        assertEquals(DateUtil.formatTimeStamp(expectedTimestamp), valueCaptorAllValues.get((4)));
-        assertEquals(eventLogContent.getTab(), valueCaptorAllValues.get((5)));
+        assertEquals(eventLogContent.getTargetMs(), valueCaptorAllValues.get((3)));
+        assertEquals(eventLogContent.getEventLabel(), valueCaptorAllValues.get((4)));
+        assertEquals(DateUtil.formatTimeStamp(expectedTimestamp), valueCaptorAllValues.get((5)));
+        assertEquals(eventLogContent.getTab(), valueCaptorAllValues.get((6)));
     }
 
 

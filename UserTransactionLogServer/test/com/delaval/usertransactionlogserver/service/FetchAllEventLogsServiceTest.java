@@ -291,6 +291,7 @@ public class FetchAllEventLogsServiceTest {
         result.userTransactionKeyId = userTransId;
         result.category = "category";
         result.host = "host";
+        result.targetMs = "targetMs";
         result.timestamp = new Date();
         result.name = "name";
         result.label = "label";
@@ -329,6 +330,7 @@ public class FetchAllEventLogsServiceTest {
         String userTransactionKeyId;
         Date timestamp;
         String host;
+        String targetMs;
 
         @Override
         public String getId() {
@@ -369,6 +371,9 @@ public class FetchAllEventLogsServiceTest {
         public String getHost() {
             return host;
         }
+
+        @Override
+        public String getTargetMs(){return targetMs;}
 
     }
 
