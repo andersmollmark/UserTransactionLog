@@ -13,6 +13,7 @@ public class EventLogContent implements JsonContent {
     private String timestamp;
     private String tab;
     private String host;
+    private String targetMs;
 
     public void setEventName(String eventName) {
         this.eventName = eventName;
@@ -62,6 +63,14 @@ public class EventLogContent implements JsonContent {
         this.host = host;
     }
 
+    public String getTargetMs() {
+        return targetMs;
+    }
+
+    public void setTargetMs(String targetMs) {
+        this.targetMs = targetMs;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -71,6 +80,7 @@ public class EventLogContent implements JsonContent {
           .append(", eventLabel").append(getEventLabel())
           .append(", activetab").append(getTab())
           .append(", host").append(getHost())
+          .append(", targetMs").append(getTargetMs())
           .append(", time:").append(DateUtil.formatTimeStamp(Long.parseLong(getTimestamp())));
         return sb.toString();
     }

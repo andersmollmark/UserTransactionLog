@@ -71,14 +71,16 @@ public class CreateEventLogOperation implements CreateUpdateOperation {
         newContent.setString(EventLog.NAME, eventLogContent.getEventName());
         newContent.setString(EventLog.CATEGORY, eventLogContent.getEventCategory());
         newContent.setString(EventLog.HOST, eventLogContent.getHost());
+        newContent.setString(EventLog.TARGET_MS, eventLogContent.getTargetMs());
         newContent.setString(EventLog.LABEL, eventLogContent.getEventLabel());
         newContent.setString(EventLog.TIMESTAMP, DateUtil.formatTimeStamp(utc));
         newContent.setString(EventLog.TAB, eventLogContent.getTab());
 
         if(UtlsLogUtil.isDebug()){
             UtlsLogUtil.debug(this.getClass(), newContent.getTimestamp().toString(),
-              ", Creating eventlog with content:", webSocketMessage.toString());
+              ", Created eventlog in db with content:", webSocketMessage.toString());
         }
+
     }
 
 

@@ -24,6 +24,7 @@ public class EventLog extends AbstractEntity {
     public static final SFieldString LABEL = new SFieldString(EVENT_LOG, "label", 512, SDESCRIPTIVE);
     public static final SFieldString TAB = new SFieldString(EVENT_LOG, "tab", 20, SDESCRIPTIVE);
     public static final SFieldString HOST = new SFieldString(EVENT_LOG, "host", 40, SDESCRIPTIVE);
+    public static final SFieldString TARGET_MS = new SFieldString(EVENT_LOG, "targetMs", 40, SDESCRIPTIVE);
     public static final SFieldString USER_TRANSACTION_KEY_ID = new SFieldString(EVENT_LOG, "userTransactionKeyId", 100, SDESCRIPTIVE);
     public static final SFieldTimestamp TIMESTAMP = new SFieldTimestamp(EVENT_LOG, "timestamp").overrideSqlDataType("TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6)");
 
@@ -35,6 +36,7 @@ public class EventLog extends AbstractEntity {
         varcharColumns.add(LABEL);
         varcharColumns.add(TAB);
         varcharColumns.add(HOST);
+        varcharColumns.add(TARGET_MS);
         varcharColumns.add(USER_TRANSACTION_KEY_ID);
     }
 
@@ -71,6 +73,10 @@ public class EventLog extends AbstractEntity {
 
     public String getLabel(){
         return getString(LABEL);
+    }
+
+    public String getTargetMs(){
+        return getString(TARGET_MS);
     }
 
     public Date getTimestamp(){

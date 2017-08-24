@@ -2,6 +2,7 @@ package com.delaval.usertransactionlogserver.domain;
 
 import com.delaval.usertransactionlogserver.persistence.entity.EventLog;
 import com.delaval.usertransactionlogserver.persistence.entity.UserTransactionKey;
+import org.eclipse.jetty.io.ssl.SslHandshakeListener;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -29,38 +30,33 @@ public class InternalEventLog implements InternalEntityRepresentation {
     private Date timestampAsDate;
     private String tab;
     private String host;
+    private String targetMs;
     private String target;
 
     public InternalEventLog(EventLog eventLog) {
-        id = eventLog.getId();
-        name = eventLog.getName();
-        category = eventLog.getCategory();
-        label = eventLog.getLabel();
-        tab = eventLog.getTab();
-        userTransactionKeyId = eventLog.getUserTransactionKeyId();
+        setCommon(eventLog);
         timestampAsDate = eventLog.getTimestamp();
-        timestamp = eventLog.getTimestamp().getTime();
-        host = eventLog.getHost();
         username = "unknown";
         target = "unknown";
     }
 
     public InternalEventLog(EventLog eventLog, UserTransactionKey myKey) {
-        id = eventLog.getId();
-        name = eventLog.getName();
-        category = eventLog.getCategory();
-        label = eventLog.getLabel();
-        tab = eventLog.getTab();
-        userTransactionKeyId = eventLog.getUserTransactionKeyId();
+        setCommon(eventLog);
         timestampAsDate = eventLog.getTimestamp();
-        timestamp = eventLog.getTimestamp().getTime();
-        host = eventLog.getHost();
-
         username = myKey.getUsername();
         target = myKey.getTarget();
     }
 
     public InternalEventLog(EventLog eventLog, UserTransactionKey myKey, ZoneId localZoneId) {
+        setCommon(eventLog);
+        ZonedDateTime localTime = Instant.ofEpochMilli(timestamp).atZone(localZoneId);
+        timestampAsDate = Date.from(localTime.toInstant());
+        timestamp = timestampAsDate.getTime();
+        username = myKey.getUsername();
+        target = myKey.getTarget();
+    }
+
+    private void setCommon(EventLog eventLog){
         id = eventLog.getId();
         name = eventLog.getName();
         category = eventLog.getCategory();
@@ -68,15 +64,9 @@ public class InternalEventLog implements InternalEntityRepresentation {
         tab = eventLog.getTab();
         userTransactionKeyId = eventLog.getUserTransactionKeyId();
         timestamp = eventLog.getTimestamp().getTime();
-
-        ZonedDateTime localTime = Instant.ofEpochMilli(timestamp).atZone(localZoneId);
-        timestampAsDate = Date.from(localTime.toInstant());
-        timestamp = timestampAsDate.getTime();
-
         host = eventLog.getHost();
+        targetMs = eventLog.getTargetMs();
 
-        username = myKey.getUsername();
-        target = myKey.getTarget();
     }
 
     public void setUsername(String username) {
