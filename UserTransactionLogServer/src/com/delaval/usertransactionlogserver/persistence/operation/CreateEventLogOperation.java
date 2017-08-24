@@ -48,10 +48,10 @@ public class CreateEventLogOperation implements CreateUpdateOperation {
 
         eventLogContent = new Gson().fromJson(webSocketMessage.getJsonContent(), EventLogContent.class);
         if(eventLogContent.getEventLabel() != null && eventLogContent.getEventLabel().length() > EventLog.LABEL.getMaxSize()){
-            UtlsLogUtil.info(this.getClass(),
-              "Tried to create a eventlabel with size ",
+            UtlsLogUtil.error(this.getClass(),
+              "Tried to create an eventlog with  a to large label:",
               Integer.toString(eventLogContent.getEventLabel().length()),
-              ":", eventLogContent.getEventLabel());
+              ":", eventLogContent.getEventLabel(), ", have to make it smaller");
             String shortenedLabel = eventLogContent.getEventLabel().substring(0, EventLog.LABEL.getMaxSize() - 1);
             eventLogContent.setEventLabel(shortenedLabel);
         }
@@ -59,7 +59,7 @@ public class CreateEventLogOperation implements CreateUpdateOperation {
 
     @Override
     public void execute() {
-        UtlsLogUtil.debug(this.getClass(), "execute CreateEventLogOperation");
+        UtlsLogUtil.info(this.getClass(), "Creating eventlog:", eventLogContent.toString());
         UserTransactionKey.findOrCreateKey(jdbcSession, webSocketMessage);
         EventLog newContent = (EventLog) jdbcSession.create(EventLog.EVENT_LOG, getEventLogId(webSocketMessage, eventLogContent));
         newContent.createUserTransactionId(webSocketMessage);
@@ -74,8 +74,11 @@ public class CreateEventLogOperation implements CreateUpdateOperation {
         newContent.setString(EventLog.LABEL, eventLogContent.getEventLabel());
         newContent.setString(EventLog.TIMESTAMP, DateUtil.formatTimeStamp(utc));
         newContent.setString(EventLog.TAB, eventLogContent.getTab());
-        UtlsLogUtil.debug(this.getClass(), newContent.getTimestamp().toString(),
-          ", Creating eventlog with content:", webSocketMessage.toString());
+
+        if(UtlsLogUtil.isDebug()){
+            UtlsLogUtil.debug(this.getClass(), newContent.getTimestamp().toString(),
+              ", Creating eventlog with content:", webSocketMessage.toString());
+        }
     }
 
 
