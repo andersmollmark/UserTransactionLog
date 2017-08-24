@@ -10,6 +10,7 @@ export class UtlsLog{
     timestampAsDate: string;
     tab: string;
     host: string;
+    targetMs: string;
     target: string;
 
 }

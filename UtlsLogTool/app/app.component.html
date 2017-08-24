@@ -114,9 +114,9 @@
                     </a>
                 </th>
                 <th class="utls-column-xsmall">
-                    <a style="cursor: pointer" (click)="resetSort('host')" class="text-nowrap">
-                        <span *ngIf="isColumnSortAsc('host')" class="glyphicon glyphicon-triangle-top"></span>
-                        <span *ngIf="isColumnSortDesc('host')" class="glyphicon glyphicon-triangle-bottom"></span>
+                    <a style="cursor: pointer" (click)="resetSort('targetMs')" class="text-nowrap">
+                        <span *ngIf="isColumnSortAsc('targetMs')" class="glyphicon glyphicon-triangle-top"></span>
+                        <span *ngIf="isColumnSortDesc('targetMs')" class="glyphicon glyphicon-triangle-bottom"></span>
                         Robot
                     </a>
                 </th>
@@ -137,7 +137,7 @@
                 <td>{{log.target}}</td>
                 <td>{{log.category}}</td>
                 <td>{{log.name}}</td>
-                <td>{{log.host}}</td>
+                <td>{{log.targetMs}}</td>
                 <td>{{log.label}}</td>
             </tr>
             </tbody>
