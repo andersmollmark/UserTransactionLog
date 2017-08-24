@@ -78,7 +78,14 @@ public class OperationDAO {
               .stream()
               .map(param -> param.getValue())
               .collect(Collectors.joining(","));
-            error = operation.getClass().getName() + " " + parameterString;
+            error = "OperationClass and parameters:" + operation.getClass().getName() + " " + parameterString;
+        }
+        else if(operation instanceof CreateUpdateOperation){
+            CreateUpdateOperation crudOperation = (CreateUpdateOperation)operation;
+            error = "OperationClass and messageType:" + crudOperation.getClass().getName() + " " + crudOperation.getMesstype();
+        }
+        else{
+            error = "unknown operation! class:" + operation.getClass().getName();
         }
 
         UtlsLogUtil.error(this.getClass(),
