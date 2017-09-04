@@ -73,7 +73,7 @@ public class CreateEventLogOperation implements CreateUpdateOperation {
         newContent.setString(EventLog.HOST, eventLogContent.getHost());
         newContent.setString(EventLog.TARGET_MS, eventLogContent.getTargetMs());
         newContent.setString(EventLog.LABEL, eventLogContent.getEventLabel());
-        newContent.setString(EventLog.TIMESTAMP, DateUtil.formatTimeStamp(utc));
+        newContent.setString(EventLog.TIMESTAMP, DateUtil.formatTimeStamp(timestamp));
         newContent.setString(EventLog.TAB, eventLogContent.getTab());
 
         if(UtlsLogUtil.isDebug()){

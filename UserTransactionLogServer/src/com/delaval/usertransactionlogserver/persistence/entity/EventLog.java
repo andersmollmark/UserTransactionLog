@@ -5,8 +5,8 @@ import simpleorm.dataset.SFieldString;
 import simpleorm.dataset.SFieldTimestamp;
 import simpleorm.dataset.SRecordMeta;
 
+import java.time.*;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import static simpleorm.dataset.SFieldFlags.SDESCRIPTIVE;
@@ -79,12 +79,12 @@ public class EventLog extends AbstractEntity {
         return getString(TARGET_MS);
     }
 
-    public Date getTimestamp(){
-        Date date = new Date();
-        date.setTime(getTimestamp(TIMESTAMP).getTime());
-        return date;
-    }
 
+    public LocalDateTime getTimestamp(){
+        Instant instantOfMillis = Instant.ofEpochMilli(getTimestamp(TIMESTAMP).getTime());
+        ZonedDateTime ofInstant = ZonedDateTime.ofInstant(instantOfMillis, ZoneId.of(ZoneOffset.UTC.getId()));
+        return ofInstant.toLocalDateTime();
+    }
 
     @Override
     public SRecordMeta<EventLog> getMeta() {

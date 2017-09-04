@@ -13,6 +13,7 @@ public class DateUtil {
 
 
     private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    private static DateTimeFormatter guiFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy HH:mm:ss");
 
     /**
      * Formats miliseconds since 1970 for SFieldTimestamp
@@ -37,5 +38,9 @@ public class DateUtil {
 
     public static String formatTimeStamp(ZonedDateTime zdt){
         return zdt.format(dtf);
+    }
+
+    public static String formatTimeStampToGuiString(LocalDateTime ldt){
+        return ldt.format(guiFormatter);
     }
 }

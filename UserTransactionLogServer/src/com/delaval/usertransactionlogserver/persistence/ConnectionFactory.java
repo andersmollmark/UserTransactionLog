@@ -170,7 +170,7 @@ public class ConnectionFactory {
         try {
             String jdbcUrl = "jdbc:mysql://" + getProp(ServerProperties.PropKey.DB_SERVER_HOST) +
               ":" + getProp(ServerProperties.PropKey.DB_SERVER_PORT) + "/" +
-              getProp(ServerProperties.PropKey.DB_NAME);
+              getProp(ServerProperties.PropKey.DB_NAME) + "?useLegacyDatetimeCode=false&serverTimezone=UTC";
             UtlsLogUtil.debug(this.getClass(), "Creating db-connection:", jdbcUrl);
             theConnection = java.sql.DriverManager.getConnection(jdbcUrl, getProp(ServerProperties.PropKey.DB_USER), getProp(ServerProperties.PropKey.DB_PWD));
 

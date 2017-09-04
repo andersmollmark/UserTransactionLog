@@ -1,14 +1,15 @@
 package com.delaval.usertransactionlogserver.service;
 
 import com.delaval.usertransactionlogserver.ServerProperties;
+import com.delaval.usertransactionlogserver.TestObjectFactory;
 import com.delaval.usertransactionlogserver.domain.FetchLogDTO;
 import com.delaval.usertransactionlogserver.domain.InternalEventLog;
 import com.delaval.usertransactionlogserver.domain.InternalSystemProperty;
 import com.delaval.usertransactionlogserver.domain.InternalUserTransactionKey;
 import com.delaval.usertransactionlogserver.persistence.dao.OperationDAO;
-import com.delaval.usertransactionlogserver.persistence.entity.EventLog;
-import com.delaval.usertransactionlogserver.persistence.entity.UserTransactionKey;
 import com.delaval.usertransactionlogserver.persistence.operation.*;
+import com.delaval.usertransactionlogserver.testobject.MyEventLog;
+import com.delaval.usertransactionlogserver.testobject.MyUserTransactionKey;
 import com.delaval.usertransactionlogserver.websocket.JsonDumpMessage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -278,138 +279,36 @@ public class FetchAllEventLogsServiceTest {
 
     private List<InternalEventLog> getEventLogsWithOneUserTransactionId(String userTransId) {
         List<InternalEventLog> result = new ArrayList<>();
-        InternalEventLog log1 = new InternalEventLog(createEventLog("id1", userTransId));
+        MyEventLog eventLog1 = TestObjectFactory.createEventLog("id1", userTransId);
+        InternalEventLog log1 = new InternalEventLog(eventLog1);
         result.add(log1);
-        InternalEventLog log2 = new InternalEventLog(createEventLog("id2", userTransId));
+        MyEventLog eventLog2 = TestObjectFactory.createEventLog("id2", userTransId);
+        InternalEventLog log2 = new InternalEventLog(eventLog2);
         result.add(log2);
         return result;
     }
 
-    private MyEventLog createEventLog(String id, String userTransId) {
-        MyEventLog result = new MyEventLog();
-        result.id = id;
-        result.userTransactionKeyId = userTransId;
-        result.category = "category";
-        result.host = "host";
-        result.targetMs = "targetMs";
-        result.timestamp = new Date();
-        result.name = "name";
-        result.label = "label";
-        result.tab = "tab";
-        return result;
-    }
 
     private List<InternalUserTransactionKey> getInternalUserTransactionKeyList() {
-        MyUserTransactionKey test1 = new MyUserTransactionKey();
-        test1.username = "Chuck Norris";
-        test1.target = "Everything";
-        test1.client = "Noone";
-        test1.id = "TheOneAndOnly";
-        test1.timestamp = new Date();
+        MyUserTransactionKey test1 = TestObjectFactory.getUserTransactionKey();
+        test1.setUsername("Chuck Norris");
+        test1.setTarget("Everything");
+        test1.setClient("Noone");
+        test1.setId("TheOneAndOnly");
+        test1.setTimestamp(new Date());
 
         MyUserTransactionKey test2 = new MyUserTransactionKey();
-        test2.username = "Sly Stallone";
-        test2.target = "Nothing";
-        test2.client = "Someone";
-        test2.id = "Rambo";
-        test2.timestamp = new Date();
+        test2.setUsername("Sly Stallone");
+        test2.setTarget("Nothing");
+        test2.setClient("Someone");
+        test2.setId("Rambo");
+        test2.setTimestamp(new Date());
         InternalUserTransactionKey internal1 = new InternalUserTransactionKey(test1);
         InternalUserTransactionKey internal2 = new InternalUserTransactionKey(test2);
         List<InternalUserTransactionKey> result = new ArrayList<>();
         result.add(internal1);
         result.add(internal2);
         return result;
-    }
-
-    private static class MyEventLog extends EventLog {
-        String id;
-        String name;
-        String category;
-        String label;
-        String tab;
-        String userTransactionKeyId;
-        Date timestamp;
-        String host;
-        String targetMs;
-
-        @Override
-        public String getId() {
-            return id;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public String getCategory() {
-            return category;
-        }
-
-        @Override
-        public String getLabel() {
-            return label;
-        }
-
-        @Override
-        public String getTab() {
-            return tab;
-        }
-
-        @Override
-        public String getUserTransactionKeyId() {
-            return userTransactionKeyId;
-        }
-
-        @Override
-        public Date getTimestamp() {
-            return timestamp;
-        }
-
-        @Override
-        public String getHost() {
-            return host;
-        }
-
-        @Override
-        public String getTargetMs(){return targetMs;}
-
-    }
-
-    private static class MyUserTransactionKey extends UserTransactionKey {
-        String id;
-        String username;
-        String target;
-        String client;
-
-        @Override
-        public String getId() {
-            return id;
-        }
-
-        @Override
-        public String getUsername() {
-            return username;
-        }
-
-        @Override
-        public String getTarget() {
-            return target;
-        }
-
-        @Override
-        public String getClient() {
-            return client;
-        }
-
-        Date timestamp;
-
-
-        @Override
-        public Date getTimestamp() {
-            return timestamp;
-        }
     }
 
 }

@@ -2,23 +2,16 @@ package com.delaval.usertransactionlogserver.domain;
 
 import com.delaval.usertransactionlogserver.persistence.entity.EventLog;
 import com.delaval.usertransactionlogserver.persistence.entity.UserTransactionKey;
-import org.eclipse.jetty.io.ssl.SslHandshakeListener;
+import com.delaval.usertransactionlogserver.util.DateUtil;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.IllegalBlockSizeException;
-import java.io.*;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.Date;
+import java.time.*;
 
 /**
  * Created by delaval on 12/9/2015.
  */
 public class InternalEventLog implements InternalEntityRepresentation {
+
+
 
     private String id;
     private String username;
@@ -27,7 +20,8 @@ public class InternalEventLog implements InternalEntityRepresentation {
     private String label;
     private String userTransactionKeyId;
     private long timestamp;
-    private Date timestampAsDate;
+    private LocalDateTime timestampAsDate;
+    private String timestampAsDateString;
     private String tab;
     private String host;
     private String targetMs;
@@ -36,6 +30,7 @@ public class InternalEventLog implements InternalEntityRepresentation {
     public InternalEventLog(EventLog eventLog) {
         setCommon(eventLog);
         timestampAsDate = eventLog.getTimestamp();
+        timestampAsDateString = DateUtil.formatTimeStampToGuiString(timestampAsDate);
         username = "unknown";
         target = "unknown";
     }
@@ -43,6 +38,7 @@ public class InternalEventLog implements InternalEntityRepresentation {
     public InternalEventLog(EventLog eventLog, UserTransactionKey myKey) {
         setCommon(eventLog);
         timestampAsDate = eventLog.getTimestamp();
+        timestampAsDateString = DateUtil.formatTimeStampToGuiString(timestampAsDate);
         username = myKey.getUsername();
         target = myKey.getTarget();
     }
@@ -50,8 +46,9 @@ public class InternalEventLog implements InternalEntityRepresentation {
     public InternalEventLog(EventLog eventLog, UserTransactionKey myKey, ZoneId localZoneId) {
         setCommon(eventLog);
         ZonedDateTime localTime = Instant.ofEpochMilli(timestamp).atZone(localZoneId);
-        timestampAsDate = Date.from(localTime.toInstant());
-        timestamp = timestampAsDate.getTime();
+        timestampAsDate = localTime.toLocalDateTime();
+        timestampAsDateString = DateUtil.formatTimeStampToGuiString(timestampAsDate);
+        timestamp = localTime.toInstant().toEpochMilli();
         username = myKey.getUsername();
         target = myKey.getTarget();
     }
@@ -63,7 +60,7 @@ public class InternalEventLog implements InternalEntityRepresentation {
         label = eventLog.getLabel();
         tab = eventLog.getTab();
         userTransactionKeyId = eventLog.getUserTransactionKeyId();
-        timestamp = eventLog.getTimestamp().getTime();
+        timestamp = eventLog.getTimestamp().toInstant(ZoneOffset.UTC).toEpochMilli();
         host = eventLog.getHost();
         targetMs = eventLog.getTargetMs();
 
@@ -109,7 +106,7 @@ public class InternalEventLog implements InternalEntityRepresentation {
         return userTransactionKeyId;
     }
 
-    public Date getTimestampAsDate() {
+    public LocalDateTime getTimestampAsDate() {
         return timestampAsDate;
     }
 

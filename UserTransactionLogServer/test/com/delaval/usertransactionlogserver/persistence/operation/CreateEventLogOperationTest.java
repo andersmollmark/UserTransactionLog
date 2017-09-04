@@ -6,7 +6,6 @@ import com.delaval.usertransactionlogserver.util.DateUtil;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import com.delaval.usertransactionlogserver.websocket.EventLogContent;
 import com.delaval.usertransactionlogserver.websocket.WebSocketMessage;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,9 +23,9 @@ import simpleorm.sessionjdbc.SSessionJdbc;
 
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -77,7 +76,7 @@ public class CreateEventLogOperationTest {
         eventLogContent.setTab("Tab");
 
         Mockito.when(mockSession.create(Mockito.any(SRecordMeta.class), Mockito.anyString())).thenReturn(mockLog);
-        Mockito.when(mockLog.getTimestamp()).thenReturn(new Date());
+        Mockito.when(mockLog.getTimestamp()).thenReturn(LocalDateTime.now());
 
         testOperation.jdbcSession = mockSession;
         testOperation.webSocketMessage = webSocketMessage;
@@ -106,7 +105,7 @@ public class CreateEventLogOperationTest {
         assertNotNull(capturedMessage);
         assertEquals(capturedMessage.getUsername(), username.toLowerCase());
 
-        ZonedDateTime expectedTimestamp = Instant.ofEpochMilli(timestamp.getTime()).atZone(ZoneOffset.UTC);
+        ZonedDateTime expectedTimestamp = Instant.ofEpochMilli(timestamp.getTime()).atZone(ZoneOffset.systemDefault());
 
         List<String> valueCaptorAllValues = valueCaptor.getAllValues();
         assertEquals(eventLogContent.getEventName(), valueCaptorAllValues.get((0)));

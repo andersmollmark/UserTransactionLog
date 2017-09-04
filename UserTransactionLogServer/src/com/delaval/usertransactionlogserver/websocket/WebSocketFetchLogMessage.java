@@ -39,9 +39,9 @@ public class WebSocketFetchLogMessage extends WebSocketType{
     public String toString(){
         StringBuilder sb = new StringBuilder(this.getClass().getCanonicalName());
         sb.append(", Messtype:").append(getType())
-        .append(" from:")
+        .append(" from in UTC:")
         .append(getFromAsString())
-        .append(" to:")
+        .append(" to in UTC:")
         .append(getToAsString());
         return sb.toString();
     }
