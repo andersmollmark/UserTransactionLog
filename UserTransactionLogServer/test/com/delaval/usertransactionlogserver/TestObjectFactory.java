@@ -2,10 +2,11 @@ package com.delaval.usertransactionlogserver;
 
 import com.delaval.usertransactionlogserver.testobject.MyEventLog;
 import com.delaval.usertransactionlogserver.testobject.MyUserTransactionKey;
+import org.junit.Ignore;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
+@Ignore
 public class TestObjectFactory {
 
     public static MyEventLog createEventLog(String id, String userTransId) {
