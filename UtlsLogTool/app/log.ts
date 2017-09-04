@@ -8,6 +8,7 @@ export class UtlsLog{
     userTransactionKeyId: string;
     timestamp: number;
     timestampAsDate: string;
+    timestampAsDateString: string;
     tab: string;
     host: string;
     targetMs: string;
