@@ -235,9 +235,11 @@ else
     addService dbus
     addService avahi-daemon
     addService ntpd
-    addService utlServer
-    addService publishUTLServer
-    addService activemq
+	if [ ! -e /etc/runlevels/amsserver/servicecluster ] ; then
+		addService utlServer
+		addService publishUTLServer
+		addService activemq
+	fi
     addService mysql
     rc-update -u
 
@@ -253,9 +255,11 @@ else
     /etc/init.d/vixie-cron start
     /etc/init.d/xinetd start
     /etc/init.d/mysql start
-    /etc/init.d/aaserver start
-    /etc/init.d/publishAAServer start
-    /etc/init.d/vmscontroller start
+	if [ ! -e /etc/runlevels/amsserver/servicecluster ] ; then
+		/etc/init.d/aaserver start
+		/etc/init.d/publishAAServer start
+		/etc/init.d/vmscontroller start
+	fi
 
     echo "creating db..."
     /usr/bin/logger  -p user.debug -t install Creating db...
@@ -264,9 +268,11 @@ else
 #mysql --user=root --password=delavalpwd -e "GRANT SUPER ON *.* TO logAdmin@localhost IDENTIFIED BY 'admin'"
 
 
-    /etc/init.d/activemq start
-    /etc/init.d/utlServer start
-    /etc/init.d/publishUTLServer start
+	if [ ! -e /etc/runlevels/amsserver/servicecluster ] ; then
+		/etc/init.d/activemq start
+		/etc/init.d/utlServer start
+		/etc/init.d/publishUTLServer start
+	fi
     /etc/init.d/local start
 
 #echo Install finished `date` >>/var/log/utls/utlsinstall.log
