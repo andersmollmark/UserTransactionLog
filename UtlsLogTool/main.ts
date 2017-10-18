@@ -1,9 +1,9 @@
-// import {AppConstants} from "./app/app.constants";
+
 const {app, ipcMain, BrowserWindow} = require('electron');
 
-require('electron-debug')({showDevTools: false});
+// require('electron-debug')({showDevTools: true});
 
-let mainWindow, secondWindow;
+let mainWindow, devtoolOpen;
 
 function createWindow(){
     mainWindow = new BrowserWindow({
@@ -11,9 +11,21 @@ function createWindow(){
         height: 720
     });
 
+    devtoolOpen = false;
+
     mainWindow.loadURL('file://' + __dirname + '/index.html');
+
     // mainWindow.webContents.openDevTools();
 
+    ipcMain.on('TOGGLE_DEV_TOOLS', (event, arg) => {
+       if(devtoolOpen){
+           mainWindow.webContents.closeDevTools();
+       }
+       else{
+           mainWindow.webContents.openDevTools();
+       }
+        devtoolOpen = !devtoolOpen;
+    });
 
     // Emitted when the window is closed.
     mainWindow.on('closed', () => {

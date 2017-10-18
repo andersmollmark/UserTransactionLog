@@ -12,6 +12,7 @@ import {FetchLogParam} from "./fetchLogParam";
 import {CryptoService} from "./crypto.service";
 import {LogMessage} from "./logMessage";
 import moment = require("moment");
+import {Subscriber} from "rxjs/Subscriber";
 
 let fileSystem = require('fs');
 
@@ -65,6 +66,7 @@ export class UtlsFileService {
 
     createLogs(filename: string): Observable<UtlsLog[]> {
         this.init();
+
         this.activeLogContent = this.http.get(filename).map(res => res.json())
             .catch(error => Observable.throw(error.json ? error.json().error : alert("Error when reading file:" + filename + "," + error) || 'Server error'));
 
@@ -109,25 +111,12 @@ export class UtlsFileService {
             this.utlsserverService.connectAndFetchEncryptedDump(fetchLogParam);
             this.websocketObservable = this.utlsserverService.utlServerWebsocket;
             let socketSubscription = this.websocketObservable.subscribe(dump => {
-                    console.log('dump received in utls-file-service');
-                    if (dump) {
-                        let jsondata = JSON.parse(dump);
-                        let prettyPrint = JSON.stringify(jsondata, null, '\t');
-                        let fileSuffix = moment().format('YYYY_MM_DD_HHmmss').concat(AppConstants.UTL_FILE_SUFFIX);
-                        let filename = 'dump' + fileSuffix;
-                        console.log('writing file:' + filename);
-                        fileSystem.writeFile(filename, prettyPrint, (err) => {
-                            if (err) {
-                                observer.next(new Result('something went wrong:' + err, false));
-                                throw err;
-                            }
-                            console.log('file ' + filename + ' is saved');
-                            observer.next(new Result(filename, true));
-                        });
-
+                    if(!dump){
+                        console.log('no dump received in utls-file-service');
+                        observer.next(new Result('No logs is received', false));
                     }
                     else {
-                        observer.next(new Result('no dump is received', false));
+                        this.handleDump(dump, observer);
                     }
                     socketSubscription.unsubscribe();
                 },
@@ -147,6 +136,29 @@ export class UtlsFileService {
         return result;
     }
 
+    private handleDump(dump: any, observer: Subscriber<Result>){
+        let jsondata = JSON.parse(dump);
+        if(jsondata.length === 0){
+            console.log('dump is empty in utls-file-service');
+            observer.next(new Result('There is no logs in selected timespan', false));
+        }
+        else{
+            console.log('dump received in utls-file-service');
+            let prettyPrint = JSON.stringify(jsondata, null, '\t');
+            let fileSuffix = moment().format('YYYY_MM_DD_HHmmss').concat(AppConstants.UTL_FILE_SUFFIX);
+            let filename = 'dump' + fileSuffix;
+            console.log('writing file:' + filename);
+            fileSystem.writeFile(filename, prettyPrint, (err) => {
+                if (err) {
+                    observer.next(new Result('something went wrong:' + err, false));
+                    throw err;
+                }
+                console.log('file ' + filename + ' is saved');
+                observer.next(new Result(filename, true));
+            });
+        }
+    }
+
 
     private init() {
         if (this.usersInLogContent && this.usersInLogContent.length > 0) {
@@ -164,8 +176,13 @@ export class UtlsFileService {
     }
 
     mapLogToContentAndColumn(logs: UtlsLog[]) {
-        this.createLogContentAndColumn(logs);
-        this.setOriginalStructureFromFile();
+        if(logs.length > 0){
+            this.createLogContentAndColumn(logs);
+            this.setOriginalStructureFromFile();
+        }
+        else{
+            alert('File contains no logs');
+        }
 
     }
 

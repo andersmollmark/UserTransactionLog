@@ -13,6 +13,7 @@ import {FetchLogParam} from "./fetchLogParam";
 
 const electron = require('electron');
 const remote = electron.remote;
+const ipcRenderer = electron.ipcRenderer;
 
 let {dialog} = remote;
 
@@ -108,6 +109,13 @@ export class AppComponent implements OnInit {
                         self.utlsFileService.setOpenWhenFileIsFetched(true);
                         self.showView(AppConstants.VIEW_FETCH_LOGS);
                     }
+                },
+                {
+                    label: 'Toggle devtool',
+                    accelerator: 'Ctrl+Shift+I',
+                    click: function () {
+                        ipcRenderer.send('TOGGLE_DEV_TOOLS');
+                    }
                 }
             ]
         }]);
@@ -149,7 +157,7 @@ export class AppComponent implements OnInit {
     showView(viewname: string) {
         let self = this;
         self.zone.run(() => {
-            if (self.activeViewname !== viewname) {
+            if (self.activeViewname !== viewname && self.activeViewname !== AppConstants.VIEW_WAIT) {
                 self.oldViewname = self.activeViewname;
             }
             for (let key in self.views) {
@@ -173,15 +181,16 @@ export class AppComponent implements OnInit {
                         if (result.isOk) {
                             console.log('Logfile with name :' + result.value + ' is saved');
                             alert('Logfile with name :' + result.value + ' is saved');
+                            if (show) {
+                                self.createLogContentFromFile(result.value, this.utlsFileService.createLogs.bind(this.utlsFileService));
+                            }
+                            else {
+                                self.showView(this.oldViewname);
+                            }
                         }
                         else {
                             console.log(result.value);
                             alert(result.value);
-                        }
-                        if (show) {
-                            self.createLogContentFromFile(result.value, this.utlsFileService.createLogs.bind(this.utlsFileService));
-                        }
-                        else {
                             self.showView(this.oldViewname);
                         }
                         logSubscription.unsubscribe();

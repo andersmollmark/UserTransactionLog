@@ -9,7 +9,7 @@ export class SelectedDate {
     }
 
     public static getFromDateParts(val: Date): SelectedDate {
-        let temp = new Date(val.getFullYear(), val.getMonth(), val.getDate());
+        let temp = new Date(val.getFullYear(), val.getMonth(), val.getDate(), val.getHours(), val.getMinutes());
         return new SelectedDate(temp);
     }
 
