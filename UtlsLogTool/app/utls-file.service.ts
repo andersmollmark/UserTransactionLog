@@ -81,7 +81,7 @@ export class UtlsFileService {
         this.init();
         this.activeLogContent = this.http.get(filename).map(res => {
             let content = res.json();
-            if (AppConstants.UTL_LOGS_LAST_DAY === content.messType) {
+            if (AppConstants.UTL_LOGS_LAST_DAY === content.messType || AppConstants.UTL_LOGS_BACKUP_FETCH_LOGS === content.messType) {
                 console.log('yep, file read');
                 return this.fixEncryptedLogs(content);
             }

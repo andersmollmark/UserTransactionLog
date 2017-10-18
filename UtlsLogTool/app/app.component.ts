@@ -224,7 +224,8 @@ export class AppComponent implements OnInit {
             console.log("No file selected");
             this.showView(this.oldViewname);
         }
-        else if (!fileNamesArr[0].endsWith(AppConstants.UTL_ENCRYPTED_FILE_SUFFIX)) {
+        else if (!fileNamesArr[0].endsWith(AppConstants.UTL_ENCRYPTED_FILE_SUFFIX) &&
+            !fileNamesArr[0].endsWith(AppConstants.UTL_BACKUP_FILE_SUFFIX)) {
             console.log("File must be encrypted (ends with .encrypted)");
             this.showView(this.oldViewname);
         }

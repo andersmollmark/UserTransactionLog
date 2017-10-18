@@ -14,3 +14,24 @@ The result will end up under a folder called dist in project-root.
 
 Unfortunately, when running build, and there is a package with executable files, it fails.
 The sollution to this is just to either remove the packages or just move it to another destination. Then its possible to run build again.
+
+*** Devtools and other utilities ***
+When utls started you can allways use theese combinations:
+
+Toggle DevTools.
+
+macOS: Cmd Alt I or F12
+Linux: Ctrl Shift I or F12
+Windows: Ctrl Shift I or F12
+
+Force reload the window.
+
+macOS: Cmd R or F5
+Linux: Ctrl R or F5
+Windows: Ctrl R or F5
+
+Open DevTools and focus the Element Inspector tool.
+
+macOS: Cmd Shift C
+Linux: Ctrl Shift C
+Windows: Ctrl Shift C
