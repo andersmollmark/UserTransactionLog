@@ -1,8 +1,7 @@
 <div class="utls-logfilter-column utls-inline-column timefilter-row">
-    <div class="utls-selector-text utls-text">From:</div>
-    <div class="form-group calendarInput">
-        <input type="text" class="form-control" value="{{getFromFilterDateString()}}" readonly>
 
+    <div class="utls-text-and-calendar">
+        <div class="utls-selector-text utls-text">From:</div>
         <div class="calendarIconBundle">
             <div class="calendaricon">
                 <img src="app/resources/calendar-image.png" (click)="setShowFrom()">
@@ -12,6 +11,11 @@
             </div>
 
         </div>
+    </div>
+    <div class="form-group calendarInput">
+        <input type="text" class="form-control" value="{{getFromFilterDateString()}}" readonly>
+
+
     </div>
 
     <div *ngIf="isShowFrom()" class="calendardiv">
@@ -28,11 +32,9 @@
 </div>
 
 
-<div class="utls-logfilter-column utls-inline-column">
-    <div class="utls-selector-text utls-text">To:</div>
-    <div class="form-group calendarInput">
-        <input type="text" class="form-control" value="{{getToFilterDateString()}}" readonly>
-
+<div class="utls-logfilter-column utls-inline-column utls-inline-column_paddingLeft">
+    <div class="utls-text-and-calendar">
+        <div class="utls-selector-text utls-text">To:</div>
         <div class="calendarIconBundle">
             <div class="calendaricon">
                 <img src="app/resources/calendar-image.png" (click)="setShowTo()">
@@ -41,6 +43,11 @@
                 <img src="app/resources/clock.png" (click)="setShowToTime()">
             </div>
         </div>
+    </div>
+    <div class="form-group calendarInput">
+        <input type="text" class="form-control" value="{{getToFilterDateString()}}" readonly>
+
+
     </div>
 
     <div *ngIf="isShowTo()" class="calendardiv">

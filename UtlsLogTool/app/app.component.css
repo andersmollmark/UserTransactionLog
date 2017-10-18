@@ -14,7 +14,7 @@
 }
 
 .utls-text{
-    padding-left: 15px;
+    /*padding-left: 15px;*/
     color: white;
 }
 
@@ -40,11 +40,11 @@
 }
 
 .utls-column-xsmall{
-    width: 5%;
+    width: 4%;
 }
 
 .utls-column-small{
-    width: 10%;
+    width: 13%;
 }
 
 .utls-column-big{
@@ -64,7 +64,12 @@
 
 .utls-selector-text{
     font-size: 16px;
-    display: inline-flex;
+    /*display: inline-flex;*/
+    display: inline-block;
+}
+
+.utls-text-and-calendar{
+    display: block;
 }
 
 .utls-discrete-text{
@@ -97,13 +102,15 @@
     display: inline-block;
 }
 
+.utls-inline-column_paddingLeft{
+    padding-left: 50px;
+}
+
+
 .utls-row{
     display: block;
 }
 
-.fetch-btn-inline{
-    padding-left: 15px;
-}
 
 .fetch-log-timezone{
 
@@ -133,6 +140,7 @@
 
 .calendarIconBundle{
     display: inline-block;
+    float: right;
 }
 
 .calendaricon{
