@@ -211,14 +211,17 @@ export class AppComponent implements OnInit {
         );
     }
 
-    // TODO add errormessages in client
     public checkFilenameAndHandleFile = (fileNamesArr: Array<any>) => {
         if (!fileNamesArr) {
-            console.log("No file selected");
+            let errorText = "No file selected";
+            console.log(errorText);
+            alert(errorText);
             this.showView(this.oldViewname);
         }
         else if (!fileNamesArr[0].endsWith(AppConstants.UTL_FILE_SUFFIX)) {
-            console.log("File must be encrypted (ends with .utls)");
+            let errorText = "File must be encrypted (ends with .utls)";
+            console.log(errorText);
+            alert(errorText);
             this.showView(this.oldViewname);
         }
         else {
@@ -227,15 +230,18 @@ export class AppComponent implements OnInit {
         }
     }
 
-    // TODO add errormessages in client
     public checkFilenameAndHandleEncryptedFile = (fileNamesArr: Array<any>) => {
         if (!fileNamesArr) {
-            console.log("No file selected");
+            let errorText = "No file selected";
+            console.log(errorText);
+            alert(errorText);
             this.showView(this.oldViewname);
         }
         else if (!fileNamesArr[0].endsWith(AppConstants.UTL_ENCRYPTED_FILE_SUFFIX) &&
             !fileNamesArr[0].endsWith(AppConstants.UTL_BACKUP_FILE_SUFFIX)) {
-            console.log("File must be encrypted (ends with .encrypted)");
+            let errorText = "File must be encrypted (ends with .encrypted)";
+            console.log(errorText);
+            alert(errorText);
             this.showView(this.oldViewname);
         }
         else {
