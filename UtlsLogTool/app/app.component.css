@@ -14,7 +14,6 @@
 }
 
 .utls-text{
-    /*padding-left: 15px;*/
     color: white;
 }
 
@@ -64,8 +63,12 @@
 
 .utls-selector-text{
     font-size: 16px;
-    /*display: inline-flex;*/
     display: inline-block;
+}
+
+.utls-selector-onlytext{
+    font-size: 16px;
+    display: block;
 }
 
 .utls-text-and-calendar{
@@ -89,13 +92,18 @@
 }
 
 .utls-logfilter-column{
-    /*float: left;*/
     padding-bottom: 10px;
+}
+
+.utls-clear-filter-button{
+    display: inline-block;
+    padding-left: 50px;
 }
 
 .utls-filter-dropdown{
     display: inline-block;
-    width: 30%;
+    /*width: 30%;*/
+    padding-right: 50px;
 }
 
 .utls-inline-column{

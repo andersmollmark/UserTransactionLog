@@ -124,7 +124,6 @@ export class AppComponent implements OnInit {
     }
 
     ngDoCheck() {
-        // console.log('ngdocheck...');
         this.filterQuery = this.timeFilterService.getFilterQuery();
         if (this.utlsFileService.isColumnContentChanged()) {
             this.changeColumnValueAndContentValues(this.selectedColumn);
@@ -157,7 +156,8 @@ export class AppComponent implements OnInit {
     showView(viewname: string) {
         let self = this;
         self.zone.run(() => {
-            if (self.activeViewname !== viewname && self.activeViewname !== AppConstants.VIEW_WAIT) {
+            if (self.activeViewname !== viewname && self.activeViewname !== AppConstants.VIEW_WAIT &&
+                self.activeViewname !== AppConstants.VIEW_SETTINGS) {
                 self.oldViewname = self.activeViewname;
             }
             for (let key in self.views) {
@@ -179,10 +179,12 @@ export class AppComponent implements OnInit {
                 let logSubscription = observableResult.subscribe(
                     result => {
                         if (result.isOk) {
-                            console.log('Logfile with name :' + result.value + ' is saved');
+                            let filepath = electron.remote.app.getAppPath();
+                            console.log('Logfile with name :' + result.value + ' is saved and appPath is:' + filepath);
                             alert('Logfile with name :' + result.value + ' is saved');
                             if (show) {
-                                self.createLogContentFromFile(result.value, this.utlsFileService.createLogs.bind(this.utlsFileService));
+                                let fileAndPath = filepath + '/' + result.value;
+                                self.createLogContentFromFile(fileAndPath, this.utlsFileService.createLogs.bind(this.utlsFileService));
                             }
                             else {
                                 self.showView(this.oldViewname);
@@ -210,6 +212,7 @@ export class AppComponent implements OnInit {
             }
         );
     }
+
 
     public checkFilenameAndHandleFile = (fileNamesArr: Array<any>) => {
         if (!fileNamesArr) {

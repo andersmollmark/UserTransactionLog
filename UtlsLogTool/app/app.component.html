@@ -27,7 +27,7 @@
     <div class="utls-selector-row" *ngIf="isLoaded">
 
         <div class="utls-logfilter-column utls-filter-dropdown">
-            <div class="utls-selector-text utls-text">
+            <div class="utls-selector-onlytext utls-text">
                 Filter on column:
             </div>
 
@@ -41,7 +41,7 @@
         </div>
 
         <div class="utls-logfilter-column utls-filter-dropdown">
-            <div class="utls-selector-text utls-text">
+            <div class="utls-selector-onlytext utls-text">
                 Specify columnvalue:
             </div>
 
@@ -56,7 +56,7 @@
 
         <timefilter></timefilter>
 
-        <div class="utls-logfilter-column">
+        <div class="utls-logfilter-column utls-clear-filter-button">
             <button class="btn btn-primary btn-md" (click)="resetFilter()">Clear filter</button>
         </div>
 

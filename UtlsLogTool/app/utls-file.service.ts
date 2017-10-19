@@ -15,6 +15,9 @@ import moment = require("moment");
 import {Subscriber} from "rxjs/Subscriber";
 
 let fileSystem = require('fs');
+const electron = require('electron');
+const path = require('path');
+
 
 @Injectable()
 export class UtlsFileService {
@@ -147,8 +150,9 @@ export class UtlsFileService {
             let prettyPrint = JSON.stringify(jsondata, null, '\t');
             let fileSuffix = moment().format('YYYY_MM_DD_HHmmss').concat(AppConstants.UTL_FILE_SUFFIX);
             let filename = 'dump' + fileSuffix;
-            console.log('writing file:' + filename);
-            fileSystem.writeFile(filename, prettyPrint, (err) => {
+            let fileAndPath = path.join(electron.remote.app.getAppPath() + '/' + filename);
+            console.log('writing file:' + filename + ' and hole path:' + fileAndPath);
+            fileSystem.writeFile(fileAndPath, prettyPrint, (err) => {
                 if (err) {
                     observer.next(new Result('something went wrong:' + err, false));
                     throw err;
