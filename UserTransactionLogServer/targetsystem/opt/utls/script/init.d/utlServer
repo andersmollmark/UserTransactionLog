@@ -4,6 +4,7 @@ depend()
 {
 	use logger net
 	need mysql
+    need browseFarm
 }
 
 
@@ -14,6 +15,18 @@ start()
     logger -t UserTransactionLogServer Start the utlServer
 	. /opt/amsserver/amsdefinitions
     
+    SCRIPTS=/opt/amsserver/script
+    UTLSERVER=$( $SCRIPTS/farmmap -g UTLSERVER -f ipaddr /opt/vc/data/vmslist )
+    OWNIP=$( $SCRIPTS/getownip )
+    if [ "$UTLSERVER" != "" ] ; then
+        if [ "$UTLSERVER" != "$OWNIP" ] ; then
+            echo Another UtlServer with address $UTLSERVER is already active in the network > $AMSLOGDIR/utlServer_err.log
+            logger -t UserTransactionLogServer Start of the utlServer is not done! Another UtlServer exists allready with address $UTLSERVER
+            eend 1
+            return 1
+        fi
+    fi
+
 	start-stop-daemon --start --background --make-pidfile --pidfile /var/run/utls.pid \
         --chdir /opt/utls/dist \
         --exec /usr/bin/java \
