@@ -75,12 +75,12 @@ public class EventLogContent implements JsonContent {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("EventLogContent:")
-          .append("eventName:").append(getEventName())
+          .append(" eventName:").append(getEventName())
           .append(", eventCategory:").append(getEventCategory())
-          .append(", eventLabel").append(getEventLabel())
-          .append(", activetab").append(getTab())
-          .append(", host").append(getHost())
-          .append(", targetMs").append(getTargetMs())
+          .append(", eventLabel:").append(getEventLabel())
+          .append(", activetab:").append(getTab())
+          .append(", host:").append(getHost())
+          .append(", targetMs:").append(getTargetMs())
           .append(", time:").append(DateUtil.formatTimeStamp(Long.parseLong(getTimestamp())));
         return sb.toString();
     }

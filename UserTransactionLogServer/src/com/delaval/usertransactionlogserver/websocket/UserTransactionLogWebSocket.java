@@ -79,6 +79,7 @@ public class UserTransactionLogWebSocket {
             if (MessTypes.EVENT_LOG.isSame(webSocketType.getType())) {
                 UtlsLogUtil.info(this.getClass(), "Incoming EventLog:", webSocketType.toString());
                 WebSocketMessage webSocketMessage = new Gson().fromJson(jsonMessage, WebSocketMessage.class);
+                UtlsLogUtil.info(this.getClass(), "Putting websocketmess on mq:", webSocketMessage.toString());
                 JmsMessageService.getInstance().createJmsMessage(webSocketMessage, jsonMessage);
             } else if (MessTypes.GET_PUBLIC_KEY.isSame(webSocketType.getType())) {
                 session.getRemote().sendStringByFuture(CryptoKeyService.getInstance().getPublicKeyAsJson());

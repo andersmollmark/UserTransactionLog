@@ -51,22 +51,25 @@ public class InitDAO {
             if (resultSet.next()) {
                 return false;
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             return true;
         }
         finally {
-            if(ps != null){
+            if (ps != null) {
                 try {
                     ps.close();
-                } catch (SQLException e) {
-                    UtlsLogUtil.error(ServerProperties.class, "Couldnt close PreparedStatement:", e.getMessage());
+                }
+                catch (SQLException e) {
+                    UtlsLogUtil.error(InitDAO.class, "Couldnt close PreparedStatement:", e.getMessage());
                 }
             }
-            if(resultSet != null){
+            if (resultSet != null) {
                 try {
                     resultSet.close();
-                } catch (SQLException e) {
-                    UtlsLogUtil.error(ServerProperties.class, "Couldnt close ResultSet:", e.getMessage());
+                }
+                catch (SQLException e) {
+                    UtlsLogUtil.error(InitDAO.class, "Couldnt close ResultSet:", e.getMessage());
                 }
             }
         }
@@ -96,6 +99,8 @@ public class InitDAO {
         alterTimestampColumns(EventLog.EVENT_LOG.getTableName());
         UtlsLogUtil.debug(this.getClass(), SystemProperty.SYSTEM_PROPERTY.getTableName(), " alter timestamps...");
         alterTimestampColumns(SystemProperty.SYSTEM_PROPERTY.getTableName());
+
+        updateUserTransactionKeyIdToLowerIfExist();
     }
 
     private void alterTables(ResultSet table, String tablename, List<SFieldString> varcharColumns) throws SQLException {
@@ -104,7 +109,7 @@ public class InitDAO {
             addMissingVarcharColumn(tablename, missingColumn);
         }
         List<SFieldString> varcharColumnsWithBiggerColumnSize = getVarcharColumnsWithBiggerColumnSize(table, varcharColumns, tablename);
-        for(SFieldString columnWithBiggerSize : varcharColumnsWithBiggerColumnSize){
+        for (SFieldString columnWithBiggerSize : varcharColumnsWithBiggerColumnSize) {
             alterSizeOfColumn(tablename, columnWithBiggerSize);
         }
     }
@@ -131,7 +136,8 @@ public class InitDAO {
 
                 }
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             UtlsLogUtil.error(this.getClass(),
               "FATAL ERROR, something went wrong while checking columns in table:", tablename,
               " ", e.getMessage());
@@ -161,7 +167,8 @@ public class InitDAO {
 
                 }
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             UtlsLogUtil.error(this.getClass(),
               "FATAL ERROR, something went wrong while checking columnsize in table:", tablename,
               " ", e.getMessage());
@@ -202,6 +209,59 @@ public class InitDAO {
 
     }
 
+    private void updateUserTransactionKeyIdToLowerIfExist() throws SQLException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("select id from ").append(UserTransactionKey.USER_TRANSACTION_KEY.getTableName())
+          .append(" where id REGEXP BINARY '[A-Z]'");
+        UtlsLogUtil.debug(InitDAO.class, "check if it exist any userTransactionKeyId with capital letters:", sql.toString());
+        Connection connection = ConnectionFactory.getInstance().getConnection();
+        PreparedStatement ps = null;
+        ResultSet resultSet = null;
+        try {
+            ps = connection.prepareStatement(sql.toString());
+            resultSet = ps.executeQuery();
+            if (resultSet.next()) {
+                StringBuilder sqlCommand = new StringBuilder();
+                sqlCommand.append("update ").append(UserTransactionKey.USER_TRANSACTION_KEY.getTableName()).append(" set id = LOWER(id) where id REGEXP BINARY '[A-Z]'");
+                StringBuilder errorBuilder = new StringBuilder();
+                errorBuilder.append("Something went wrong when updating id-colum in ").
+                  append(UserTransactionKey.USER_TRANSACTION_KEY.getTableName()).
+                  append(" to lower case");
+                runSqlCommand(sqlCommand, errorBuilder.toString());
+
+                sqlCommand = new StringBuilder();
+                sqlCommand.append("update ").append(EventLog.EVENT_LOG.getTableName()).append(" set userTransactionKeyId = LOWER(userTransactionKeyId) where userTransactionKeyId REGEXP BINARY '[A-Z]'");
+                errorBuilder = new StringBuilder();
+                errorBuilder.append("Something went wrong when updating userTransacetionKeyId-colum in ").
+                  append(EventLog.EVENT_LOG.getTableName()).
+                  append(" to lower case");
+                runSqlCommand(sqlCommand, errorBuilder.toString());
+
+            }
+        }
+        catch (SQLException e) {
+            UtlsLogUtil.error(InitDAO.class, "Something went wrong while altering userTransactionKeyId:", e.getMessage());
+        }
+        finally {
+            if (ps != null) {
+                try {
+                    ps.close();
+                }
+                catch (SQLException e) {
+                    UtlsLogUtil.error(InitDAO.class, "Couldnt close PreparedStatement:", e.getMessage());
+                }
+            }
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                }
+                catch (SQLException e) {
+                    UtlsLogUtil.error(InitDAO.class, "Couldnt close ResultSet:", e.getMessage());
+                }
+            }
+        }
+    }
+
     private ResultSet getTableWithName(String tablename) throws SQLException {
         UtlsLogUtil.debug(this.getClass(), tablename, " getTableWithName...");
         StringBuilder sql = new StringBuilder();
@@ -221,7 +281,8 @@ public class InitDAO {
             dropAllTables(session);
             UtlsLogUtil.debug(this.getClass(), "creating tables");
             createTables(session);
-        } finally {
+        }
+        finally {
             if (session != null) {
                 session.close();
                 ConnectionFactory.getInstance().closeConnection();
@@ -272,17 +333,17 @@ public class InitDAO {
         createDeleteEventLogEvent();
     }
 
-    public void createFetchLogUsers(){
+    public void createFetchLogUsers() {
         UtlsLogUtil.debug(this.getClass(), " checking if we have to create fetch-log-users");
         String delproUser = ServerProperties.getInstance().getProp(ServerProperties.PropKey.FETCH_LOG_USER_DELPRO);
         String toolUser = ServerProperties.getInstance().getProp(ServerProperties.PropKey.FETCH_LOG_USER_TOOL);
         InternalSystemProperty delproUserProperty = getSystemPropertyWithName(delproUser);
         InternalSystemProperty toolUserProperty = getSystemPropertyWithName(toolUser);
-        if(delproUserProperty == null || !delproUserProperty.getValue().equals(delproUser)){
+        if (delproUserProperty == null || !delproUserProperty.getValue().equals(delproUser)) {
             UtlsLogUtil.debug(this.getClass(), " creating delpro fetch-log-user as a systemproperty");
             createSystemProperty(delproUser, delproUser);
         }
-        if(toolUserProperty == null || !toolUserProperty.getValue().equals(toolUser)){
+        if (toolUserProperty == null || !toolUserProperty.getValue().equals(toolUser)) {
             UtlsLogUtil.debug(this.getClass(), " creating utls-tool fetch-log-user as a systemproperty");
             createSystemProperty(toolUser, toolUser);
         }
@@ -326,14 +387,17 @@ public class InitDAO {
             while (resultSet.next()) {
                 ids.add(resultSet.getString("id"));
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             UtlsLogUtil.error(this.getClass(), "Something went wrong when iterating resultset:", e.getMessage());
-        } finally {
+        }
+        finally {
             try {
                 if (resultSet != null) {
                     resultSet.close();
                 }
-            } catch (SQLException e) {
+            }
+            catch (SQLException e) {
                 UtlsLogUtil.error(this.getClass(), "Something went wrong when closing resultset:", e.getMessage());
             }
         }
@@ -344,26 +408,26 @@ public class InitDAO {
         UtlsLogUtil.debug(this.getClass(), " getDeleteInterval with name:" + name);
         InternalSystemProperty systemPropertyWithName = getSystemPropertyWithName(name);
         String interval = ServerProperties.getInstance().getProp(ServerProperties.PropKey.DELETE_LOGS_INTERVAL_DEFAULT_IN_DAYS) != null ?
-          ServerProperties.getInstance().getProp(ServerProperties.PropKey.DELETE_LOGS_INTERVAL_DEFAULT_IN_DAYS): DEFAULT_DELETE_INTERVAL_IN_DAYS;
+          ServerProperties.getInstance().getProp(ServerProperties.PropKey.DELETE_LOGS_INTERVAL_DEFAULT_IN_DAYS) : DEFAULT_DELETE_INTERVAL_IN_DAYS;
 
-        if(systemPropertyWithName == null || !systemPropertyWithName.getValue().equals(interval)){
+        if (systemPropertyWithName == null || !systemPropertyWithName.getValue().equals(interval)) {
             interval = createSystemProperty(name, interval);
         }
         return interval;
     }
 
-    private InternalSystemProperty getSystemPropertyWithName(String name){
+    private InternalSystemProperty getSystemPropertyWithName(String name) {
         UtlsLogUtil.debug(this.getClass(), " fetching systemproperty with name:" + name);
         GetSystemPropertyWithNameOperation operation = OperationFactory.getSystemPropertyWithName(name);
         OperationResult<InternalSystemProperty> operationResult = OperationDAO.getInstance().doRead(operation);
         List<InternalSystemProperty> result = operationResult.getResult();
-        if(result.size() > 0){
+        if (result.size() > 0) {
             return result.get(0);
         }
         return null;
     }
 
-    private String createSystemProperty(String name, String value){
+    private String createSystemProperty(String name, String value) {
         InternalSystemProperty newProperty = new InternalSystemProperty();
         newProperty.setName(name);
         newProperty.setValue(value);
@@ -382,28 +446,32 @@ public class InitDAO {
             ps = connection.prepareStatement(sql.toString());
             resultSet = ps.executeQuery();
 
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             UtlsLogUtil.error(this.getClass(), errorMess, e.getMessage());
-        } finally {
+        }
+        finally {
             try {
                 if (resultSet != null) {
                     resultSet.close();
                 }
-            } catch (SQLException e) {
-                UtlsLogUtil.error(this.getClass(), "Something went wrong when closing resultset:",  e.getMessage());
+            }
+            catch (SQLException e) {
+                UtlsLogUtil.error(this.getClass(), "Something went wrong when closing resultset:", e.getMessage());
             }
             try {
-                if(ps != null){
+                if (ps != null) {
                     ps.close();
                 }
-            } catch (SQLException e) {
-                UtlsLogUtil.error(this.getClass(), "Something went wrong when closing prepared statement:",  e.getMessage());
+            }
+            catch (SQLException e) {
+                UtlsLogUtil.error(this.getClass(), "Something went wrong when closing prepared statement:", e.getMessage());
             }
         }
     }
 
     private ResultSet runSqlCommandAndGetResult(StringBuilder sql, String errorMess) throws SQLException {
-        UtlsLogUtil.debug(InitDAO.class, "running sql-command and returning result:",  sql.toString());
+        UtlsLogUtil.debug(InitDAO.class, "running sql-command and returning result:", sql.toString());
         Connection connection = ConnectionFactory.getInstance().getConnection();
         ResultSet resultSet = null;
         PreparedStatement ps = null;
@@ -411,21 +479,24 @@ public class InitDAO {
             ps = connection.prepareStatement(sql.toString());
             resultSet = ps.executeQuery();
 
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             UtlsLogUtil.error(this.getClass(), errorMess, e.getMessage());
         }
         finally {
-            if(ps != null){
+            if (ps != null) {
                 try {
                     ps.close();
-                } catch (SQLException e) {
+                }
+                catch (SQLException e) {
                     UtlsLogUtil.error(this.getClass(), "Something went wrong when closing prepared statement:", e.getMessage());
                 }
             }
             if (resultSet != null) {
                 try {
                     resultSet.close();
-                } catch (SQLException e) {
+                }
+                catch (SQLException e) {
                     UtlsLogUtil.error(this.getClass(), "Something went wrong when closing resultset:", e.getMessage());
                 }
             }

@@ -52,7 +52,7 @@ public class WebSocketMessage extends WebSocketType{
                 .append(", client:").append(getClient())
                 .append(", username:").append(getUsername())
                 .append(", target:").append(getTarget())
-                .append(", Content:").append(getJsonContent());
+                .append(", content:").append(getJsonContent());
         return sb.toString();
     }
 }
