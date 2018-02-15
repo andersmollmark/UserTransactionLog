@@ -41,7 +41,7 @@ public class InitDAO {
     public boolean isCreateTables() throws SQLException {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT * FROM ").append(UserTransactionKey.USER_TRANSACTION_KEY.getTableName());
-        UtlsLogUtil.debug(InitDAO.class, "Checking if db-tables exist:", sql.toString());
+        UtlsLogUtil.info(InitDAO.class, "Checking if db-tables exist:", sql.toString());
         Connection connection = ConnectionFactory.getInstance().getConnection();
         PreparedStatement ps = null;
         ResultSet resultSet = null;
@@ -87,17 +87,17 @@ public class InitDAO {
     }
 
     public void alterTables() throws SQLException {
-        UtlsLogUtil.debug(this.getClass(), EventLog.EVENT_LOG.getTableName(), " alter table...");
+        UtlsLogUtil.info(this.getClass(), EventLog.EVENT_LOG.getTableName(), " alter table...");
         ResultSet eventLogTable = getTableWithName(EventLog.EVENT_LOG.getTableName());
         alterTables(eventLogTable, EventLog.EVENT_LOG.getTableName(), EventLog.getVarcharColumns());
 
-        UtlsLogUtil.debug(this.getClass(), SystemProperty.SYSTEM_PROPERTY.getTableName(), " alter table...");
+        UtlsLogUtil.info(this.getClass(), SystemProperty.SYSTEM_PROPERTY.getTableName(), " alter table...");
         ResultSet systemPropTable = getTableWithName(SystemProperty.SYSTEM_PROPERTY.getTableName());
         alterTables(systemPropTable, SystemProperty.SYSTEM_PROPERTY.getTableName(), SystemProperty.getVarcharColumns());
 
-        UtlsLogUtil.debug(this.getClass(), EventLog.EVENT_LOG.getTableName(), " alter timestamps...");
+        UtlsLogUtil.info(this.getClass(), EventLog.EVENT_LOG.getTableName(), " alter timestamps...");
         alterTimestampColumns(EventLog.EVENT_LOG.getTableName());
-        UtlsLogUtil.debug(this.getClass(), SystemProperty.SYSTEM_PROPERTY.getTableName(), " alter timestamps...");
+        UtlsLogUtil.info(this.getClass(), SystemProperty.SYSTEM_PROPERTY.getTableName(), " alter timestamps...");
         alterTimestampColumns(SystemProperty.SYSTEM_PROPERTY.getTableName());
 
         updateUserTransactionKeyIdToLowerIfExist();
@@ -116,13 +116,13 @@ public class InitDAO {
 
     private List<SFieldString> getMissingVarcharColumns(ResultSet table, List<SFieldString> varcharColumns, String tablename) {
         List<SFieldString> missingColumnnames = new ArrayList<>();
-        UtlsLogUtil.debug(this.getClass(), "checking missing columns...");
+        UtlsLogUtil.info(this.getClass(), "checking missing columns...");
         try {
             ResultSetMetaData metaData = table.getMetaData();
             for (SFieldString column : varcharColumns) {
                 boolean exist = false;
                 for (int i = 1; i <= metaData.getColumnCount(); i++) {
-                    UtlsLogUtil.debug(this.getClass(),
+                    UtlsLogUtil.info(this.getClass(),
                       "checking if column exist table.columnname:", metaData.getColumnName(i),
                       " varcharcolumns:", column.getColumnName());
                     exist = column.getColumnName().equals(metaData.getColumnName(i));
@@ -131,7 +131,7 @@ public class InitDAO {
                     }
                 }
                 if (!exist) {
-                    UtlsLogUtil.debug(this.getClass(), "found missing column:", column.getColumnName());
+                    UtlsLogUtil.info(this.getClass(), "found missing column:", column.getColumnName());
                     missingColumnnames.add(column);
 
                 }
@@ -147,13 +147,13 @@ public class InitDAO {
 
     private List<SFieldString> getVarcharColumnsWithBiggerColumnSize(ResultSet table, List<SFieldString> varcharColumns, String tablename) {
         List<SFieldString> changedColumnSize = new ArrayList<>();
-        UtlsLogUtil.debug(this.getClass(), "checking size of columns...");
+        UtlsLogUtil.info(this.getClass(), "checking size of columns...");
         try {
             ResultSetMetaData metaData = table.getMetaData();
             for (SFieldString column : varcharColumns) {
                 boolean changedSize = false;
                 for (int i = 1; i <= metaData.getColumnCount(); i++) {
-                    UtlsLogUtil.debug(this.getClass(),
+                    UtlsLogUtil.info(this.getClass(),
                       "checking if column size is changed, columnname:", metaData.getColumnName(i),
                       " varcharcolumns:", column.getColumnName());
                     changedSize = column.getMaxSize() > metaData.getColumnDisplaySize(i);
@@ -162,7 +162,7 @@ public class InitDAO {
                     }
                 }
                 if (changedSize) {
-                    UtlsLogUtil.debug(this.getClass(), "found column with changed size:", column.getColumnName());
+                    UtlsLogUtil.info(this.getClass(), "found column with changed size:", column.getColumnName());
                     changedColumnSize.add(column);
 
                 }
@@ -177,7 +177,7 @@ public class InitDAO {
     }
 
     private void addMissingVarcharColumn(String tablename, SFieldString missingColumn) throws SQLException {
-        UtlsLogUtil.debug(this.getClass(),
+        UtlsLogUtil.info(this.getClass(),
           "adding missing column:", missingColumn.toString(),
           " to table:", tablename);
         StringBuilder sqlEvent = new StringBuilder();
@@ -188,7 +188,7 @@ public class InitDAO {
     }
 
     private void alterSizeOfColumn(String tablename, SFieldString column) throws SQLException {
-        UtlsLogUtil.debug(this.getClass(),
+        UtlsLogUtil.info(this.getClass(),
           " changing size of column:", column.toString(),
           " to table:", tablename, " to size:", Integer.toString(column.getMaxSize()));
         StringBuilder sqlEvent = new StringBuilder();
@@ -200,7 +200,7 @@ public class InitDAO {
 
 
     private void alterTimestampColumns(String tablename) throws SQLException {
-        UtlsLogUtil.debug(this.getClass(), "altering timestamp in table:", tablename);
+        UtlsLogUtil.info(this.getClass(), "altering timestamp in table:", tablename);
         StringBuilder sqlEvent = new StringBuilder();
         sqlEvent.append("ALTER TABLE ").append(tablename)
           .append(" MODIFY timestamp TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3)");
@@ -213,7 +213,7 @@ public class InitDAO {
         StringBuilder sql = new StringBuilder();
         sql.append("select id from ").append(UserTransactionKey.USER_TRANSACTION_KEY.getTableName())
           .append(" where id REGEXP BINARY '[A-Z]'");
-        UtlsLogUtil.debug(InitDAO.class, "check if it exist any userTransactionKeyId with capital letters:", sql.toString());
+        UtlsLogUtil.info(InitDAO.class, "check if it exist any userTransactionKeyId with capital letters:", sql.toString());
         Connection connection = ConnectionFactory.getInstance().getConnection();
         PreparedStatement ps = null;
         ResultSet resultSet = null;
@@ -263,7 +263,7 @@ public class InitDAO {
     }
 
     private ResultSet getTableWithName(String tablename) throws SQLException {
-        UtlsLogUtil.debug(this.getClass(), tablename, " getTableWithName...");
+        UtlsLogUtil.info(this.getClass(), tablename, " getTableWithName...");
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT * FROM ").append(tablename);
         return runSqlCommandAndGetResult(sql, "Something went wrong when 'select * from':" + tablename);
@@ -273,13 +273,13 @@ public class InitDAO {
      * Creates the database-tables needed.
      */
     public void createTables() throws Exception {
-        UtlsLogUtil.debug(this.getClass(), "going to create tables");
+        UtlsLogUtil.info(this.getClass(), "going to create tables");
         SSessionJdbc session = null;
         try {
             session = ConnectionFactory.getInstance().getSession(ConnectionFactory.LOG_SERVER_CONN_NAME);
-            UtlsLogUtil.debug(this.getClass(), "dropping tables");
+            UtlsLogUtil.info(this.getClass(), "dropping tables");
             dropAllTables(session);
-            UtlsLogUtil.debug(this.getClass(), "creating tables");
+            UtlsLogUtil.info(this.getClass(), "creating tables");
             createTables(session);
         }
         finally {
@@ -314,7 +314,7 @@ public class InitDAO {
     }
 
     public void updateSystemUser() throws SQLException {
-        UtlsLogUtil.debug(this.getClass(), "updateSystemUser");
+        UtlsLogUtil.info(this.getClass(), "updateSystemUser");
         StringBuilder sql = new StringBuilder("update SystemProperty set userTransactionKeyId = 'systemsystemsystem' where userTransactionKeyId like('SystemSystemSystem')");
         String errorMessSchedule = "Something went wrong when updating SystemProperty and systemuser:";
         runSqlCommand(sql, errorMessSchedule);
@@ -326,7 +326,7 @@ public class InitDAO {
     }
 
     public void createDeleteLogEvent() throws SQLException {
-        UtlsLogUtil.debug(this.getClass(), "createDeleteLogEvent");
+        UtlsLogUtil.info(this.getClass(), "createDeleteLogEvent");
         StringBuilder sql = new StringBuilder("SET GLOBAL event_scheduler = ON");
         String errorMessSchedule = "Something went wrong when creating delete_log-event:";
         runSqlCommand(sql, errorMessSchedule);
@@ -334,24 +334,24 @@ public class InitDAO {
     }
 
     public void createFetchLogUsers() {
-        UtlsLogUtil.debug(this.getClass(), " checking if we have to create fetch-log-users");
+        UtlsLogUtil.info(this.getClass(), " checking if we have to create fetch-log-users");
         String delproUser = ServerProperties.getInstance().getProp(ServerProperties.PropKey.FETCH_LOG_USER_DELPRO);
         String toolUser = ServerProperties.getInstance().getProp(ServerProperties.PropKey.FETCH_LOG_USER_TOOL);
         InternalSystemProperty delproUserProperty = getSystemPropertyWithName(delproUser);
         InternalSystemProperty toolUserProperty = getSystemPropertyWithName(toolUser);
         if (delproUserProperty == null || !delproUserProperty.getValue().equals(delproUser)) {
-            UtlsLogUtil.debug(this.getClass(), " creating delpro fetch-log-user as a systemproperty");
+            UtlsLogUtil.info(this.getClass(), " creating delpro fetch-log-user as a systemproperty");
             createSystemProperty(delproUser, delproUser);
         }
         if (toolUserProperty == null || !toolUserProperty.getValue().equals(toolUser)) {
-            UtlsLogUtil.debug(this.getClass(), " creating utls-tool fetch-log-user as a systemproperty");
+            UtlsLogUtil.info(this.getClass(), " creating utls-tool fetch-log-user as a systemproperty");
             createSystemProperty(toolUser, toolUser);
         }
 
     }
 
     private void createDeleteEventLogEvent() throws SQLException {
-        UtlsLogUtil.debug(this.getClass(), " create deleteEventLogEvent");
+        UtlsLogUtil.info(this.getClass(), " create deleteEventLogEvent");
         String deleteEventLogsIntervalName = ServerProperties.getInstance().getProp(ServerProperties.PropKey.SYSTEM_PROPERTY_NAME_DELETE_EVENT_LOGS_INTERVAL);
         String deleteInterval = getDeleteInterval(deleteEventLogsIntervalName);
 
@@ -374,7 +374,7 @@ public class InitDAO {
     }
 
     public List<String> getAllUserTransactionKeysThatLacksLogs() {
-        UtlsLogUtil.debug(this.getClass(), "getAllUserTransactionKeysThatLacksLogs");
+        UtlsLogUtil.info(this.getClass(), "getAllUserTransactionKeysThatLacksLogs");
         ResultSet resultSet = null;
         List<String> ids = new ArrayList<>();
         try {
@@ -405,7 +405,7 @@ public class InitDAO {
     }
 
     private String getDeleteInterval(String name) throws SQLException {
-        UtlsLogUtil.debug(this.getClass(), " getDeleteInterval with name:" + name);
+        UtlsLogUtil.info(this.getClass(), " getDeleteInterval with name:" + name);
         InternalSystemProperty systemPropertyWithName = getSystemPropertyWithName(name);
         String interval = ServerProperties.getInstance().getProp(ServerProperties.PropKey.DELETE_LOGS_INTERVAL_DEFAULT_IN_DAYS) != null ?
           ServerProperties.getInstance().getProp(ServerProperties.PropKey.DELETE_LOGS_INTERVAL_DEFAULT_IN_DAYS) : DEFAULT_DELETE_INTERVAL_IN_DAYS;
@@ -417,7 +417,7 @@ public class InitDAO {
     }
 
     private InternalSystemProperty getSystemPropertyWithName(String name) {
-        UtlsLogUtil.debug(this.getClass(), " fetching systemproperty with name:" + name);
+        UtlsLogUtil.info(this.getClass(), " fetching systemproperty with name:" + name);
         GetSystemPropertyWithNameOperation operation = OperationFactory.getSystemPropertyWithName(name);
         OperationResult<InternalSystemProperty> operationResult = OperationDAO.getInstance().doRead(operation);
         List<InternalSystemProperty> result = operationResult.getResult();
@@ -438,45 +438,25 @@ public class InitDAO {
     }
 
     private void runSqlCommand(StringBuilder sql, String errorMess) throws SQLException {
-        UtlsLogUtil.debug(InitDAO.class, "running sql-command:", sql.toString());
+        UtlsLogUtil.info(InitDAO.class, "running sql-command:", sql.toString());
         Connection connection = ConnectionFactory.getInstance().getConnection();
-        ResultSet resultSet = null;
-        PreparedStatement ps = null;
-        try {
-            ps = connection.prepareStatement(sql.toString());
-            resultSet = ps.executeQuery();
 
+        try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+            ps.executeQuery();
+            connection.commit();
         }
         catch (SQLException e) {
             UtlsLogUtil.error(this.getClass(), errorMess, e.getMessage());
-        }
-        finally {
-            try {
-                if (resultSet != null) {
-                    resultSet.close();
-                }
-            }
-            catch (SQLException e) {
-                UtlsLogUtil.error(this.getClass(), "Something went wrong when closing resultset:", e.getMessage());
-            }
-            try {
-                if (ps != null) {
-                    ps.close();
-                }
-            }
-            catch (SQLException e) {
-                UtlsLogUtil.error(this.getClass(), "Something went wrong when closing prepared statement:", e.getMessage());
-            }
+            connection.rollback();
+
         }
     }
 
     private ResultSet runSqlCommandAndGetResult(StringBuilder sql, String errorMess) throws SQLException {
-        UtlsLogUtil.debug(InitDAO.class, "running sql-command and returning result:", sql.toString());
+        UtlsLogUtil.info(InitDAO.class, "running sql-command and returning result:", sql.toString());
         Connection connection = ConnectionFactory.getInstance().getConnection();
         ResultSet resultSet = null;
-        PreparedStatement ps = null;
-        try {
-            ps = connection.prepareStatement(sql.toString());
+        try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
             resultSet = ps.executeQuery();
 
         }
@@ -484,14 +464,6 @@ public class InitDAO {
             UtlsLogUtil.error(this.getClass(), errorMess, e.getMessage());
         }
         finally {
-            if (ps != null) {
-                try {
-                    ps.close();
-                }
-                catch (SQLException e) {
-                    UtlsLogUtil.error(this.getClass(), "Something went wrong when closing prepared statement:", e.getMessage());
-                }
-            }
             if (resultSet != null) {
                 try {
                     resultSet.close();
