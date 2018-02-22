@@ -187,12 +187,10 @@ public class FetchAllEventLogsService {
     }
 
     JsonArray getAllEventLogsWithinTimespanAsJson(FetchLogDTO fetchLogDTO) {
-        UtlsLogUtil.info(this.getClass(), "Get all eventlogs within timespan and creating json-format");
-
         GetEventLogsWithinTimespanOperation operation = OperationFactory.getEventLogsWithinTimespan(fetchLogDTO);
         OperationResult<InternalEventLog> operationResult = OperationDAO.getInstance().doRead(operation);
 
-        UtlsLogUtil.debug(this.getClass(), "Number of eventlogs found:", Integer.toString(operationResult.getResult().size()));
+        UtlsLogUtil.info(this.getClass(), "Number of eventlogs found:", Integer.toString(operationResult.getResult().size()));
         Gson gson = new Gson();
         JsonElement element = gson.toJsonTree(operationResult.getResult(), new TypeToken<List<InternalEventLog>>() {
         }.getType());

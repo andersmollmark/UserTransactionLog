@@ -16,9 +16,7 @@ public class WebSocketFetchLogMessage extends WebSocketType{
     String toInMillis;
 
     public LocalDateTime getFrom(){
-        LocalDateTime from =
-          Instant.ofEpochMilli(Long.parseLong(fromInMillis)).atZone(ZoneOffset.UTC).toLocalDateTime();
-        return from;
+        return DateUtil.getLocalDateTimeFromMillis(Long.parseLong(fromInMillis));
     }
 
     public String getFromAsString(){
@@ -30,9 +28,7 @@ public class WebSocketFetchLogMessage extends WebSocketType{
     }
 
     public LocalDateTime getTo(){
-        LocalDateTime to =
-          Instant.ofEpochMilli(Long.parseLong(toInMillis)).atZone(ZoneOffset.UTC).toLocalDateTime();
-        return to;
+        return DateUtil.getLocalDateTimeFromMillis(Long.parseLong(toInMillis));
     }
 
     @Override

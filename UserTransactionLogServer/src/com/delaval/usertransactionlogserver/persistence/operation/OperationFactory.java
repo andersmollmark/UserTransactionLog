@@ -6,12 +6,12 @@ import com.delaval.usertransactionlogserver.domain.InternalSystemProperty;
 import com.delaval.usertransactionlogserver.domain.InternalUserTransactionKey;
 import com.delaval.usertransactionlogserver.persistence.entity.SystemProperty;
 import com.delaval.usertransactionlogserver.util.DateUtil;
+import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import com.delaval.usertransactionlogserver.websocket.MessTypes;
 import com.delaval.usertransactionlogserver.websocket.SystemPropertyContent;
 import com.delaval.usertransactionlogserver.websocket.WebSocketMessage;
 import com.google.gson.Gson;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 
 /**
@@ -66,6 +66,10 @@ public class OperationFactory {
         GetEventLogsWithinTimespanOperation operation = new GetEventLogsWithinTimespanOperation();
         StringParameter fromParam = new StringParameter(DateUtil.formatLocalDateTime(fetchLogDTO.getFrom()));
         StringParameter toParam = new StringParameter(DateUtil.formatLocalDateTime(fetchLogDTO.getTo()));
+
+        UtlsLogUtil.info(OperationFactory.class, "Get all eventlogs within timespan and creating json-format, ",
+          "from:", fromParam.value, " to:", toParam.value);
+
         if(fetchLogDTO.getZoneId() != null){
             StringParameter zoneId = new StringParameter(fetchLogDTO.getZoneId().getId());
             operation.setOperationParameters(Arrays.asList(fromParam, toParam, zoneId));

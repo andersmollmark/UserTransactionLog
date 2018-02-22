@@ -1,7 +1,9 @@
 package com.delaval.usertransactionlogserver.util;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
@@ -42,5 +44,9 @@ public class DateUtil {
 
     public static String formatTimeStampToGuiString(LocalDateTime ldt){
         return ldt.format(guiFormatter);
+    }
+
+    public static LocalDateTime getLocalDateTimeFromMillis(long millis){
+          return Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDateTime();
     }
 }
