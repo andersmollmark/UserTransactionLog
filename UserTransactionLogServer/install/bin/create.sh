@@ -32,6 +32,6 @@ cd ../..
 echo command line create.sh
 datestr=`date +%y%m%d`
 timestr=`date +%H%M`
-makeself install install_pkg/utls_"$datestr"_$timestr "User transaction logserver for Asterix" ./bin/install.sh --self
+makeself --xz --complevel 1 install install_pkg/utls_"$datestr"_$timestr "User transaction logserver for Asterix" ./bin/install.sh --self
 
 #popd
