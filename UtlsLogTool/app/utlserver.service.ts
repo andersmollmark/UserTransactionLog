@@ -58,6 +58,7 @@ export class UtlserverService {
     }
 
     getUtlsIp(): string {
+        this.setIpAndPort();
         return this.ipAddr;
     }
 

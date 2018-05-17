@@ -55,6 +55,8 @@ export class AppComponent implements OnInit {
     activeViewname: string = AppConstants.VIEW_EMPTY;
     views: View[] = new Array<View>();
 
+    menu;
+
     constructor(private utlsFileService: UtlsFileService, private timeFilterService: TimeFilterService,
                 private utlserverService: UtlserverService, private zone: NgZone) {
         this.isLoaded = false;
@@ -71,7 +73,7 @@ export class AppComponent implements OnInit {
 
     ngOnInit(): void {
         let self = this;
-        let menu = remote.Menu.buildFromTemplate([{
+        this.menu = remote.Menu.buildFromTemplate([{
             label: 'Menu',
             submenu: [
                 {
@@ -91,7 +93,7 @@ export class AppComponent implements OnInit {
                     }
                 },
                 {
-                    label: 'Change ip for utlserver (now: '.concat(self.utlserverService.getUtlsIp()).concat(')'),
+                    label: self.getIpMenuLabel(),
                     click: function () {
                         self.zone.run(() => self.showView(AppConstants.VIEW_SETTINGS));
                     }
@@ -119,7 +121,7 @@ export class AppComponent implements OnInit {
                 }
             ]
         }]);
-        remote.Menu.setApplicationMenu(menu);
+        remote.Menu.setApplicationMenu(this.menu);
 
     }
 
@@ -128,6 +130,10 @@ export class AppComponent implements OnInit {
         if (this.utlsFileService.isColumnContentChanged()) {
             this.changeColumnValueAndContentValues(this.selectedColumn);
         }
+    }
+
+    private getIpMenuLabel(): string {
+        return 'Change ip for utlserver (now: '.concat(this.utlserverService.getUtlsIp()).concat(')');
     }
 
     closeSettings(): void {
@@ -156,6 +162,11 @@ export class AppComponent implements OnInit {
     showView(viewname: string) {
         let self = this;
         self.zone.run(() => {
+            if(self.isServerIpUpdated(self)){
+                // update ip for server in menu
+                self.ngOnInit();
+            }
+
             if (self.activeViewname !== viewname && self.activeViewname !== AppConstants.VIEW_WAIT &&
                 self.activeViewname !== AppConstants.VIEW_SETTINGS) {
                 self.oldViewname = self.activeViewname;
@@ -169,6 +180,11 @@ export class AppComponent implements OnInit {
         });
     }
 
+    private isServerIpUpdated(component): boolean{
+        return component.activeViewname === AppConstants.VIEW_SETTINGS && component.oldViewname !== AppConstants.VIEW_SETTINGS &&
+            component.menu.items[0].submenu.items[2].label !== component.getIpMenuLabel();
+    }
+
     fetchLogfile(fetchLogParam: FetchLogParam) {
         let show = this.utlsFileService.isOpenWhenFileIsFetched();
         console.log('fetching logfile and will show immediately?' + show);
@@ -180,8 +196,7 @@ export class AppComponent implements OnInit {
                     result => {
                         if (result.isOk) {
                             let filepath = electron.remote.app.getAppPath();
-                            console.log('Logfile with name :' + result.value + ' is saved and appPath is:' + filepath);
-                            alert('Logfile with name :' + result.value + ' is saved');
+                            this.alertLog('Logfile with name :' + result.value + ' is saved and appPath is:' + filepath);
                             if (show) {
                                 let fileAndPath = filepath + '/' + result.value;
                                 self.createLogContentFromFile(fileAndPath, this.utlsFileService.createLogs.bind(this.utlsFileService));
@@ -191,14 +206,13 @@ export class AppComponent implements OnInit {
                             }
                         }
                         else {
-                            console.log(result.value);
-                            alert(result.value);
+                            this.alertLog(result.value);
                             self.showView(this.oldViewname);
                         }
                         logSubscription.unsubscribe();
                     },
                     error => {
-                        console.error('app-component, logsubscription error:' + error);
+                        this.alertLog('app-component, logsubscription error:' + error);
                         logSubscription.unsubscribe();
                         self.showView(this.oldViewname);
                     },
@@ -216,15 +230,11 @@ export class AppComponent implements OnInit {
 
     public checkFilenameAndHandleFile = (fileNamesArr: Array<any>) => {
         if (!fileNamesArr) {
-            let errorText = "No file selected";
-            console.log(errorText);
-            alert(errorText);
+            this.alertLog("No file selected");
             this.showView(this.oldViewname);
         }
         else if (!fileNamesArr[0].endsWith(AppConstants.UTL_FILE_SUFFIX)) {
-            let errorText = "File must be encrypted (ends with .utls)";
-            console.log(errorText);
-            alert(errorText);
+            this.alertLog("File must be encrypted (ends with .utls)");
             this.showView(this.oldViewname);
         }
         else {
@@ -235,16 +245,12 @@ export class AppComponent implements OnInit {
 
     public checkFilenameAndHandleEncryptedFile = (fileNamesArr: Array<any>) => {
         if (!fileNamesArr) {
-            let errorText = "No file selected";
-            console.log(errorText);
-            alert(errorText);
+            this.alertLog("No file selected");
             this.showView(this.oldViewname);
         }
         else if (!fileNamesArr[0].endsWith(AppConstants.UTL_ENCRYPTED_FILE_SUFFIX) &&
             !fileNamesArr[0].endsWith(AppConstants.UTL_BACKUP_FILE_SUFFIX)) {
-            let errorText = "File must be encrypted (ends with .encrypted)";
-            console.log(errorText);
-            alert(errorText);
+            this.alertLog("File must be encrypted (ends with .encrypted)");
             this.showView(this.oldViewname);
         }
         else {
@@ -339,6 +345,11 @@ export class AppComponent implements OnInit {
             }
         }
 
+    }
+
+    private alertLog(log: string): void {
+        console.log(log);
+        alert(log);
     }
 
 
