@@ -21,9 +21,10 @@ public class AppConfigEventLog {
 
     @Bean
     ConnectionFactory connectionFactory() {
-        PooledConnectionFactory pooledConnectionFactory = new PooledConnectionFactory(
-                new ActiveMQConnectionFactory(ServerProperties.getInstance().getProp(ServerProperties.PropKey.JMS_CONNECTION)));
+        ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(ServerProperties.getInstance().getProp(ServerProperties.PropKey.JMS_CONNECTION));
+        PooledConnectionFactory pooledConnectionFactory = new PooledConnectionFactory(activeMQConnectionFactory);
         pooledConnectionFactory.setReconnectOnException(true);
+
         return pooledConnectionFactory;
     }
 

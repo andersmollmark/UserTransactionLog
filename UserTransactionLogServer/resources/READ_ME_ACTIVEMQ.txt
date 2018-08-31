@@ -16,3 +16,6 @@ if [ -z "$ACTIVEMQ_PIDFILE" ]; then
   ACTIVEMQ_PIDFILE="/var/run/activemq.pid"
 fi
 
+############# user and pwd to login to activemq ################
+/// Go to url http:ip_to_amsserver:8161/admin/
+// user: admin, pwd: admin

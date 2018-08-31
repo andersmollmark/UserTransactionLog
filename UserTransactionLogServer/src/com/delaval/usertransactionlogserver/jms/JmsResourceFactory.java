@@ -1,12 +1,8 @@
 package com.delaval.usertransactionlogserver.jms;
 
-import com.delaval.usertransactionlogserver.service.JmsMessageService;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.jms.config.JmsListenerEndpointRegistry;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.listener.SimpleMessageListenerContainer;
-import org.springframework.jms.listener.adapter.MessageListenerAdapter;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -26,9 +22,16 @@ public class JmsResourceFactory {
     }
 
     public static synchronized JmsResourceFactory getEventLogInstance() {
+        UtlsLogUtil.debug(JmsResourceFactory.class, "inside getEventLogInstance");
         if (_eventLogInstance == null) {
-            _eventLogInstance = new JmsResourceFactory();
-            _eventLogInstance.ctx = new AnnotationConfigApplicationContext(AppConfigEventLog.class);
+            try {
+                _eventLogInstance = new JmsResourceFactory();
+                _eventLogInstance.ctx = new AnnotationConfigApplicationContext(AppConfigEventLog.class);
+            }
+            catch(Throwable t) {
+                _eventLogInstance = null;
+                UtlsLogUtil.error(JmsResourceFactory.class, "getEventLogInstance caused an exception, maybe activemq is down:", t.getMessage());
+            }
         }
         return _eventLogInstance;
     }

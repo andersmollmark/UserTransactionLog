@@ -26,7 +26,7 @@ public class ServerProperties {
         DB_NAME("dbName", "user_transaction_log_server"),
         DB_USER("dbUser", "root"),
         DB_PWD("dbPassword", "delavalpwd"),
-        JMS_CONNECTION("jmsConnection", "failover:(tcp://localhost:61616)?startupMaxReconnectAttempts=1"),
+        JMS_CONNECTION("jmsConnection", "failover:(tcp://localhost:61616)?initialReconnectDelay=200&startupMaxReconnectAttempts=1"),
         JMS_QUEUE_DEST_EVENT("jmsQueueEventLog", "UserTransactionEventLog"),
         THREAD_POOL_SIZE("threadPoolSize", "500"),
         LOGGING_KEY("loggingKey", "utlserver"),
@@ -34,7 +34,7 @@ public class ServerProperties {
         DELETE_LOGS_INTERVAL_DEFAULT_IN_DAYS("deleteLogsIntervalDefault", InitDAO.DEFAULT_DELETE_INTERVAL_IN_DAYS),
         SYSTEM_PROPERTY_NAME_DELETE_EVENT_LOGS_INTERVAL("deleteEventLogsIntervalName", "deleteEventLogsIntervalName"),
         CONNECTION_TIMEOUT_IN_SECONDS("connectionTimeoutInSeconds", "10"),
-        UTLS_LOG_CACHE_MAX_SIZE("utlsLogCacheMaxSize", "500"),
+        UTLS_LOG_CACHE_MAX_SIZE("utlsLogCacheMaxSize", "1000"),
         FETCH_LOG_USER_DELPRO("fetchLogUserDelpro", "delPr0backup2017"), // 0 is a zero,
         FETCH_LOG_USER_TOOL("fetchLogUserTool", "utlsT00l2017rule"), // 0 is zeros
         RSA_ALGORITHM("rsaAlgorithm", "RSA/ECB/PKCS1Padding"),

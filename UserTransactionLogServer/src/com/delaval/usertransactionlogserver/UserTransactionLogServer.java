@@ -9,6 +9,7 @@ import ch.qos.logback.classic.Level;
 import com.delaval.usertransactionlogserver.jms.JmsResourceFactory;
 import com.delaval.usertransactionlogserver.persistence.ConnectionFactory;
 import com.delaval.usertransactionlogserver.persistence.dao.InitDAO;
+import com.delaval.usertransactionlogserver.service.ConnectionTimeoutService;
 import com.delaval.usertransactionlogserver.service.CryptoKeyService;
 import com.delaval.usertransactionlogserver.service.FetchAllEventLogsService;
 import com.delaval.usertransactionlogserver.servlet.LogWebSocketServlet;
@@ -90,6 +91,8 @@ public class UserTransactionLogServer {
         try {
             server.start();
             JmsResourceFactory.initApplicationContext();
+            // Start the timer to be sure that if there are any logs in cachefile, its going to be saved to db
+            ConnectionTimeoutService.stopJmsAndStartTimer();
             server.join();
 
         } catch (Exception e) {

@@ -2,10 +2,14 @@ package com.delaval.usertransactionlogserver.service;
 
 import com.delaval.usertransactionlogserver.ServerProperties;
 import com.delaval.usertransactionlogserver.jms.JmsResourceFactory;
+import com.delaval.usertransactionlogserver.jms.JmsTempCache;
 import com.delaval.usertransactionlogserver.persistence.ConnectionFactory;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
+import com.delaval.usertransactionlogserver.websocket.WebSocketMessage;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +40,7 @@ public class ConnectionTimeoutService {
     private static void startNew() {
         synchronized (LOCK) {
             executorService = Executors.newSingleThreadExecutor();
-            UtlsLogUtil.info(ConnectionTimeoutService.class, " starting a new connection timeout");
+            UtlsLogUtil.debug(ConnectionTimeoutService.class, " starting a new connection timeout");
             executorService.execute(new TimeoutTask());
         }
     }
@@ -47,7 +51,7 @@ public class ConnectionTimeoutService {
     public static void stop() {
         synchronized (LOCK) {
             if (isRunning()) {
-                UtlsLogUtil.info(ConnectionTimeoutService.class, " shutting down connection timeout");
+                UtlsLogUtil.debug(ConnectionTimeoutService.class, " shutting down connection timeout");
                 executorService.shutdownNow();
             }
         }
@@ -74,13 +78,17 @@ public class ConnectionTimeoutService {
         @Override
         public void run() {
             boolean success = true;
+            Map<WebSocketMessage, String> messThatsNotSent = new HashMap<>();
             try {
                 TimeUnit.SECONDS.sleep(timeoutInSeconds);
-                UtlsLogUtil.info(ConnectionTimeoutService.class, " trying to get connection again");
+                UtlsLogUtil.debug(ConnectionTimeoutService.class, " trying to get connection again");
                 ConnectionFactory.checkIfConnectionIsOk();
-                UtlsLogUtil.info(ConnectionTimeoutService.class, " the connection should be up again and we try to send cached jms-messages");
-                JmsMessageService.getInstance().sendCachedJmsMessages();
+                messThatsNotSent = JmsMessageService.getInstance().sendCachedJmsMessages();
+                if(messThatsNotSent.size() > 0) {
+                    success = false;
+                }
             } catch (InterruptedException e) {
+                UtlsLogUtil.debug(ConnectionTimeoutService.class, " ****** interruptedException:", e.getMessage());
                 e.printStackTrace();
             }
             catch (SQLException sqlException){
@@ -94,6 +102,7 @@ public class ConnectionTimeoutService {
                     }
                 }
                 if(!success){
+                    JmsTempCache.getInstance().addMessageListThatsNotBeeingSent(messThatsNotSent);
                     ConnectionTimeoutService.startNew();
                 }
 
@@ -101,12 +110,6 @@ public class ConnectionTimeoutService {
             }
         }
 
-//        private void checkIfConnectionIsOk() throws SQLException {
-//            ConnectionFactory.getInstance().getConnection();
-//            if(ConnectionFactory.getInstance().isAnyLogTableLocked()){
-//                throw new SQLException("a logtable is locked");
-//            }
-//        }
     }
 
 }

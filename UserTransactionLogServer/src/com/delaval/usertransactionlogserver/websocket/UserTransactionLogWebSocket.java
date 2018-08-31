@@ -23,7 +23,7 @@ public class UserTransactionLogWebSocket {
     @OnWebSocketConnect
     public void onconnect(Session session) {
         mySession = session;
-        UtlsLogUtil.info(this.getClass(), "CONNECTING session:", sessionController.getRemoteAddress(mySession));
+        UtlsLogUtil.trace(this.getClass(), "CONNECTING session:", sessionController.getRemoteAddress(mySession));
         sessionController.add(mySession);
         checkSessionPerHost();
     }
@@ -35,8 +35,7 @@ public class UserTransactionLogWebSocket {
 
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
-        UtlsLogUtil.info(this.getClass(),
-          "CLOSING websocket:",
+        UtlsLogUtil.debug(this.getClass(), "CLOSING websocket:",
           sessionController.getRemoteAddress(mySession),
           ", status:", Integer.toString(statusCode),
           " reason:", reason,
@@ -71,7 +70,7 @@ public class UserTransactionLogWebSocket {
     public void handleMessage(Session session, String jsonMessage) {
         try {
             WebSocketType webSocketType = new Gson().fromJson(jsonMessage, WebSocketType.class);
-            if (MessTypes.IDLE_POLL.isSame(webSocketType.getType())) {
+            if (MessTypes.IDLE_POLL.isSame(webSocketType.getType()) || MessTypes.AUTHORIZE_REQ.isSame(webSocketType.getType())) {
                 session.getRemote().sendStringByFuture(jsonMessage);
                 return;
             }

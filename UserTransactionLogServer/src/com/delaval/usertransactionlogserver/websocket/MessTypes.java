@@ -5,6 +5,7 @@ package com.delaval.usertransactionlogserver.websocket;
  */
 public enum MessTypes {
 
+    AUTHORIZE_REQ("AuthorizeReq"),
     IDLE_POLL("IdlePoll"),
     SYSTEM_PROPERTY("systemProperty"),
     JSON_DUMP("jsonDump"),

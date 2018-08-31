@@ -43,6 +43,12 @@ public class UtlsLogUtil {
         }
     }
 
+    public static void trace(Class clazz, String... mess) {
+        synchronized (LOCK) {
+            LOGGER.trace(getLogRow(clazz, getLogString(mess)));
+        }
+    }
+
     public static boolean isDebug(){
         return LOGGER.isDebugEnabled();
     }
