@@ -37,6 +37,7 @@ public class JmsTempCache {
 //        singleton
         String maxSize = ServerProperties.getInstance().getProp(ServerProperties.PropKey.UTLS_LOG_CACHE_MAX_SIZE);
         maxNumberOfLogs = Integer.parseInt(maxSize);
+        createEmptyCachefile();
     }
 
     /**
@@ -68,7 +69,7 @@ public class JmsTempCache {
 
             }
             catch (IOException e) {
-                e.printStackTrace();
+                UtlsLogUtil.error(this.getClass(), "create logs from cache didnt work:", e.getMessage());
             }
         }
     }
@@ -117,20 +118,21 @@ public class JmsTempCache {
         synchronized (LOG_LOCK) {
             logsCopy = listOfLogs;
             listOfLogs = new ConcurrentHashMap<>();
-            deleteCacheContentOnFile();
+            createEmptyCachefile();
             UtlsLogUtil.info(this.getClass(), "Trying to recreate ", Integer.toString(logsCopy.size()), " jms-messages from cache");
         }
         return logsCopy;
     }
 
-    private void deleteCacheContentOnFile() {
+    private void createEmptyCachefile() {
         try (PrintWriter pw = new PrintWriter(FetchAllEventLogsService.DEFAULT_FILE_PATH_TMP + JmsTempCache.logCache)) {
-            UtlsLogUtil.debug(this.getClass(), "********** a new cachefile is created");
+            UtlsLogUtil.info(this.getClass(), "a new cachefile is created");
         }
         catch (FileNotFoundException e) {
             UtlsLogUtil.error(this.getClass(), "something went wrong while creating file for cached logs:", " Exception:" + e.toString());
         }
     }
+
 
     public synchronized void addMessageListThatsNotBeeingSent(Map<WebSocketMessage, String> messages) {
         messages.forEach(this::addLog);

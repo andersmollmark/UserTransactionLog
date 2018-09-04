@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Handles the timeout-functionality connected to remotecontrol. And the timeout-time can be altered in properties-file (vmsFarm.properties
+ * Handles a timeout-functionality when checking both connection to mysql and activemq. And the timeout-time can be altered in properties-file UserTransactionLogServer.properties
  */
 public class ConnectionTimeoutService {
 
@@ -64,7 +64,7 @@ public class ConnectionTimeoutService {
     }
 
     /**
-     * Handles what to do when rc is timing out
+     * Checks if connection to mysql is up and ok and it tries to send, if it exist, cached messages to activemq again.
      */
     private static class TimeoutTask implements Runnable {
 
@@ -81,19 +81,19 @@ public class ConnectionTimeoutService {
             Map<WebSocketMessage, String> messThatsNotSent = new HashMap<>();
             try {
                 TimeUnit.SECONDS.sleep(timeoutInSeconds);
-                UtlsLogUtil.debug(ConnectionTimeoutService.class, " trying to get connection again");
+                UtlsLogUtil.debug(ConnectionTimeoutService.class, "trying to get connection again");
                 ConnectionFactory.checkIfConnectionIsOk();
                 messThatsNotSent = JmsMessageService.getInstance().sendCachedJmsMessages();
                 if(messThatsNotSent.size() > 0) {
                     success = false;
                 }
             } catch (InterruptedException e) {
-                UtlsLogUtil.debug(ConnectionTimeoutService.class, " ****** interruptedException:", e.getMessage());
+                UtlsLogUtil.debug(ConnectionTimeoutService.class, "interruptedException:", e.getMessage());
                 e.printStackTrace();
             }
             catch (SQLException sqlException){
                 success = false;
-                UtlsLogUtil.error(ConnectionTimeoutService.class, " connection is still down");
+                UtlsLogUtil.error(ConnectionTimeoutService.class, "connection is still down");
             }
             finally {
                 synchronized (LOCK) {

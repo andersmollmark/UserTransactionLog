@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 
+import java.net.SocketTimeoutException;
 import java.util.List;
 
 /**
@@ -29,8 +30,15 @@ public class UserTransactionLogWebSocket {
     }
 
     @OnWebSocketError
-    public void onError(Throwable t) {
-        UtlsLogUtil.error(this.getClass(), "WebSocketError, reason:", t.toString());
+    public void onError(Session session, Throwable t) {
+        if(t instanceof SocketTimeoutException) {
+            UtlsLogUtil.debug(this.getClass(), "WebSocketError, reason:", t.toString());
+            session.close();
+        }
+        else {
+            UtlsLogUtil.error(this.getClass(), "WebSocketError, reason:", t.toString());
+        }
+
     }
 
     @OnWebSocketClose
