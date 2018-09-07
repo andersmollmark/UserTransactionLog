@@ -177,4 +177,4 @@ fi
 /etc/init.d/local start
 
 endInstallation
-/usr/bin/logger -t install Installation ver $build finished!
+/usr/bin/logger -t install Installation ver $build of UTLS finished!
