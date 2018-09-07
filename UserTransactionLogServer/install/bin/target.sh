@@ -41,7 +41,7 @@ build=$1
 initInstallation
 
 echo "Installing ver $build of utls"
-/usr/bin/logger -t install Installing utls
+/usr/bin/logger -t install Installing ver $build of utls
 
 echo "changing rights in /tmp"
 /usr/bin/logger  -p user.debug -t install Changing rights in /tmp
