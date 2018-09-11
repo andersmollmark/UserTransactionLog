@@ -38,8 +38,8 @@ import java.util.TimeZone;
 public class FetchAllEventLogsService {
 
     public static final String DEFAULT_FILE_PATH_TMP = "/tmp/";
-    public static final String DEFAULT_FILENAME_JSONDUMP = "jsonDump";
-    private static final String LAST_DAY_FILENAME = "dataLastDay.encrypted";
+    public static final String DEFAULT_FILENAME_JSONDUMP = "jsonDump.json";
+    private static final String LAST_DAY_FILENAME = "dataLastDay.enc";
 
     public void writeJsonDumpOnDefaultFile() {
         writeJsonDumpOnFile(DEFAULT_FILE_PATH_TMP, DEFAULT_FILENAME_JSONDUMP);

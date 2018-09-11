@@ -157,7 +157,7 @@ public class UserTransactionLogServer {
                 System.out.println("-V");
                 System.out.println("writes out version of server");
                 System.out.println("-dump");
-                System.out.println("writes db-content in jsonformat on defaultlocation and defaultfile /tmp/jsonDump");
+                System.out.println("writes db-content in jsonformat on defaultlocation and defaultfile /tmp/jsonDump.json");
                 System.out.println("-dump path filename");
                 System.out.println("writes db-content in jsonformat on location specified in path and file specified in filename");
                 System.exit(0);
