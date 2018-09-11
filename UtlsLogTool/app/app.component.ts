@@ -85,14 +85,6 @@ export class AppComponent implements OnInit {
                     }
                 },
                 {
-                    label: 'Open encrypted logfile',
-                    click: function () {
-                        self.zone.run(() => {
-                            dialog.showOpenDialog(self.checkFilenameAndHandleEncryptedFile);
-                        });
-                    }
-                },
-                {
                     label: self.getIpMenuLabel(),
                     click: function () {
                         self.zone.run(() => self.showView(AppConstants.VIEW_SETTINGS));
@@ -162,7 +154,7 @@ export class AppComponent implements OnInit {
     showView(viewname: string) {
         let self = this;
         self.zone.run(() => {
-            if(self.isServerIpUpdated(self)){
+            if (self.isServerIpUpdated(self)) {
                 // update ip for server in menu
                 self.ngOnInit();
             }
@@ -180,7 +172,7 @@ export class AppComponent implements OnInit {
         });
     }
 
-    private isServerIpUpdated(component): boolean{
+    private isServerIpUpdated(component): boolean {
         return component.activeViewname === AppConstants.VIEW_SETTINGS && component.oldViewname !== AppConstants.VIEW_SETTINGS &&
             component.menu.items[0].submenu.items[2].label !== component.getIpMenuLabel();
     }
@@ -196,10 +188,10 @@ export class AppComponent implements OnInit {
                     result => {
                         if (result.isOk) {
                             let filepath = electron.remote.app.getAppPath();
-                            this.alertLog('Logfile with name :' + result.value + ' is saved and appPath is:' + filepath);
+                            this.alertLog('Logfile with name :' + result.value + ' is saved at location:\n' + filepath);
                             if (show) {
                                 let fileAndPath = filepath + '/' + result.value;
-                                self.createLogContentFromFile(fileAndPath, this.utlsFileService.createLogs.bind(this.utlsFileService));
+                                self.createLogContentFromFile(fileAndPath, this.utlsFileService.createLogsFromFile.bind(this.utlsFileService));
                             }
                             else {
                                 self.showView(this.oldViewname);
@@ -233,30 +225,8 @@ export class AppComponent implements OnInit {
             this.alertLog("No file selected");
             this.showView(this.oldViewname);
         }
-        else if (!fileNamesArr[0].endsWith(AppConstants.UTL_FILE_SUFFIX)) {
-            this.alertLog("File must be encrypted (ends with .utls)");
-            this.showView(this.oldViewname);
-        }
-        else {
-            console.log("filename selected:" + fileNamesArr[0]);
-            this.createLogContentFromFile(fileNamesArr[0], this.utlsFileService.createLogs.bind(this.utlsFileService));
-        }
-    }
-
-    public checkFilenameAndHandleEncryptedFile = (fileNamesArr: Array<any>) => {
-        if (!fileNamesArr) {
-            this.alertLog("No file selected");
-            this.showView(this.oldViewname);
-        }
-        else if (!fileNamesArr[0].endsWith(AppConstants.UTL_ENCRYPTED_FILE_SUFFIX) &&
-            !fileNamesArr[0].endsWith(AppConstants.UTL_BACKUP_FILE_SUFFIX)) {
-            this.alertLog("File must be encrypted (ends with .encrypted)");
-            this.showView(this.oldViewname);
-        }
-        else {
-            console.log("filename selected:" + fileNamesArr[0]);
-            this.createLogContentFromFile(fileNamesArr[0], this.utlsFileService.createLogsFromEncryptedFile.bind(this.utlsFileService));
-        }
+        console.log("filename selected:" + fileNamesArr[0]);
+        this.createLogContentFromFile(fileNamesArr[0], this.utlsFileService.createLogsFromFile.bind(this.utlsFileService));
     }
 
     public createLogContentFromFile = (fileName: string, fetchLogFunction: Function) => {
@@ -267,9 +237,13 @@ export class AppComponent implements OnInit {
         let self = this;
         self.zone.run(() => {
             let logSubscription = this.logs$.subscribe(logs => {
-                self.setTimeData(logs);
-                logSubscription.unsubscribe();
-            });
+                    self.setTimeData(logs);
+                    logSubscription.unsubscribe();
+                },
+                error => {
+                    console.log('Error while creating logs from file:' + error);
+                    logSubscription.unsubscribe();
+                });
         });
         this.showView(AppConstants.VIEW_LOGS);
         this.isLoaded = true;

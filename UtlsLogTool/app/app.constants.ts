@@ -20,9 +20,10 @@ export class AppConstants {
     public static UTL_LOG_DUMPMESSAGE = 'fetchLogsWithTimezone';
     public static UTL_LOGS_LAST_DAY = 'fetchLogsLastDay';
     public static UTL_LOGS_BACKUP_FETCH_LOGS = 'fetchLogs';
+    public static UTL_DUMP_MESSTYPE = 'jsonDump';
 
-    public static UTL_ENCRYPTED_FILE_SUFFIX = '.encrypted';
-    public static UTL_BACKUP_FILE_SUFFIX = '.json';
+    public static UTL_ENCRYPTED_FILE_SUFFIX = '.enc';
+    public static UTL_JSON_FILE_SUFFIX = '.json';
     public static UTL_FILE_SUFFIX = '.utls';
 
     public static IPC_CLOSE_WAIT_VIEW = 'closeWait';

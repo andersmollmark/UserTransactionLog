@@ -1,4 +1,4 @@
-import {Injectable} from "@angular/core";
+import {Injectable, NgZone} from "@angular/core";
 import {UtlsLog} from "./log";
 import {Observable} from "rxjs/Observable";
 import {Http} from "@angular/http";
@@ -11,8 +11,8 @@ import {Subject} from "rxjs/Subject";
 import {FetchLogParam} from "./fetchLogParam";
 import {CryptoService} from "./crypto.service";
 import {LogMessage} from "./logMessage";
-import moment = require("moment");
 import {Subscriber} from "rxjs/Subscriber";
+import moment = require("moment");
 
 let fileSystem = require('fs');
 const electron = require('electron');
@@ -25,12 +25,7 @@ export class UtlsFileService {
     activeLogContent: Observable<UtlsLog[]>;
     partOfLogContent: Observable<UtlsLog[]>;
 
-    encryptedFileContent: Observable<LogMessage>;
-    public filereaderSubject: Subject<any>;
-
-
     columnContentHasChanged: boolean = false;
-    private logfileIsFetched: boolean = false;
     private openLogsWhenFileIsFetched: boolean = false;
 
     usersInLogContent: Dto[] = [];
@@ -49,7 +44,7 @@ export class UtlsFileService {
         allColumnContent: []
     };
 
-    constructor(private http: Http, private utlsserverService: UtlserverService, private cryptoService: CryptoService) {
+    constructor(private http: Http, private utlsserverService: UtlserverService, private cryptoService: CryptoService, private zone: NgZone) {
     }
 
     ngOnDestroy() {
@@ -67,43 +62,50 @@ export class UtlsFileService {
         return this.openLogsWhenFileIsFetched;
     }
 
-    createLogs(filename: string): Observable<UtlsLog[]> {
+    createLogsFromFile(filename: string): Subject<UtlsLog[]> {
         this.init();
+        let resultSubject = new Subject();
+        this.zone.run(() => {
+            this.getLogsFromFile(filename).subscribe(logs => {
+                    resultSubject.next(logs);
+                },
+                error => {
+                    console.log('Something went wrong while reading file:' + filename + ', error:' + error);
+                    resultSubject.error(error);
+                });
+        });
+        return resultSubject;
+    }
 
-        this.activeLogContent = this.http.get(filename).map(res => res.json())
-            .catch(error => Observable.throw(error.json ? error.json().error : alert("Error when reading file:" + filename + "," + error) || 'Server error'));
-
-        this.activeLogContent.subscribe(
-            logs => this.mapLogToContentAndColumn(logs),
-            error => console.log("something went wrong when mapping logs to columns"),
-            () => console.log("done with mapping")
-        );
-
+    private getLogsFromFile(filename: string): Observable<UtlsLog[]> {
+        this.activeLogContent = null;
+        this.zone.run(() => {
+            this.activeLogContent = this.http.get(filename).map(res => {
+                // let jsonstring = JSON.stringify(res.json());
+                let content: LogMessage = LogMessage.fromResponse(res);
+                // let content:LogMessage = JsonConverter.deserializeObject(res, TestMessage);
+                let logs: UtlsLog[] = content.logs;
+                console.log('file read');
+                if (content.is(AppConstants.UTL_LOGS_LAST_DAY) || content.is(AppConstants.UTL_LOGS_BACKUP_FETCH_LOGS)) {
+                    console.log('yep, and it was a encrypted file');
+                    logs = this.getDecryptedLogs(content);
+                }
+                this.mapLogToContentAndColumn(logs);
+                return logs;
+            })
+                .catch(error => Observable.throw(error.json ? error.json().error : alert("Error when reading file:" + filename + "," + error) || 'Server error'));
+        });
         return this.activeLogContent;
     }
 
-    createLogsFromEncryptedFile(filename: string): Observable<UtlsLog[]> {
-        this.init();
-        this.activeLogContent = this.http.get(filename).map(res => {
-            let content = res.json();
-            if (AppConstants.UTL_LOGS_LAST_DAY === content.messType || AppConstants.UTL_LOGS_BACKUP_FETCH_LOGS === content.messType) {
-                console.log('yep, file read');
-                return this.fixEncryptedLogs(content);
-            }
-            else {
-                console.log('bummer, no file read, jsonmess:' + content);
-                return [];
-            }
-        })
-            .catch(error => Observable.throw(error.json ? error.json().error : alert("Error when reading file:" + filename + "," + error) || 'Server error'));
-        return this.activeLogContent;
-    }
-
-    fixEncryptedLogs(logMessage: LogMessage): UtlsLog[] {
+    getDecryptedLogs(logMessage: LogMessage): UtlsLog[] {
         let decryptedContent = this.cryptoService.doDecryptContent(logMessage.jsondump);
-        let decryptedLogs = <UtlsLog[]> JSON.parse(decryptedContent);
-        this.mapLogToContentAndColumn(decryptedLogs);
-        return decryptedLogs;
+        let result: UtlsLog[] = [];
+        let logs: UtlsLog[] = JSON.parse(decryptedContent);
+        logs.forEach(log => {
+            result.push(Object.assign(new UtlsLog(), log));
+        });
+        return result;
     }
 
 
@@ -114,7 +116,7 @@ export class UtlsFileService {
             this.utlsserverService.connectAndFetchEncryptedDump(fetchLogParam);
             this.websocketObservable = this.utlsserverService.utlServerWebsocket;
             let socketSubscription = this.websocketObservable.subscribe(dump => {
-                    if(!dump){
+                    if (!dump) {
                         console.log('no dump received in utls-file-service');
                         observer.next(new Result('No logs is received', false));
                     }
@@ -139,16 +141,16 @@ export class UtlsFileService {
         return result;
     }
 
-    private handleDump(dump: any, observer: Subscriber<Result>){
+    private handleDump(dump: any, observer: Subscriber<Result>) {
         let jsondata = JSON.parse(dump);
-        if(jsondata.length === 0){
+        if (jsondata.length === 0) {
             console.log('dump is empty in utls-file-service');
             observer.next(new Result('There is no logs in selected timespan', false));
         }
-        else{
+        else {
             console.log('dump received in utls-file-service');
             let prettyPrint = JSON.stringify(jsondata, null, '\t');
-            let fileSuffix = moment().format('YYYY_MM_DD_HHmmss').concat(AppConstants.UTL_FILE_SUFFIX);
+            let fileSuffix = moment().format('YYYY_MM_DD_HHmmss').concat(AppConstants.UTL_JSON_FILE_SUFFIX);
             let filename = 'dump' + fileSuffix;
             let fileAndPath = path.join(electron.remote.app.getAppPath() + '/' + filename);
             console.log('writing file:' + filename + ' and hole path:' + fileAndPath);
@@ -180,11 +182,11 @@ export class UtlsFileService {
     }
 
     mapLogToContentAndColumn(logs: UtlsLog[]) {
-        if(logs.length > 0){
+        if (logs.length > 0) {
             this.createLogContentAndColumn(logs);
             this.setOriginalStructureFromFile();
         }
-        else{
+        else {
             alert('File contains no logs');
         }
 
@@ -205,7 +207,7 @@ export class UtlsFileService {
         this.addColumndataToAllColumns();
     }
 
-    private createLogContentAndColumn(logs: any[]) {
+    private createLogContentAndColumn(logs: any[]): void {
         let tempStructure = {
             tempUser: [],
             tempTab: [],
@@ -229,7 +231,7 @@ export class UtlsFileService {
 
     }
 
-    private createPossibleColumnFilter(self, log, tempStructure) {
+    private createPossibleColumnFilter(self, log, tempStructure){
         if (tempStructure.tempUser.indexOf(log.username) === -1) {
             tempStructure.tempUser.push(log.username);
             self.usersInLogContent.push({name: AppConstants.COL_USERNAME, value: log.username});
