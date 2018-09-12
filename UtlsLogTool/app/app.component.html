@@ -92,13 +92,6 @@
                         Tab
                     </a>
                 </th>
-                <th class="utls-column-xsmall">
-                    <a style="cursor: pointer" (click)="resetSort('target')" class="text-nowrap">
-                        <span *ngIf="isColumnSortAsc('target')" class="glyphicon glyphicon-triangle-top"></span>
-                        <span *ngIf="isColumnSortDesc('target')" class="glyphicon glyphicon-triangle-bottom"></span>
-                        Device
-                    </a>
-                </th>
                 <th class="utls-column-small">
                     <a style="cursor: pointer" (click)="resetSort('category')" class="text-nowrap">
                         <span *ngIf="isColumnSortAsc('category')" class="glyphicon glyphicon-triangle-top"></span>
@@ -114,10 +107,17 @@
                     </a>
                 </th>
                 <th class="utls-column-xsmall">
+                    <a style="cursor: pointer" (click)="resetSort('host')" class="text-nowrap">
+                        <span *ngIf="isColumnSortAsc('host')" class="glyphicon glyphicon-triangle-top"></span>
+                        <span *ngIf="isColumnSortDesc('host')" class="glyphicon glyphicon-triangle-bottom"></span>
+                        Controlling MS
+                    </a>
+                </th>
+                <th class="utls-column-xsmall">
                     <a style="cursor: pointer" (click)="resetSort('targetMs')" class="text-nowrap">
                         <span *ngIf="isColumnSortAsc('targetMs')" class="glyphicon glyphicon-triangle-top"></span>
                         <span *ngIf="isColumnSortDesc('targetMs')" class="glyphicon glyphicon-triangle-bottom"></span>
-                        Robot
+                        Target MS
                     </a>
                 </th>
                 <th class="utls-column-big">
@@ -134,9 +134,9 @@
                 <td>{{log.username}}</td>
                 <td>{{log.timestampAsDateString}}</td>
                 <td>{{log.tab}}</td>
-                <td>{{log.target}}</td>
                 <td>{{log.category}}</td>
                 <td>{{log.name}}</td>
+                <td>{{log.host}}</td>
                 <td>{{log.targetMs}}</td>
                 <td>{{log.label}}</td>
             </tr>
