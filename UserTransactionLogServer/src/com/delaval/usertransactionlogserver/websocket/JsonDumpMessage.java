@@ -6,8 +6,10 @@ package com.delaval.usertransactionlogserver.websocket;
 public class JsonDumpMessage {
 
     String messType;
+    String timezoneId;
 
     String jsondump;
+
 
     public JsonDumpMessage(MessTypes messTypes){
         messType = messTypes.getMyValue();
@@ -15,6 +17,10 @@ public class JsonDumpMessage {
 
     public void setJsondump(String json){
         jsondump = json;
+    }
+
+    public void setTimezoneId(String timezoneId) {
+        this.timezoneId = timezoneId;
     }
 
 }

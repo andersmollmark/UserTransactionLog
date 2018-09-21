@@ -1,11 +1,5 @@
 package com.delaval.usertransactionlogserver.websocket;
 
-import com.delaval.usertransactionlogserver.util.DateUtil;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-
 /**
  * Dataholder for the message that fetch logs from the registered log-users (delpro, utls-tool)
  */
@@ -19,6 +13,10 @@ public class WebSocketTimezoneFetchLogMessage extends WebSocketFetchLogMessage{
 
     public long getToInMillis(){
         return Long.parseLong(toInMillis);
+    }
+
+    public String getTimezone() {
+        return timezone;
     }
 
     @Override

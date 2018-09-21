@@ -16,6 +16,7 @@ public class FetchLogDTO {
     private LocalDateTime to;
     private ZoneId zoneId;
 
+
     public LocalDateTime getFrom() {
         return from;
     }

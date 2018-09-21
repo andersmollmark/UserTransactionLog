@@ -10,6 +10,8 @@ import com.delaval.usertransactionlogserver.persistence.operation.*;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import com.delaval.usertransactionlogserver.websocket.JsonDumpMessage;
 import com.delaval.usertransactionlogserver.websocket.MessTypes;
+import com.delaval.usertransactionlogserver.websocket.WebSocketFetchLogMessage;
+import com.delaval.usertransactionlogserver.websocket.WebSocketTimezoneFetchLogMessage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -46,35 +48,31 @@ public class FetchAllEventLogsService {
     }
 
     public void writeJsonDumpOnFile(String filepath, String filename) {
-        UtlsLogUtil.info(this.getClass(),
-          "Writing jsonfile, path:", filepath,
-          " filename:", filename);
+        UtlsLogUtil.info(this.getClass(), "Writing jsonfile, path:", filepath, " filename:", filename);
         Path path = Paths.get(filepath + filename);
-        try (BufferedWriter writer = Files.newBufferedWriter(path)) {
-            JsonArray allEventLogsAsJson = getAllEventLogsAsJson();
-            Gson gson = new GsonBuilder().setPrettyPrinting().create();
-            writer.write(gson.toJson(allEventLogsAsJson));
-            UtlsLogUtil.info(this.getClass(), "Created file, ", filepath, filename,
-              " with db-content in json-format");
-        } catch (IOException e) {
-            UtlsLogUtil.error(this.getClass(), "something went wrong while writing to file:", filepath, filename,
-              " \nException:" + e.toString());
-        }
+        String allLogs = getJsonDumpMessage();
+        writeDataToFile(path, allLogs);
+        UtlsLogUtil.info(this.getClass(), "Created file, ", filepath, filename,
+          " with db-content in json-format");
+
     }
 
     public void writeLastDayDataOnFile(){
-        UtlsLogUtil.info(this.getClass(),
-          "Writing jsonfile, path:", DEFAULT_FILE_PATH_TMP,
-          " filename:", LAST_DAY_FILENAME);
+        UtlsLogUtil.info(this.getClass(), "Writing jsonfile, path:", DEFAULT_FILE_PATH_TMP, " filename:", LAST_DAY_FILENAME);
         Path path = Paths.get(DEFAULT_FILE_PATH_TMP + LAST_DAY_FILENAME);
+        String logsLastDay = getEncryptedJsonLogsLastDay();
+        writeDataToFile(path, logsLastDay);
+        UtlsLogUtil.info(this.getClass(), "Created file, ", DEFAULT_FILE_PATH_TMP, LAST_DAY_FILENAME,
+          " with db-content from last day in encrypted format");
+        System.out.println("\nCreated file " + LAST_DAY_FILENAME + " at path " + DEFAULT_FILE_PATH_TMP);
+
+    }
+
+    private void writeDataToFile(Path path, String data) {
         try (BufferedWriter writer = Files.newBufferedWriter(path)) {
-            String dataLastDay = getEncryptedJsonLogsLastDay();
-            writer.write(dataLastDay);
-            UtlsLogUtil.info(this.getClass(), "Created file, ", DEFAULT_FILE_PATH_TMP, LAST_DAY_FILENAME,
-              " with db-content from last day in encrypted format");
-            System.out.println("\nCreated file " + LAST_DAY_FILENAME + " at path " + DEFAULT_FILE_PATH_TMP);
+            writer.write(data);
         } catch (IOException e) {
-            UtlsLogUtil.error(this.getClass(), "something went wrong while writing to file:", DEFAULT_FILE_PATH_TMP, LAST_DAY_FILENAME,
+            UtlsLogUtil.error(this.getClass(), "something went wrong while writing to file:", path.toString(),
               " \nException:" + e.toString());
         }
     }
@@ -84,12 +82,15 @@ public class FetchAllEventLogsService {
      *
      * @return JsonDumpMessage with the dump as a encrypted string from logs
      */
-    public synchronized String getEncryptedJsonLogs(LocalDateTime from, LocalDateTime to) {
-        JsonDumpMessage dump = new JsonDumpMessage(MessTypes.FETCH_ENCRYPTED_LOGS);
+    public synchronized String getEncryptedJsonLogs(WebSocketFetchLogMessage webSocketFetchLogMessage) {
         FetchLogDTO fetchLogDTO = new FetchLogDTO();
-        fetchLogDTO.setFrom(from);
-        fetchLogDTO.setTo(to);
-        dump.setJsondump(getEncryptedDump(fetchLogDTO));
+        fetchLogDTO.setFrom(webSocketFetchLogMessage.getFrom());
+        fetchLogDTO.setTo(webSocketFetchLogMessage.getTo());
+        String encryptedDump = getEncryptedDump(fetchLogDTO);
+        JsonDumpMessage dump = new JsonDumpMessage(MessTypes.FETCH_ENCRYPTED_LOGS);
+        dump.setJsondump(encryptedDump);
+        TimeZone utc = TimeZone.getTimeZone("UTC");
+        dump.setTimezoneId(utc.getID());
         return new Gson().toJson(dump);
     }
 
@@ -97,12 +98,10 @@ public class FetchAllEventLogsService {
      * Fetch the logs with timezone
      * @return JsonDumpMessage with the dump as a encrypted string from logs
      */
-    public synchronized String getEncryptedJsonLogsWithTimezone(long fromInMillis, long toInMillis, String timezoneId) {
-        JsonDumpMessage dump = new JsonDumpMessage(MessTypes.FETCH_ENCRYPTED_LOGS_WITH_TIMEZONE);
-
-        TimeZone timeZone = TimeZone.getTimeZone(timezoneId);
-        ZonedDateTime fromAtLocation = Instant.ofEpochMilli(fromInMillis).atZone(timeZone.toZoneId());
-        ZonedDateTime toAtLocation = Instant.ofEpochMilli(toInMillis).atZone(timeZone.toZoneId());
+    public synchronized String getEncryptedJsonLogsWithTimezone(WebSocketTimezoneFetchLogMessage webSocketTimezoneFetchLogMessage) {
+        TimeZone timeZone = TimeZone.getTimeZone(webSocketTimezoneFetchLogMessage.getTimezone());
+        ZonedDateTime fromAtLocation = Instant.ofEpochMilli(webSocketTimezoneFetchLogMessage.getFromInMillis()).atZone(timeZone.toZoneId());
+        ZonedDateTime toAtLocation = Instant.ofEpochMilli(webSocketTimezoneFetchLogMessage.getToInMillis()).atZone(timeZone.toZoneId());
 
         ZonedDateTime from = fromAtLocation.withZoneSameInstant(ZoneOffset.UTC);
         ZonedDateTime to = toAtLocation.withZoneSameInstant(ZoneOffset.UTC);
@@ -111,7 +110,10 @@ public class FetchAllEventLogsService {
         fetchLogDTO.setFrom(from.toLocalDateTime());
         fetchLogDTO.setTo(to.toLocalDateTime());
         fetchLogDTO.setZoneId(timeZone.toZoneId());
+
+        JsonDumpMessage dump = new JsonDumpMessage(MessTypes.FETCH_ENCRYPTED_LOGS_WITH_TIMEZONE);
         dump.setJsondump(getEncryptedDump(fetchLogDTO));
+        dump.setTimezoneId(webSocketTimezoneFetchLogMessage.getTimezone());
         return new Gson().toJson(dump);
     }
 
@@ -122,7 +124,6 @@ public class FetchAllEventLogsService {
     public synchronized String getEncryptedJsonLogsLastDay() {
         UtlsLogUtil.info(this.getClass(), "get encrypted logs...");
         JsonDumpMessage dump = new JsonDumpMessage(MessTypes.FETCH_ENCRYPTED_LOGS_LAST_DAY);
-
         TimeZone timeZone = TimeZone.getDefault();
         LocalDateTime to = LocalDateTime.now();
         LocalDateTime from = to.minusDays(1L);
@@ -131,8 +132,10 @@ public class FetchAllEventLogsService {
         fetchLogDTO.setFrom(from);
         fetchLogDTO.setTo(to);
         fetchLogDTO.setZoneId(timeZone.toZoneId());
+
         UtlsLogUtil.info(this.getClass(), fetchLogDTO.toString());
         dump.setJsondump(getEncryptedDump(fetchLogDTO));
+        dump.setTimezoneId(timeZone.getID());
         return new Gson().toJson(dump);
     }
 
@@ -183,6 +186,8 @@ public class FetchAllEventLogsService {
         Gson gson = new Gson();
         JsonDumpMessage dump = new JsonDumpMessage(MessTypes.JSON_DUMP);
         dump.setJsondump(gson.toJson(allEventLogsAsJson));
+        TimeZone utc = TimeZone.getTimeZone("UTC");
+        dump.setTimezoneId(utc.getID());
         return gson.toJson(dump);
     }
 

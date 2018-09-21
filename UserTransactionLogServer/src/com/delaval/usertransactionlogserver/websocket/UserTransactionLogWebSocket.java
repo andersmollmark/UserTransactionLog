@@ -94,7 +94,7 @@ public class UserTransactionLogWebSocket {
             else if (MessTypes.FETCH_ENCRYPTED_LOGS.isSame(webSocketType.getType())) {
                 WebSocketFetchLogMessage webSocketFetchLogMessage = new Gson().fromJson(jsonMessage, WebSocketFetchLogMessage.class);
                 FetchAllEventLogsService logsService = new FetchAllEventLogsService();
-                session.getRemote().sendStringByFuture(logsService.getEncryptedJsonLogs(webSocketFetchLogMessage.getFrom(), webSocketFetchLogMessage.getTo()));
+                session.getRemote().sendStringByFuture(logsService.getEncryptedJsonLogs(webSocketFetchLogMessage));
             }
             else if (MessTypes.FETCH_ENCRYPTED_LOGS_LAST_DAY.isSame(webSocketType.getType())) {
                 UtlsLogUtil.info(this.getClass(), "Fetching logs last day:");
@@ -106,7 +106,7 @@ public class UserTransactionLogWebSocket {
                 UtlsLogUtil.info(this.getClass(), "Fetching logs with timezone:", webSocketFetchLogMessage.toString());
                 FetchAllEventLogsService logsService = new FetchAllEventLogsService();
                 session.getRemote().sendStringByFuture(
-                  logsService.getEncryptedJsonLogsWithTimezone(webSocketFetchLogMessage.getFromInMillis(), webSocketFetchLogMessage.getToInMillis(), webSocketFetchLogMessage.timezone));
+                  logsService.getEncryptedJsonLogsWithTimezone(webSocketFetchLogMessage));
             }
             else {
                 UtlsLogUtil.info(this.getClass(), "Unknown message:", webSocketType.getType());

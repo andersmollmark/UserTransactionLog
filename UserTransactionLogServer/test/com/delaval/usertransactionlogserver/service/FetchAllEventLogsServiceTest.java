@@ -11,6 +11,7 @@ import com.delaval.usertransactionlogserver.persistence.operation.*;
 import com.delaval.usertransactionlogserver.testobject.MyEventLog;
 import com.delaval.usertransactionlogserver.testobject.MyUserTransactionKey;
 import com.delaval.usertransactionlogserver.websocket.JsonDumpMessage;
+import com.delaval.usertransactionlogserver.websocket.WebSocketFetchLogMessage;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
@@ -78,6 +79,9 @@ public class FetchAllEventLogsServiceTest {
     @Mock
     OperationFactory mockFactory;
 
+    @Mock
+    WebSocketFetchLogMessage mockLogMessage;
+
 
     private static final String cryptoAlgorithm = "AES";
 
@@ -123,7 +127,10 @@ public class FetchAllEventLogsServiceTest {
 
         // get encrypted data/logs
         LocalDateTime now = LocalDateTime.now();
-        String jsonDumpMessageWithEncryptedData = fetchService.getEncryptedJsonLogs(now, now);
+
+        Mockito.when(mockLogMessage.getFrom()).thenReturn(now);
+        Mockito.when(mockLogMessage.getTo()).thenReturn(now);
+        String jsonDumpMessageWithEncryptedData = fetchService.getEncryptedJsonLogs(mockLogMessage);
         JsonDumpMessage jsonDumpMessage = new Gson().fromJson(jsonDumpMessageWithEncryptedData, JsonDumpMessage.class);
         String encryptedLogs = TestUtils.getFieldValue("jsondump", JsonDumpMessage.class, jsonDumpMessage);
 
