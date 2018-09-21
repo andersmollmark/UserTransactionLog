@@ -44,6 +44,7 @@ export class TimefilterComponent implements OnInit, OnDestroy {
                 if(selectedDate !== null){
                     this.selectedDateFrom = selectedDate;
                     this.fromTime = selectedDate.getValue();
+                    // this.fromString = this.selectedDateFrom.asString();
                 }
 
             });
@@ -54,7 +55,7 @@ export class TimefilterComponent implements OnInit, OnDestroy {
                 if(selectedDate !== null){
                     this.selectedDateTo = selectedDate;
                     this.toTime = selectedDate.getValue();
-                    // this.defaultDateTo = new Date(this.toTime.getTime());
+                    // this.toString = this.selectedDateTo.asString();
                 }
             });
         });

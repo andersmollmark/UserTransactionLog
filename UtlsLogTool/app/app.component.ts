@@ -34,6 +34,7 @@ export class AppComponent implements OnInit, OnDestroy {
     activeLogs: UtlsLog[] = null;
     logsTimezoneId: string;
     currentTimezoneId: string;
+    currentTimezoneIdText: string;
     timezoneDisabled: boolean = false;
     oldTimezoneId: string;
     timezones = [];
@@ -310,10 +311,12 @@ export class AppComponent implements OnInit, OnDestroy {
         this.timezones = momentTz.tz.names();
         if (this.utlsFileService.getActiveTimezoneId() !== null) {
             this.currentTimezoneId = this.utlsFileService.getActiveTimezoneId();
+            this.currentTimezoneIdText = this.currentTimezoneId;
             this.timezoneDisabled = false;
         }
         else {
-            this.currentTimezoneId = 'Unknown';
+            this.currentTimezoneId = 'Europe/Stockholm';
+            this.currentTimezoneIdText = 'Unknown, using ' + this.currentTimezoneId;
             this.timezoneDisabled = true;
         }
         this.oldTimezoneId = this.currentTimezoneId;
@@ -326,7 +329,6 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     changeTimezone(newTimezone: string): void {
-        // let oldTimezoneId = this.currentTimezoneId;
         this.currentTimezoneId = newTimezone;
         this.zone.run(() => {
             this.timeFilterService.changeTimezone(newTimezone, this.activeLogs);

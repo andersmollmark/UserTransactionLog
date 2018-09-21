@@ -90,8 +90,8 @@ export class TimeFilterService {
     createTimefilter(timezoneId: string) {
         this.filterQuery = "";
         console.log('timefilterService: createTimeFilter');
-        this.setSelectedTimefilterFrom(SelectedDate.createOrigin(this.firstDateFromFile, this.is12HourMode, timezoneId));
-        this.setSelectedTimefilterTo(SelectedDate.createOrigin(this.lastDateFromFile, this.is12HourMode, timezoneId));
+        this.setSelectedTimefilterFrom(SelectedDate.createOrigin(this.firstDateFromFile, this.is12HourMode, timezoneId, 0));
+        this.setSelectedTimefilterTo(SelectedDate.createOrigin(this.lastDateFromFile, this.is12HourMode, timezoneId, 59));
     }
 
     setFromTime(from: SelectedDate, newValue: Date) {

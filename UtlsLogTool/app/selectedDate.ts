@@ -13,12 +13,15 @@ export class SelectedDate {
     private timeHandler = TimeHandler.getInstance();
 
 
-    private constructor(private value: Date, private hour12Mode: boolean) {
-        this.originalTimestamp = value.getTime();
+    private constructor(private value: Date, private hour12Mode: boolean, seconds: number) {
+        let temp = new Date(value.getTime());
+        temp.setMilliseconds(0);
+        temp.setSeconds(seconds);
+        this.originalTimestamp = temp.getTime();
     }
 
-    public static createOrigin(val: Date, hour12Mode: boolean, timezoneId: string): SelectedDate {
-        let result = new SelectedDate(val, hour12Mode);
+    public static createOrigin(val: Date, hour12Mode: boolean, timezoneId: string, seconds: number): SelectedDate {
+        let result = new SelectedDate(val, hour12Mode, seconds);
         result.value = result.timeHandler.getChangedDateDueToTimezone(new Date(result.originalTimestamp), timezoneId, 0);
         result.valueCopy = new Date(result.value.getTime());
 
@@ -29,7 +32,7 @@ export class SelectedDate {
         this.value = this.timeHandler.getChangedDateDueToTimezone(new Date(this.originalTimestamp), newTimezone, 0);
         console.log('before change:' + this.valueCopy +  'after changing to new timezone:' + newTimezone + ':' + this.value);
         this.valueCopy = new Date(this.value);
-
+        this.hour12Mode = hour12Mode;
         return this;
     }
 
@@ -74,7 +77,10 @@ export class SelectedDate {
     }
 
     private getDiff(): number {
-        return this.value.getTime() - this.valueCopy.getTime();
+        let temp = new Date(this.value.getTime());
+        temp.setSeconds(0);
+        temp.setMilliseconds(0);
+        return temp.getTime() - this.valueCopy.getTime();
     }
 
     private getFormat(): string {
