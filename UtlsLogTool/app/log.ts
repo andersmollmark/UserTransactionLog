@@ -13,5 +13,6 @@ export class UtlsLog{
     host: string;
     targetMs: string;
     target: string;
+    timestampWithTimezone: Map<string, number> = new Map<string, number>();
 
 }

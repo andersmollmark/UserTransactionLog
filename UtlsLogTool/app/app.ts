@@ -7,6 +7,14 @@ import { AppModule } from './app.module';
 export const platformRef = platformBrowserDynamic();
 
 export function main() {
+
+    // process.on('uncaughtException', (err) => {
+    //     console.error('whoops! there was an error:' + err);
+    //     console.log('now?');
+    //     let temp = err;
+    //
+    // });
+
     return platformRef.bootstrapModule(AppModule)
         .catch(err => console.error(err));
 }

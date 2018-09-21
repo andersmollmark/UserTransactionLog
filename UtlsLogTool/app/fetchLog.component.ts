@@ -1,10 +1,9 @@
-import {Component, Output, EventEmitter, Input, NgZone} from "@angular/core";
+import {Component, EventEmitter, Input, NgZone, Output} from "@angular/core";
 import {AppConstants} from "./app.constants";
-import {UtlsFileService} from "./utls-file.service";
 import {TimeFilterService} from "./timefilter.service";
 import {SelectedDate} from "./selectedDate";
-import moment = require("moment");
 import {FetchLogParam} from "./fetchLogParam";
+import moment = require("moment");
 
 @Component({
     selector: 'fetchLog',
@@ -31,7 +30,6 @@ export class FetchLogComponent {
         let oneMonthAgo = moment().subtract(1, 'month').toDate();
         timefilterService.setFirstDateFromFile(oneMonthAgo);
         timefilterService.setLastDateFromFile(now);
-        this.timefilterService.resetTimefilter();
 
         let favorite = localStorage.getItem(AppConstants.TIMEZONE_FAVORITE);
 
@@ -40,6 +38,10 @@ export class FetchLogComponent {
             this.timezones = momentTz.tz.names();
             if(favorite){
                 this.chosenTimezone = favorite;
+                this.timefilterService.createTimefilter(this.chosenTimezone);
+            }
+            else {
+                this.timefilterService.createTimefilter('UTC');
             }
         });
     }

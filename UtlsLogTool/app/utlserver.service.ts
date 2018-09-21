@@ -4,6 +4,8 @@ import {Subject} from "rxjs";
 import {AppConstants} from "./app.constants";
 import {CryptoService} from "./crypto.service";
 import {FetchLogParam} from "./fetchLogParam";
+import {LogMessage} from "./logMessage";
+import {FetchLogResult} from "./fetchLogResult";
 
 
 @Injectable()
@@ -39,7 +41,10 @@ export class UtlserverService {
                         let jsonMessage = JSON.parse(response.data);
                         if (AppConstants.UTL_LOG_DUMPMESSAGE === jsonMessage.messType) {
                             console.log('yep, dumpmessage arrived');
-                            return this.cryptoService.doDecryptContent(jsonMessage.jsondump);
+                            let result = new FetchLogResult();
+                            result.jsondump = this.cryptoService.doDecryptContent(jsonMessage.jsondump);
+                            result.timezoneId = jsonMessage.timezoneId ? jsonMessage.timezoneId: null;
+                            return result;
                         }
                         console.log('bummer, not dumpmessage arrived');
                     }

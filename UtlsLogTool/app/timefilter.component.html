@@ -9,11 +9,14 @@
             <div class="clockicon">
                 <img src="app/resources/clock.png" (click)="setShowFromTime()">
             </div>
+            <div *ngIf="isShowFrom() || isShowFromTime()" class="closeicon">
+                <img src="app/resources/close.png" (click)="closeFrom()">
+            </div>
 
         </div>
     </div>
     <div class="form-group calendarInput">
-        <input type="text" class="form-control" value="{{getFromFilterDateString()}}" readonly>
+        <input type="text" class="form-control" value="{{fromString}}" readonly>
 
 
     </div>
@@ -42,15 +45,20 @@
             <div class="clockicon">
                 <img src="app/resources/clock.png" (click)="setShowToTime()">
             </div>
+            <div *ngIf="isShowTo() || isShowToTime()" class="closeicon">
+                <img src="app/resources/close.png" (click)="closeTo()">
+            </div>
         </div>
     </div>
     <div class="form-group calendarInput">
-        <input type="text" class="form-control" value="{{getToFilterDateString()}}" readonly>
+        <input type="text" class="form-control" value="{{toString}}" readonly>
 
 
     </div>
 
     <div *ngIf="isShowTo()" class="calendardiv">
+        <!-- TODO why does it set hour and minutes to zero and why cant we use initDate below? -->
+        <!--<datepicker [(ngModel)]="selectedDateTo.value" [initDate]="defaultDateTo" [showWeeks]="false" (click)="changeTo($event)"></datepicker>-->
         <datepicker [(ngModel)]="selectedDateTo.value" [showWeeks]="false" (click)="changeTo($event)"></datepicker>
     </div>
     <div *ngIf="isShowToTime()" class="calendardiv">

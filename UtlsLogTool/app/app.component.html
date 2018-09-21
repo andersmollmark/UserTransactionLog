@@ -34,8 +34,6 @@
             <select class="form-control utls-select"
                     [(ngModel)]="selectedColumn"
                     (ngModelChange)="changeColumn($event)">
-                <option>--- Select column ---</option>
-                <option>All</option>
                 <option *ngFor="let col of cols" [ngValue]="col">{{col.name}}</option>
             </select>
         </div>
@@ -45,10 +43,9 @@
                 Specify columnvalue:
             </div>
 
-            <select class="form-control utls-select" value
+            <select class="form-control utls-select"
                     [(ngModel)]="selectedContent"
                     (ngModelChange)="changeLogContent($event)">
-                <option>--- Select ---</option>
                 <option>All</option>
                 <option *ngFor="let con of columnContent | dtoSort" [ngValue]="con">{{con.value}}</option>
             </select>
@@ -60,13 +57,32 @@
             <button class="btn btn-primary btn-md" (click)="resetFilter()">Clear filter</button>
         </div>
 
+
+        <div class="utls-logfilter-column utls-chosen-timezone">
+            <div class="utls-selector-onlytext utls-text">
+                Logs timezone: {{logsTimezoneId}}
+            </div>
+
+            <div class="fetch-log-timezone">
+                <select class="form-control utls-select"
+                        [disabled]="timezoneDisabled"
+                        [(ngModel)]="currentTimezoneId"
+                        (ngModelChange)="changeTimezone($event)">
+                    <option>Unknown</option>
+                    <option *ngFor="let timezone of timezones" [ngValue]="timezone">{{timezone}}</option>
+                </select>
+            </div>
+        </div>
+
+
     </div>
 
     <div class="utls-container">
         <table class="table table-striped utls-table"
                *ngIf="isLoaded"
-               [mfData]="logs$ | async | dataFilter : filterQuery | columnSort : columnSortObject"
+               [mfData]="logs$ | async | dataFilter : filterQuery | columnFilter: columnFilter | columnSort : columnSortObject"
                #mf="mfDataTable"
+               [mfActivePage]="activePage"
                [mfRowsOnPage]="15">
 
             <thead>

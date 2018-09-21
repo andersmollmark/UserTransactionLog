@@ -100,6 +100,11 @@
     padding-left: 50px;
 }
 
+.utls-chosen-timezone {
+    display: inline-block;
+    padding-left: 50px;
+}
+
 .utls-filter-dropdown{
     display: inline-block;
     /*width: 30%;*/
@@ -160,11 +165,24 @@
     padding-left: 3px;
 }
 
+.closeicon{
+    display: inline-flex;
+    padding-left: 3px;
+}
+
+
 .calendarInput{
     width: auto;
     display: inline-flex;
     height: 20px;
 }
+
+.readonlyInput{
+    width: auto;
+    display: inline-flex;
+    height: 20px;
+}
+
 
 .promptDiv{
     width: 10%;

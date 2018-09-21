@@ -1,15 +1,21 @@
-import {Component, NgZone, OnInit} from "@angular/core";
+import {Component, NgZone, OnDestroy, OnInit} from "@angular/core";
 import {UtlsFileService} from "./utls-file.service";
 import {UtlsLog} from "./log";
 import {Observable} from "rxjs/Observable";
 import {Dto} from "./dto";
 import {AppConstants} from "./app.constants";
-import * as _ from "lodash";
 import {TimeFilterService} from "./timefilter.service";
 import {SortingObject} from "./sortingObject";
 import {UtlserverService} from "./utlserver.service";
 import {View} from "./view";
 import {FetchLogParam} from "./fetchLogParam";
+import {TimeHandler} from "./time-handler";
+import {Subscription} from "rxjs/Subscription";
+import {ColumnFilter} from "./column-filter";
+import {LogActionHandler} from "./log-action-handler";
+import {CreateAllLogsAction} from "./create-all-logs-action";
+import {ResetAllLogsAction} from "./reset-all-logs-action";
+import {GetAllLogsAction} from "./get-all-logs-action";
 
 const electron = require('electron');
 const remote = electron.remote;
@@ -22,32 +28,40 @@ let {dialog} = remote;
     templateUrl: './app.component.html'
 
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
 
     logs$: Observable<UtlsLog[]>;
+    activeLogs: UtlsLog[] = null;
+    logsTimezoneId: string;
+    currentTimezoneId: string;
+    timezoneDisabled: boolean = false;
+    oldTimezoneId: string;
+    timezones = [];
     public filterQuery;
+
+    activePage: number = 1;
+
     columnSortValue: string = "";
     columnSortObject: SortingObject = new SortingObject();
+
     public isLoaded: boolean;
     public sortBy = "";
     logfileName: string = '';
 
     // Select-column-filter
-    selectedColumnDefaultChoice = "--- Select column ---";
-    public selectedColumn = this.selectedColumnDefaultChoice;
-    lastSelectedColumn = "";
-    allColumns = AppConstants.STR_ALL;
-    cols = [
-        {name: "Username", value: AppConstants.COL_USERNAME},
-        {name: "Active tab", value: AppConstants.COL_TAB},
-        {name: "Category", value: AppConstants.COL_CATEGORY},
-        {name: "Eventname", value: AppConstants.COL_EVENTNAME}
+
+    lastSelectedColumn: Dto = null;
+    cols = [new Dto(AppConstants.STR_ALL, AppConstants.STR_ALL),
+        new Dto("Username", AppConstants.COL_USERNAME),
+        new Dto("Active tab", AppConstants.COL_TAB),
+        new Dto("Category", AppConstants.COL_CATEGORY),
+        new Dto("Eventname", AppConstants.COL_EVENTNAME)
     ];
 
+    public selectedColumn = this.cols[0];
+    columnFilter: ColumnFilter = new ColumnFilter(this.cols[0]);
     // Selected-column-filter
-    selectedContentDefaultChoice = "--- Select ---";
-    public selectedContent = this.selectedContentDefaultChoice;
-    allContent = AppConstants.STR_ALL;
+    public selectedContent = AppConstants.STR_ALL;
     constants = AppConstants;
     columnContent: Dto[];
 
@@ -55,12 +69,21 @@ export class AppComponent implements OnInit {
     activeViewname: string = AppConstants.VIEW_EMPTY;
     views: View[] = new Array<View>();
 
+    private hourMode12Subscription: Subscription = null;
+
+    private logSubscription: Subscription = null;
+
     menu;
 
-    constructor(private utlsFileService: UtlsFileService, private timeFilterService: TimeFilterService,
+    constructor(private utlsFileService: UtlsFileService, public timeFilterService: TimeFilterService,
                 private utlserverService: UtlserverService, private zone: NgZone) {
         this.isLoaded = false;
         this.initViews();
+        this.hourMode12Subscription = this.timeFilterService.get12HourModeSubscription().subscribe(mode12Hour => {
+            this.zone.run(() => {
+                this.changeHourMode();
+            });
+        });
     }
 
     private initViews() {
@@ -91,17 +114,23 @@ export class AppComponent implements OnInit {
                     }
                 },
                 {
-                    label: 'Fetch logfile',
+                    label: 'Fetch logs',
                     click: function () {
-                        self.utlsFileService.setOpenWhenFileIsFetched(false);
+                        self.utlsFileService.setOpenWhenFileIsFetched(true);
                         self.showView(AppConstants.VIEW_FETCH_LOGS);
                     }
                 },
                 {
-                    label: 'Fetch and open logfile',
+                    label: 'Shift to 12hr mode',
                     click: function () {
-                        self.utlsFileService.setOpenWhenFileIsFetched(true);
-                        self.showView(AppConstants.VIEW_FETCH_LOGS);
+                        self.timeFilterService.set12HrMode(self.currentTimezoneId);
+
+                    }
+                },
+                {
+                    label: 'Shift to 24hr mode',
+                    click: function () {
+                        self.timeFilterService.set24HrMode(self.currentTimezoneId);
                     }
                 },
                 {
@@ -121,6 +150,15 @@ export class AppComponent implements OnInit {
         this.filterQuery = this.timeFilterService.getFilterQuery();
         if (this.utlsFileService.isColumnContentChanged()) {
             this.changeColumnValueAndContentValues(this.selectedColumn);
+        }
+    }
+
+    private changeHourMode(): void {
+        let timezoneHandler = TimeHandler.getInstance();
+        if (this.activeLogs !== null) {
+            this.zone.run(() => {
+                timezoneHandler.changeHourMode(this.currentTimezoneId, this.activeLogs);
+            });
         }
     }
 
@@ -168,7 +206,6 @@ export class AppComponent implements OnInit {
                 aView.show = viewname === aView.name;
             }
             self.activeViewname = viewname;
-            // console.log('after change, active:' + self.activeViewname + ' and oldactive is:' + self.oldViewname);
         });
     }
 
@@ -184,14 +221,14 @@ export class AppComponent implements OnInit {
         self.zone.run(() => {
                 self.showView(AppConstants.VIEW_WAIT);
                 let observableResult = self.utlsFileService.fetchLogs(fetchLogParam);
-                let logSubscription = observableResult.subscribe(
+                let fetchLogSubscription = observableResult.subscribe(
                     result => {
                         if (result.isOk) {
                             let filepath = electron.remote.app.getAppPath();
                             this.alertLog('Logfile with name :' + result.value + ' is saved at location:\n' + filepath);
                             if (show) {
                                 let fileAndPath = filepath + '/' + result.value;
-                                self.createLogContentFromFile(fileAndPath, this.utlsFileService.createLogsFromFile.bind(this.utlsFileService));
+                                self.createLogContentFromFile(fileAndPath);
                             }
                             else {
                                 self.showView(this.oldViewname);
@@ -201,16 +238,16 @@ export class AppComponent implements OnInit {
                             this.alertLog(result.value);
                             self.showView(this.oldViewname);
                         }
-                        logSubscription.unsubscribe();
+                        fetchLogSubscription.unsubscribe();
                     },
                     error => {
                         this.alertLog('app-component, logsubscription error:' + error);
-                        logSubscription.unsubscribe();
+                        fetchLogSubscription.unsubscribe();
                         self.showView(this.oldViewname);
                     },
                     () => {
                         console.log('app-component, logsubscription done:');
-                        logSubscription.unsubscribe();
+                        fetchLogSubscription.unsubscribe();
                         self.showView(this.oldViewname);
                     }
                 );
@@ -224,72 +261,110 @@ export class AppComponent implements OnInit {
         if (!fileNamesArr) {
             this.alertLog("No file selected");
             this.showView(this.oldViewname);
+            return;
         }
         console.log("filename selected:" + fileNamesArr[0]);
-        this.createLogContentFromFile(fileNamesArr[0], this.utlsFileService.createLogsFromFile.bind(this.utlsFileService));
+        this.createLogContentFromFile(fileNamesArr[0]);
     }
 
-    public createLogContentFromFile = (fileName: string, fetchLogFunction: Function) => {
+    public createLogContentFromFile = (fileName: string) => {
         this.init();
         this.logfileName = fileName;
-        this.logs$ = fetchLogFunction(fileName);
+        this.utlsFileService.createLogsFromFile(fileName);
+        if(this.logSubscription !== null) {
+            this.logSubscription.unsubscribe();
+        }
 
-        let self = this;
-        self.zone.run(() => {
-            let logSubscription = this.logs$.subscribe(logs => {
-                    self.setTimeData(logs);
-                    logSubscription.unsubscribe();
+
+        let actionHandler = LogActionHandler.getInstance();
+        actionHandler.setNext(new CreateAllLogsAction(this));
+
+        this.zone.run(() => {
+            this.logs$ = this.utlsFileService.subscribeOnLogChanges();
+            this.logSubscription = this.logs$.subscribe(logs => {
+
+                    if(actionHandler.hasNext()) {
+                        actionHandler.next().execute(logs);
+                        if (this.timeFilterService.getSelectedTimefilterFrom() !== null && this.timeFilterService.getSelectedTimefilterTo() !== null) {
+                            console.log('new from:' + this.timeFilterService.getSelectedTimefilterFrom().asString() + ' new to:' +
+                                this.timeFilterService.getSelectedTimefilterTo().asString());
+
+                        }
+
+                    }
+
+
                 },
                 error => {
-                    console.log('Error while creating logs from file:' + error);
-                    logSubscription.unsubscribe();
+                    console.log('Error while subscribing on log-changes, error:' + error);
+                    this.logSubscription.unsubscribe();
                 });
+
         });
         this.showView(AppConstants.VIEW_LOGS);
         this.isLoaded = true;
     }
 
-    setTimeData(logs: UtlsLog[]) {
-        let timestampFrom;
-        let timestampTo;
-        _.forEach(logs, function (log) {
-            if (!timestampFrom || timestampFrom > log.timestamp) {
-                timestampFrom = log.timestamp;
-            }
-            else if (!timestampTo || timestampTo < log.timestamp) {
-                timestampTo = log.timestamp;
-            }
-        });
-        let firstDate = new Date(timestampFrom);
-        let lastDate = new Date(timestampTo);
+    setTimezones() {
+        let momentTz = require("moment-timezone");
+        this.timezones = momentTz.tz.names();
+        if (this.utlsFileService.getActiveTimezoneId() !== null) {
+            this.currentTimezoneId = this.utlsFileService.getActiveTimezoneId();
+            this.timezoneDisabled = false;
+        }
+        else {
+            this.currentTimezoneId = 'Unknown';
+            this.timezoneDisabled = true;
+        }
+        this.oldTimezoneId = this.currentTimezoneId;
+        this.logsTimezoneId = this.currentTimezoneId;
 
+    }
+
+    resetTimezone(): void {
+        this.changeTimezone(this.logsTimezoneId);
+    }
+
+    changeTimezone(newTimezone: string): void {
+        // let oldTimezoneId = this.currentTimezoneId;
+        this.currentTimezoneId = newTimezone;
+        this.zone.run(() => {
+            this.timeFilterService.changeTimezone(newTimezone, this.activeLogs);
+            this.oldTimezoneId = this.currentTimezoneId;
+        });
+    }
+
+    setTimeData(logs: UtlsLog[]) {
+
+        let initTimezoneResult = TimeHandler.getInstance().initTimezonesAndGetEndDates(this.currentTimezoneId, logs);
+
+        let firstDate = new Date(initTimezoneResult.firstTimestamp);
+        let lastDate = new Date(initTimezoneResult.lastTimestamp);
+
+        this.timeFilterService.setCurrentTimezone(this.currentTimezoneId);
+        this.timeFilterService.setLogsTimezone(this.logsTimezoneId);
         this.timeFilterService.setFirstDateFromFile(firstDate);
         this.timeFilterService.setLastDateFromFile(lastDate);
 
-        this.timeFilterService.resetTimefilter();
-
-        console.log('new from:' + this.timeFilterService.getSelectedTimefilterFrom().asString() + ' new to:' +
-            this.timeFilterService.getLastSelectedTimefilterTo().asString());
     }
 
-
     resetFilter() {
-        let self = this;
-        self.zone.run(() => {
-            self.init();
-            self.timeFilterService.resetTimefilter();
-            self.logs$ = self.utlsFileService.getAllLogs();
+        this.zone.run(() => {
+            this.currentTimezoneId = this.logsTimezoneId;
+            this.init();
+            LogActionHandler.getInstance().setNext(new ResetAllLogsAction(this));
+            this.utlsFileService.getAllLogs();
         });
     }
 
     init() {
-        // this.timeFilterService.resetAllDateValues();
-        let self = this;
-        self.zone.run(() => {
+        this.zone.run(() => {
             this.filterQuery = "";
-            this.selectedColumn = this.selectedColumnDefaultChoice;
-            this.lastSelectedColumn = "";
-            this.selectedContent = this.selectedContentDefaultChoice;
+            this.activePage = 1;
+            this.columnFilter = new ColumnFilter(this.cols[0]);
+            this.selectedColumn = this.cols[0];
+            this.lastSelectedColumn = null;
+            this.selectedContent = AppConstants.STR_ALL;
             this.columnContent = new Array<Dto>();
             this.columnSortObject = new SortingObject();
             this.columnSortObject.sortorder = AppConstants.COLUMN_SORT_DESC;
@@ -299,23 +374,24 @@ export class AppComponent implements OnInit {
         });
     }
 
-    changeColumn(newColumn) {
+    changeColumn(newColumn: Dto): void {
         this.changeColumnValueAndContentValues(newColumn);
-        if (AppConstants.STR_ALL === newColumn) {
-            this.logs$ = this.utlsFileService.getAllLogs();
+        if (AppConstants.STR_ALL === newColumn.value) {
+            LogActionHandler.getInstance().setNext(new GetAllLogsAction(this));
+            this.utlsFileService.getAllLogs();
         }
     }
 
-    private changeColumnValueAndContentValues(newColumn) {
-        if (!_.isEqual(this.lastSelectedColumn, newColumn)) {
+    private changeColumnValueAndContentValues(newColumn: Dto): void {
+        if (this.lastSelectedColumn === null || !this.lastSelectedColumn.equals(newColumn)) {
             this.lastSelectedColumn = newColumn;
             this.selectedColumn = newColumn;
-            if (this.allColumns !== newColumn && this.selectedColumnDefaultChoice !== newColumn) {
-                this.columnContent = this.utlsFileService.getContentForSpecificColumn(newColumn);
-                this.selectedContent = this.selectedContentDefaultChoice;
-            }
-            if (this.allColumns === newColumn) {
+            if (AppConstants.STR_ALL === newColumn.value) {
                 this.columnContent = new Array<Dto>();
+            }
+            else {
+                this.columnContent = this.utlsFileService.getContentForSpecificColumn(newColumn);
+                this.selectedContent = AppConstants.STR_ALL;
             }
         }
 
@@ -357,17 +433,22 @@ export class AppComponent implements OnInit {
         return this.sortBy === sortBy && this.columnSortValue === AppConstants.COLUMN_SORT_DESC;
     }
 
-    changeLogContent(newValueFromSpecificColumn) {
-        if (this.allContent !== newValueFromSpecificColumn && this.selectedContentDefaultChoice !== newValueFromSpecificColumn) {
-            this.logs$ = this.utlsFileService.getLogsForSpecificColumnValue(newValueFromSpecificColumn);
+    changeLogContent(newValueFromSpecificColumn: Dto) {
+        if (AppConstants.STR_ALL !== newValueFromSpecificColumn.value) {
+            this.columnFilter = new ColumnFilter(newValueFromSpecificColumn);
         }
-        if (this.allContent === newValueFromSpecificColumn) {
-            this.logs$ = this.utlsFileService.getAllLogs();
-        }
+        LogActionHandler.getInstance().setNext(new GetAllLogsAction(this));
+        this.utlsFileService.getAllLogs();
     }
 
 
     ngOnDestroy() {
+        if (this.hourMode12Subscription !== null) {
+            this.hourMode12Subscription.unsubscribe();
+        }
+        if (this.logSubscription !== null) {
+            this.logSubscription.unsubscribe();
+        }
     }
 
 }

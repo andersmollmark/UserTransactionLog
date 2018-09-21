@@ -6,7 +6,8 @@ export class LogMessage {
 
     public jsondump: string;
     public messType: string;
-    public logs: UtlsLog[];
+    public timezoneId: string = null;
+    public logs: UtlsLog[] = null;
 
     is(type: string): boolean {
         return this.messType === type;
@@ -27,6 +28,7 @@ export class LogMessage {
         else {
             logMessage.jsondump = jsonObj.jsondump;
             logMessage.messType = jsonObj.messType;
+            logMessage.timezoneId = jsonObj.timezoneId ? jsonObj.timezoneId : null;
         }
         return logMessage;
     }
