@@ -71,8 +71,15 @@ export class AppComponent implements OnInit, OnDestroy {
     views: View[] = new Array<View>();
 
     private hourMode12Subscription: Subscription = null;
+    private timefilterFromSubscription: Subscription = null;
+    private timefilterToSubscription: Subscription = null;
+
 
     private logSubscription: Subscription = null;
+
+    private actionHandler = LogActionHandler.getInstance();
+
+
 
     menu;
 
@@ -83,6 +90,27 @@ export class AppComponent implements OnInit, OnDestroy {
         this.hourMode12Subscription = this.timeFilterService.get12HourModeSubscription().subscribe(mode12Hour => {
             this.zone.run(() => {
                 this.changeHourMode();
+            });
+        });
+
+        this.timefilterFromSubscription = this.timeFilterService.subscribeSelectedFrom().subscribe(selectedDate => {
+            this.zone.run(() => {
+                if(selectedDate !== null) {
+                    console.log('appcomp subscribe, selectedDateFrom:');
+                    this.actionHandler.setNext(new GetAllLogsAction(this));
+                    this.utlsFileService.getAllLogs();
+                }
+
+            });
+        });
+
+        this.timefilterToSubscription = this.timeFilterService.subscribeSelectedTo().subscribe(selectedDate => {
+            this.zone.run(() => {
+                if(selectedDate !== null) {
+                    console.log('appcomp subscribe, selectedDateFrom:');
+                    this.actionHandler.setNext(new GetAllLogsAction(this));
+                    this.utlsFileService.getAllLogs();
+                }
             });
         });
     }
@@ -277,15 +305,14 @@ export class AppComponent implements OnInit, OnDestroy {
         }
 
 
-        let actionHandler = LogActionHandler.getInstance();
-        actionHandler.setNext(new CreateAllLogsAction(this));
+        this.actionHandler.setNext(new CreateAllLogsAction(this));
 
         this.zone.run(() => {
             this.logs$ = this.utlsFileService.subscribeOnLogChanges();
             this.logSubscription = this.logs$.subscribe(logs => {
 
-                    if(actionHandler.hasNext()) {
-                        actionHandler.next().execute(logs);
+                    if(this.actionHandler.hasNext()) {
+                        this.actionHandler.next().execute(logs);
                         if (this.timeFilterService.getSelectedTimefilterFrom() !== null && this.timeFilterService.getSelectedTimefilterTo() !== null) {
                             console.log('new from:' + this.timeFilterService.getSelectedTimefilterFrom().asString() + ' new to:' +
                                 this.timeFilterService.getSelectedTimefilterTo().asString());
@@ -450,6 +477,12 @@ export class AppComponent implements OnInit, OnDestroy {
         }
         if (this.logSubscription !== null) {
             this.logSubscription.unsubscribe();
+        }
+        if(this.timefilterFromSubscription !== null) {
+            this.timefilterFromSubscription.unsubscribe();
+        }
+        if(this.timefilterToSubscription !== null) {
+            this.timefilterToSubscription.unsubscribe();
         }
     }
 

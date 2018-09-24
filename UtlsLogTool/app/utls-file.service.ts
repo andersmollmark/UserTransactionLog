@@ -52,26 +52,8 @@ export class UtlsFileService {
 
     allLogsFromFile: UtlsLog[] = [];
 
-    private timefilterFromSubscription: Subscription = null;
-    private timefilterToSubscription: Subscription = null;
-
-
     constructor(private http: Http, private utlsserverService: UtlserverService, private cryptoService: CryptoService,
                 private timeFilterService: TimeFilterService, private zone: NgZone) {
-        this.timefilterFromSubscription = this.timeFilterService.subscribeSelectedFrom().subscribe(selectedDate => {
-            this.zone.run(() => {
-                console.log('UtlsFileService, subscribe, selectedDateFrom:');
-                this.logsResultSubject.next(this.allLogsFromFile);
-
-            });
-        });
-
-        this.timefilterToSubscription = this.timeFilterService.subscribeSelectedTo().subscribe(selectedDate => {
-            this.zone.run(() => {
-                this.logsResultSubject.next(this.allLogsFromFile);
-            });
-        });
-
     }
 
     ngOnDestroy() {
