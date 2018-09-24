@@ -11,10 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,7 +34,10 @@ public class JmsTempCache {
 //        singleton
         String maxSize = ServerProperties.getInstance().getProp(ServerProperties.PropKey.UTLS_LOG_CACHE_MAX_SIZE);
         maxNumberOfLogs = Integer.parseInt(maxSize);
-        createEmptyCachefile();
+        if(!existCacheFile()){
+            createEmptyCachefile();
+        }
+
     }
 
     /**
@@ -52,6 +52,12 @@ public class JmsTempCache {
 
         }
         return _instance;
+    }
+
+    private boolean existCacheFile() {
+        Path path = Paths.get(FetchAllEventLogsService.DEFAULT_FILE_PATH_TMP + JmsTempCache.logCache);
+        return Files.exists(path, LinkOption.NOFOLLOW_LINKS);
+
     }
 
     /**
