@@ -1,7 +1,6 @@
 package com.delaval.usertransactionlogserver.jms;
 
 import com.delaval.usertransactionlogserver.ServerProperties;
-import com.delaval.usertransactionlogserver.service.FetchAllEventLogsService;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 import com.delaval.usertransactionlogserver.websocket.WebSocketMessage;
 import com.google.gson.Gson;
@@ -28,8 +27,6 @@ public class JmsTempCache {
     private static final Object LOG_LOCK = new Object();
     private final int maxNumberOfLogs;
 
-    private static final String logCache = "logCache";
-
     private JmsTempCache() {
 //        singleton
         String maxSize = ServerProperties.getInstance().getProp(ServerProperties.PropKey.UTLS_LOG_CACHE_MAX_SIZE);
@@ -55,9 +52,12 @@ public class JmsTempCache {
     }
 
     private boolean existCacheFile() {
-        Path path = Paths.get(FetchAllEventLogsService.DEFAULT_FILE_PATH_TMP + JmsTempCache.logCache);
-        return Files.exists(path, LinkOption.NOFOLLOW_LINKS);
+        return Files.exists(getLogCachePath(), LinkOption.NOFOLLOW_LINKS);
 
+    }
+
+    private Path getLogCachePath() {
+        return Paths.get(ServerProperties.getInstance().getProp(ServerProperties.PropKey.UTLS_CACHE_FILE_PATH));
     }
 
     /**
@@ -65,7 +65,7 @@ public class JmsTempCache {
      */
     private void createLogsFromCache() {
         synchronized (LOG_LOCK) {
-            Path path = Paths.get(FetchAllEventLogsService.DEFAULT_FILE_PATH_TMP + JmsTempCache.logCache);
+            Path path = getLogCachePath();
             try {
                 List<String> allLogs = Files.readAllLines(path);
                 allLogs.stream().forEach(jsonMessage -> {
@@ -107,16 +107,15 @@ public class JmsTempCache {
      * @param jsonMessage
      */
     private void writeLogToDisc(String jsonMessage) {
-        String filePath = FetchAllEventLogsService.DEFAULT_FILE_PATH_TMP;
-        Path path = Paths.get(filePath + JmsTempCache.logCache);
+        Path path = getLogCachePath();
         try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8, StandardOpenOption.APPEND)) {
             writer.write(jsonMessage);
             writer.newLine();
-            UtlsLogUtil.debug(this.getClass(), "added log to temporary cachefile, ", filePath, JmsTempCache.logCache);
+            UtlsLogUtil.debug(this.getClass(), "added log to temporary cachefile, ", path.toString());
         }
         catch (IOException e) {
-            UtlsLogUtil.error(this.getClass(), "something went wrong while adding log to file:", filePath, JmsTempCache.logCache,
-              " \nException:" + e.toString());
+            UtlsLogUtil.error(this.getClass(), "something went wrong while adding log to file:", path.toString(),
+              " Exception:" + e.toString());
         }
     }
 
@@ -131,7 +130,7 @@ public class JmsTempCache {
     }
 
     private void createEmptyCachefile() {
-        try (PrintWriter pw = new PrintWriter(FetchAllEventLogsService.DEFAULT_FILE_PATH_TMP + JmsTempCache.logCache)) {
+        try (PrintWriter pw = new PrintWriter(ServerProperties.getInstance().getProp(ServerProperties.PropKey.UTLS_CACHE_FILE_PATH))) {
             UtlsLogUtil.info(this.getClass(), "a new cachefile is created");
         }
         catch (FileNotFoundException e) {

@@ -3,11 +3,12 @@ package com.delaval.usertransactionlogserver;
 import com.delaval.usertransactionlogserver.persistence.dao.InitDAO;
 import com.delaval.usertransactionlogserver.util.UtlsLogUtil;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Properties;
 
 /**
@@ -19,6 +20,8 @@ public class ServerProperties {
     private static ServerProperties _instance;
 
     private static final String PROP_FILE_NAME = "UserTransactionLogServer.properties";
+    private static final String DEFAULT_UTLS_CACE_FILE_PATH = "/opt/utls/data/";
+    private static final String logCache = "logCache";
 
     public enum PropKey {
         DB_SERVER_HOST("dbServerHost", "localhost"),
@@ -41,21 +44,22 @@ public class ServerProperties {
         RSA_KEY_GEN("rsaKeyGen", "RSA"),
         AES_SECRET_KEY_ALGORITHM("AES", "AES"),
         AES_CIPHER_ALGORITHM("AES_CIPHER_ALGORITHM", "AES/ECB/PKCS5Padding"),
+        UTLS_CACHE_FILE_PATH("utlsCacheFilePath", DEFAULT_UTLS_CACE_FILE_PATH + ServerProperties.logCache),
         WEBSOCKET_PORT("websocketPort", "8085");
 
-        private String myName;
-        private String defaultValue;
+        private final String myKey;
+        private final String defaultValue;
 
-        PropKey(String name, String defaultValue) {
-            myName = name;
+        PropKey(String value, String defaultValue) {
+            myKey = value;
             this.defaultValue = defaultValue;
         }
 
-        public String getMyName() {
-            return myName;
+        public String getMyKey() {
+            return myKey;
         }
 
-        public String getDefaultValue(){
+        public String getDefaultValue() {
             return defaultValue;
         }
     }
@@ -74,7 +78,12 @@ public class ServerProperties {
     }
 
     private String get(PropKey propType) {
-        return prop.getProperty(propType.getMyName());
+        String result = prop.getProperty(propType.getMyKey());
+        if(result == null) {
+            UtlsLogUtil.warn(this.getClass(),"property is missing in file, adding it:", propType.myKey);
+            result = getPropAndAddItToFile(propType);
+        }
+        return result;
     }
 
     /**
@@ -88,64 +97,59 @@ public class ServerProperties {
     }
 
     private Properties setProperties() {
-        FileInputStream fIn = null;
-        FileOutputStream fOut = null;
-        try {
-            fIn = new FileInputStream(PROP_FILE_NAME);
-            prop.load(fIn);
-            addMissingProperty();
-            writePropFile(fOut);
 
-        } catch (IOException ex) {
-            try {
-                // Properties-file doesnt exist, create default values
-                Arrays.stream(PropKey.values()).forEach(propKey -> {
-                    set(propKey);
-                });
-                writePropFile(fOut);
+        Path propPath = Paths.get(PROP_FILE_NAME);
+        if(Files.exists(propPath)){
+            loadPropertiesFromFile(propPath);
+        }
+        else {
+            initProperties();
+            createPropertyFile(propPath);
+        }
 
-            } catch (IOException e) {
-                System.out.println("Got problem creating " + PROP_FILE_NAME + " file! ");
-            }
-        }
-        finally {
-            if(fIn != null){
-                try {
-                    fIn.close();
-                } catch (IOException e) {
-                    UtlsLogUtil.error(ServerProperties.class, "Couldnt close FileInputStream:", e.getMessage());
-                }
-            }
-            if(fOut != null){
-                try {
-                    fOut.close();
-                } catch (IOException e) {
-                    UtlsLogUtil.error(ServerProperties.class, "Couldnt close FileOutputStream:", e.getMessage());
-                }
-            }
-        }
         return prop;
     }
 
-    private void writePropFile(FileOutputStream fOut) throws IOException {
-        fOut = new FileOutputStream(PROP_FILE_NAME);
-        prop.store(fOut, "Serverproperties needed");
+    void loadPropertiesFromFile(Path propPath) {
+        try(BufferedReader reader = Files.newBufferedReader(propPath)){
+            prop.load(reader);
+        }
+        catch (IOException e) {
+            System.out.println("Got problem creating " + PROP_FILE_NAME + " file! ");
+            UtlsLogUtil.error(this.getClass(),"couldnt read propertiesfile:", PROP_FILE_NAME);
+        }
     }
 
-    private void addMissingProperty(){
-        Arrays.stream(PropKey.values()).forEach(propKey -> {
-            if(isMissing(propKey)){
-                set(propKey);
-            }
-        });
+    void initProperties() {
+        for(PropKey key: PropKey.values()) {
+            prop.setProperty(key.getMyKey(), key.defaultValue);
+        }
     }
 
-    private boolean isMissing(PropKey propKey){
-        return get(propKey) == null;
+    void createPropertyFile(Path propPath) {
+        try (BufferedWriter writer = Files.newBufferedWriter(propPath, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+            prop.store(writer, "Creating new propertiesfile");
+            UtlsLogUtil.info(this.getClass(), "Creating new propertiesfile");
+        }
+        catch (IOException e) {
+            UtlsLogUtil.error(this.getClass(), "something went wrong while creating propertiesfile:", PROP_FILE_NAME, " Exception:", e.toString());
+        }
+
     }
 
-    private void set(PropKey propType) {
-        prop.setProperty(propType
-          .getMyName(), propType.getDefaultValue());
+    String getPropAndAddItToFile(PropKey propKey) {
+        Path propPath = Paths.get(PROP_FILE_NAME);
+        prop.setProperty(propKey.getMyKey(), propKey.defaultValue);
+        try (BufferedWriter writer = Files.newBufferedWriter(propPath, StandardCharsets.UTF_8, StandardOpenOption.APPEND)) {
+            writer.write(propKey.getMyKey() + "=" + propKey.getDefaultValue());
+            writer.newLine();
+//            prop.store(writer, "Adding property to file");
+            UtlsLogUtil.info(this.getClass(), "adding property:", propKey.myKey, " to file:", PROP_FILE_NAME);
+        }
+        catch (IOException e) {
+            UtlsLogUtil.error(this.getClass(), "something went wrong when adding property ", propKey.getMyKey(), " to file:", PROP_FILE_NAME, " Exception:", e.toString());
+        }
+        return propKey.defaultValue;
     }
+
 }

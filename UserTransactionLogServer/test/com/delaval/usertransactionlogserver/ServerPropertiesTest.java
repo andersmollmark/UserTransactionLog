@@ -17,15 +17,6 @@ public class ServerPropertiesTest {
     }
 
     @Test
-    public void testIsMissing() throws Exception {
-        ServerProperties instance = ServerProperties.getInstance();
-        String expectedProp = "dummy";
-        boolean result = TestUtils.runMethod("isMissing", instance, ParametersFactory.getArgs(ServerProperties.PropKey.JMS_CONNECTION));
-        Assert.assertFalse(result);
-
-    }
-
-    @Test
     public void testGetAllPropsShallReturnRightAmountOfProps(){
         for(ServerProperties.PropKey aKey : ServerProperties.PropKey.values()){
             String prop = ServerProperties.getInstance().getProp(aKey);
