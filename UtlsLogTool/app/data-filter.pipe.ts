@@ -3,7 +3,7 @@ import {AppConstants} from "./app.constants";
 import {Pipe, PipeTransform} from "@angular/core";
 import {TimeFilterService} from "./timefilter.service";
 import {UtlsFileService} from "./utls-file.service";
-import {UtlsLog} from "./log";
+import {UtlsLog} from "./utls-log";
 
 @Pipe({
     name: "dataFilter"

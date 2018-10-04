@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import {AppConstants} from "./app.constants";
 import {Pipe, PipeTransform} from "@angular/core";
-import {UtlsLog} from "./log";
+import {UtlsLog} from "./utls-log";
 import {SortingObject} from "./sortingObject";
 
 @Pipe({

@@ -1,5 +1,5 @@
 import {Pipe, PipeTransform} from "@angular/core";
-import {UtlsLog} from "./log";
+import {UtlsLog} from "./utls-log";
 import {ColumnFilter} from "./column-filter";
 import {AppConstants} from "./app.constants";
 

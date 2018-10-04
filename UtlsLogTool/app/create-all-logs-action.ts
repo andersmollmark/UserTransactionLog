@@ -1,6 +1,6 @@
 import {LogAction} from "./log-action";
 import {AppComponent} from "./app.component";
-import {UtlsLog} from "./log";
+import {UtlsLog} from "./utls-log";
 
 export class CreateAllLogsAction implements LogAction {
 

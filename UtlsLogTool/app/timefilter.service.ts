@@ -2,7 +2,7 @@ import {Injectable} from "@angular/core";
 import {SelectedDate} from "./selectedDate";
 import {BehaviorSubject} from "rxjs/BehaviorSubject";
 import {TimeHandler} from "./time-handler";
-import {UtlsLog} from "./log";
+import {UtlsLog} from "./utls-log";
 
 @Injectable()
 export class TimeFilterService {

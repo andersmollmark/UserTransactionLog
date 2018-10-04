@@ -1,4 +1,4 @@
-import {UtlsLog} from "./log";
+import {UtlsLog} from "./utls-log";
 import {Response} from "@angular/http";
 import {AppConstants} from "./app.constants";
 

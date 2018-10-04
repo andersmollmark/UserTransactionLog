@@ -1,5 +1,5 @@
 import {Injectable, NgZone} from "@angular/core";
-import {UtlsLog} from "./log";
+import {UtlsLog} from "./utls-log";
 import {Observable} from "rxjs/Observable";
 import {Http} from "@angular/http";
 import {Dto} from "./dto";

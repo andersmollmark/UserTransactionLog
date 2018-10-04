@@ -108,7 +108,7 @@
                         Tab
                     </a>
                 </th>
-                <th class="utls-column-small">
+                <th class="utls-column-xsmall">
                     <a style="cursor: pointer" (click)="resetSort('category')" class="text-nowrap">
                         <span *ngIf="isColumnSortAsc('category')" class="glyphicon glyphicon-triangle-top"></span>
                         <span *ngIf="isColumnSortDesc('category')" class="glyphicon glyphicon-triangle-bottom"></span>
@@ -126,7 +126,14 @@
                     <a style="cursor: pointer" (click)="resetSort('host')" class="text-nowrap">
                         <span *ngIf="isColumnSortAsc('host')" class="glyphicon glyphicon-triangle-top"></span>
                         <span *ngIf="isColumnSortDesc('host')" class="glyphicon glyphicon-triangle-bottom"></span>
-                        Controlling MS
+                        Host MS
+                    </a>
+                </th>
+                <th class="utls-column-xsmall">
+                    <a style="cursor: pointer" (click)="resetSort('deviceIp')" class="text-nowrap">
+                        <span *ngIf="isColumnSortAsc('deviceIp')" class="glyphicon glyphicon-triangle-top"></span>
+                        <span *ngIf="isColumnSortDesc('deviceIp')" class="glyphicon glyphicon-triangle-bottom"></span>
+                        Controlling device
                     </a>
                 </th>
                 <th class="utls-column-xsmall">
@@ -153,6 +160,7 @@
                 <td>{{log.category}}</td>
                 <td>{{log.name}}</td>
                 <td>{{log.host}}</td>
+                <td>{{log.deviceIp}}</td>
                 <td>{{log.targetMs}}</td>
                 <td>{{log.label}}</td>
             </tr>

@@ -1,4 +1,4 @@
-import {UtlsLog} from "./log";
+import {UtlsLog} from "./utls-log";
 import {InitTimezoneResult} from "./init-timezone-result";
 import {CreateDateResult} from "./create-date-result";
 

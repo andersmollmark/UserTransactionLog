@@ -1,6 +1,6 @@
 import {Component, NgZone, OnDestroy, OnInit} from "@angular/core";
 import {UtlsFileService} from "./utls-file.service";
-import {UtlsLog} from "./log";
+import {UtlsLog} from "./utls-log";
 import {Observable} from "rxjs/Observable";
 import {Dto} from "./dto";
 import {AppConstants} from "./app.constants";
