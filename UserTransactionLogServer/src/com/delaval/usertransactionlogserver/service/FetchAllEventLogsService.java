@@ -222,6 +222,7 @@ public class FetchAllEventLogsService {
         eventLogsWithUserTransactionId.forEach(log -> {
             log.setUsername(aKey.getUsername());
             log.setTarget(aKey.getTarget());
+            log.setDeviceIp(aKey.getClient());
         });
         Gson gson = new Gson();
         JsonElement element = gson.toJsonTree(eventLogsWithUserTransactionId, new TypeToken<List<InternalEventLog>>() {

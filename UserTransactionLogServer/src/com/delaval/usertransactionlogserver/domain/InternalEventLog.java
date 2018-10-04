@@ -24,6 +24,7 @@ public class InternalEventLog implements InternalEntityRepresentation {
     private String timestampAsDateString;
     private String tab;
     private String host;
+    private String deviceIp;
     private String targetMs;
     private String target;
 
@@ -33,6 +34,7 @@ public class InternalEventLog implements InternalEntityRepresentation {
         timestampAsDateString = DateUtil.formatTimeStampToGuiString(timestampAsDate);
         username = "unknown";
         target = "unknown";
+        deviceIp = "unknown";
     }
 
     public InternalEventLog(EventLog eventLog, UserTransactionKey myKey) {
@@ -41,6 +43,7 @@ public class InternalEventLog implements InternalEntityRepresentation {
         timestampAsDateString = DateUtil.formatTimeStampToGuiString(timestampAsDate);
         username = myKey.getUsername();
         target = myKey.getTarget();
+        deviceIp = myKey.getClient();
     }
 
     public InternalEventLog(EventLog eventLog, UserTransactionKey myKey, ZoneId localZoneId) {
@@ -51,6 +54,7 @@ public class InternalEventLog implements InternalEntityRepresentation {
         timestamp = localTime.toInstant().toEpochMilli();
         username = myKey.getUsername();
         target = myKey.getTarget();
+        deviceIp = myKey.getClient();
     }
 
     private void setCommon(EventLog eventLog){
@@ -134,5 +138,13 @@ public class InternalEventLog implements InternalEntityRepresentation {
             return other.hashCode() == this.hashCode();
         }
         return false;
+    }
+
+    public String getDeviceIp() {
+        return deviceIp;
+    }
+
+    public void setDeviceIp(String deviceIp) {
+        this.deviceIp = deviceIp;
     }
 }
