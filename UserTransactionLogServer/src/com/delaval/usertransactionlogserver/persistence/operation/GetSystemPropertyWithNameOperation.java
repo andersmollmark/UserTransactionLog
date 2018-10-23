@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Returns all Clicklogs that exist in db with a certain usertransactionkey
+ * Fetches a systemproperty with a certain name
  */
 public class GetSystemPropertyWithNameOperation implements ReadOperation<InternalSystemProperty> {
 
@@ -20,11 +20,17 @@ public class GetSystemPropertyWithNameOperation implements ReadOperation<Interna
     private OperationResult<InternalSystemProperty> operationResult;
 
 
+    /**
+     * @see Operation#setJdbcSession(SSessionJdbc)
+     */
     @Override
     public void setJdbcSession(SSessionJdbc session) {
         jdbcSession = session;
     }
 
+    /**
+     * @see Operation#validate()
+     */
     @Override
     public void validate() {
         if (jdbcSession == null) {

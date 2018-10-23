@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Created by delaval on 2016-11-15.
+ * Handles the communication with jms-producer and cache, and it creates the messages to be put on activemq
  */
 public class JmsMessageService {
 
@@ -34,6 +34,10 @@ public class JmsMessageService {
     }
 
 
+    /**
+     * Tries to send all cached messages to activemq. It can send parts of or the hole cache. All messages thats not being sent is cached again.
+     * @return a map with all messages that wasnt sent to activemq
+     */
     public Map<WebSocketMessage, String> sendCachedJmsMessages() {
         JmsResourceFactory.startSendingJms();
         ConcurrentHashMap<WebSocketMessage, String> cachedLogs = JmsTempCache.getInstance().getAndClearCache();
@@ -45,11 +49,17 @@ public class JmsMessageService {
             }
             keys.remove(key);
         });
-        Map<WebSocketMessage, String> result = new HashMap<>();
-        keys.stream().forEach(messageKey -> result.put(messageKey, cachedLogs.get(messageKey)));
-        return result;
+        Map<WebSocketMessage, String> leftOvers = new HashMap<>();
+        keys.stream().forEach(messageKey -> leftOvers.put(messageKey, cachedLogs.get(messageKey)));
+        return leftOvers;
     }
 
+    /**
+     * Try to send amessage from cache and send it to activemq
+     * @param webSocketMessage
+     * @param jsonMessage
+     * @return true if it went well
+     */
     public boolean createJmsMessageFromCache(WebSocketMessage webSocketMessage, String jsonMessage) {
         if (JmsResourceFactory.isJmsStopped()) {
             UtlsLogUtil.info(this.getClass(), "sending to jms is stopped, returning");
@@ -65,6 +75,11 @@ public class JmsMessageService {
         return true;
     }
 
+    /**
+     * Creates a new message and sends it to activemq, if its up and running. Otherwise it caches it locally until activemq is up again
+     * @param webSocketMessage is the message to handle
+     * @param jsonMessage is the message in json-format
+     */
     public void createJmsMessage(WebSocketMessage webSocketMessage, String jsonMessage) {
         if (JmsResourceFactory.isJmsStopped()) {
             UtlsLogUtil.info(this.getClass(), "sending to jms is stopped, adding jms-message to cache instead");
@@ -83,6 +98,10 @@ public class JmsMessageService {
         }
     }
 
+    /**
+     * Caches a message because something has happened with either database or acrivemq. When its cached it can be handled later.
+     * @param webSocketMessage the message to cache
+     */
     public void cacheJmsMessage(WebSocketMessage webSocketMessage) {
         if (webSocketMessage != null) {
             ConnectionTimeoutService.stopJmsAndStartTimer();
@@ -92,6 +111,10 @@ public class JmsMessageService {
         }
     }
 
+    /**
+     * Sends a jmstemplate based on message on to jms-producer (activemq)
+     * @param jsonMessage the message in json-format
+     */
     private void sendJmsTemplate(String jsonMessage) {
         ServerProperties.PropKey jmsDest = ServerProperties.PropKey.JMS_QUEUE_DEST_EVENT;
         UtlsLogUtil.debug(JmsMessageService.class, "Create a jms from message:", jsonMessage, " to dest:", jmsDest.name());

@@ -6,7 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.TimeZone;
 
 /**
- * Created by delaval on 2017-06-20.
+ * Wraps the parameters thats needed to fetch the right logs, such as timespan and id of timezone
  */
 public class FetchLogDTO {
 

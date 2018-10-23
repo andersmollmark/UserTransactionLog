@@ -15,7 +15,7 @@ import com.google.gson.Gson;
 import java.util.Arrays;
 
 /**
- * Created by delaval on 1/13/2016.
+ * Creates the right operation-class for calling code
  */
 public class OperationFactory {
 
@@ -23,6 +23,11 @@ public class OperationFactory {
         return new OperationResult<T>(null);
     }
 
+    /**
+     * Creates a {@link CreateSystemPropertyOperation}
+     * @param internalSystemProperty describes a systemproperty in the system-domain
+     * @return a {@link CreateSystemPropertyOperation}
+     */
     public static CreateSystemPropertyOperation getCreateSystemPropertyForSystem(InternalSystemProperty internalSystemProperty) {
         SystemPropertyContent content = new SystemPropertyContent();
         content.setValue(internalSystemProperty.getValue());
@@ -39,29 +44,52 @@ public class OperationFactory {
         return operation;
     }
 
-
+    /**
+     * Creates a {@link CreateEventLogOperation}
+     * @param webSocketMessage is the messages that should be used when creating the log to the db
+     * @return the operation-class
+     */
     public static CreateEventLogOperation getCreateEventLog(WebSocketMessage webSocketMessage) {
         CreateEventLogOperation operation = new CreateEventLogOperation();
         operation.setMessage(webSocketMessage);
         return operation;
     }
 
+    /**
+     * Creates a {@link GetSystemPropertyWithNameOperation}
+     * @param name is the name of the systemproperty to fetch
+     * @return the operation-class
+     */
     public static GetSystemPropertyWithNameOperation getSystemPropertyWithName(String name) {
         GetSystemPropertyWithNameOperation operation = new GetSystemPropertyWithNameOperation();
         operation.setOperationParameter(new StringParameter(name));
         return operation;
     }
 
+    /**
+     * Creates a {@link GetAllUserTransactionKeysOperation}
+     * @return
+     */
     public static GetAllUserTransactionKeysOperation getAllUserTransactionKeys() {
         return new GetAllUserTransactionKeysOperation();
     }
 
+    /**
+     * Creates a {@link GetEventLogsWithUserTransactionKeyOperation}
+     * @param userTransactionKey is the inner representation of a userTransactionKey
+     * @return the operation-class
+     */
     public static GetEventLogsWithUserTransactionKeyOperation getEventLogsWithUserTransactionKey(InternalUserTransactionKey userTransactionKey) {
         GetEventLogsWithUserTransactionKeyOperation operation = new GetEventLogsWithUserTransactionKeyOperation();
         operation.setOperationParameter(new StringParameter(userTransactionKey.getId()));
         return operation;
     }
 
+    /**
+     * Creates a {@link GetEventLogsWithinTimespanOperation}
+     * @param fetchLogDTO contains the data neeeded to be able to fetch the specific timespan and timezone
+     * @return the operation-class
+     */
     public static GetEventLogsWithinTimespanOperation getEventLogsWithinTimespan(FetchLogDTO fetchLogDTO) {
         GetEventLogsWithinTimespanOperation operation = new GetEventLogsWithinTimespanOperation();
         StringParameter fromParam = new StringParameter(DateUtil.formatLocalDateTime(fetchLogDTO.getFrom()));

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Returns all Eventlogs that exist in db with a certain usertransactionkey
+ * Returns all Eventlogs that exist in db with a certain usertransactionkey (for a specific user)
  */
 public class GetEventLogsWithUserTransactionKeyOperation implements ReadOperation<InternalEventLog> {
 
@@ -19,11 +19,17 @@ public class GetEventLogsWithUserTransactionKeyOperation implements ReadOperatio
     private String userTransactionKeyId;
     private OperationResult<InternalEventLog> operationResult;
 
+    /**
+     * @see Operation#setJdbcSession(SSessionJdbc)
+     */
     @Override
     public void setJdbcSession(SSessionJdbc session) {
         jdbcSession = session;
     }
 
+    /**
+     * @see Operation#validate()
+     */
     @Override
     public void validate() {
         if (jdbcSession == null) {

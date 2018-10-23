@@ -15,7 +15,7 @@ import static simpleorm.dataset.SFieldFlags.SDESCRIPTIVE;
 import static simpleorm.dataset.SFieldFlags.SPRIMARY_KEY;
 
 /**
- * Entity that mirrors UserTransactionKey-table
+ * Entity that mirrors UserTransactionKey-table (unique identifier of an user)
  */
 public class UserTransactionKey extends AbstractEntity {
 

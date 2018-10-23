@@ -1,7 +1,7 @@
 package com.delaval.usertransactionlogserver.domain;
 
 /**
- * Created by delaval on 2017-05-15.
+ * All entities will implement this inside the systems-domain
  */
 public interface InternalEntityRepresentation {
 //    Empty marker-interface

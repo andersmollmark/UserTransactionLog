@@ -14,7 +14,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 /**
- * Created by delaval on 1/13/2016.
+ * Creates a log and saves it to db.
  */
 public class CreateEventLogOperation implements CreateUpdateOperation {
 
@@ -22,6 +22,9 @@ public class CreateEventLogOperation implements CreateUpdateOperation {
     WebSocketMessage webSocketMessage;
     EventLogContent eventLogContent;
 
+    /**
+     * @see Operation#setJdbcSession(SSessionJdbc)
+     */
     @Override
     public void setJdbcSession(SSessionJdbc session) {
         jdbcSession = session;
@@ -37,6 +40,9 @@ public class CreateEventLogOperation implements CreateUpdateOperation {
         return webSocketMessage;
     }
 
+    /**
+     * @see Operation#validate()
+     */
     @Override
     public void validate() {
         if(webSocketMessage == null){

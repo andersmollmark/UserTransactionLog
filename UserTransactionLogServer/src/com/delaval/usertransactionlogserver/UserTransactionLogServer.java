@@ -26,7 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * that initializes the Jetty-server.
+ * Main-class that initializes the Jetty-server.
  */
 public class UserTransactionLogServer {
     /**

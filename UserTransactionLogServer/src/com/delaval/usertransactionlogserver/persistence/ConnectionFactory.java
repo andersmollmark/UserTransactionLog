@@ -86,7 +86,12 @@ public class ConnectionFactory {
     }
 
 
-
+    /**
+     * Checks if a table for a specific message is locked
+     * @param messType
+     * @return true if its locked
+     * @throws SQLException
+     */
     public boolean isTableLocked(WebSocketMessage messType) throws SQLException {
         String tablename = LogTable.getTableName(MessTypes.getType(messType.getMessType()));
         return tablename != null && isTableWithNameLocked(tablename);

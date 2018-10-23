@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Returns all Eventlogs that exist in db with a certain usertransactionkey
+ * Returns all Eventlogs that exist in db within a timespan
  */
 public class GetEventLogsWithinTimespanOperation implements ReadOperation<InternalEventLog> {
 
@@ -27,11 +27,17 @@ public class GetEventLogsWithinTimespanOperation implements ReadOperation<Intern
     private ZoneId zoneId;
 
 
+    /**
+     * @see Operation#setJdbcSession(SSessionJdbc)
+     */
     @Override
     public void setJdbcSession(SSessionJdbc session) {
         jdbcSession = session;
     }
 
+    /**
+     * @see Operation#validate()
+     */
     @Override
     public void validate() {
         if (jdbcSession == null) {
@@ -47,6 +53,9 @@ public class GetEventLogsWithinTimespanOperation implements ReadOperation<Intern
 
     }
 
+    /**
+     * Fetches all eventlogs within a certain timespan and creates InternalEventLog for the inner-domain representation.
+     */
     @Override
     public void execute() {
         UtlsLogUtil.debug(this.getClass(), "Get all eventlogs between two dates:", " from:", from, " to:", to);
@@ -68,6 +77,10 @@ public class GetEventLogsWithinTimespanOperation implements ReadOperation<Intern
         this.readParameters = readParameters;
     }
 
+    /**
+     * Fetch all usertransaction-ids
+     * @return
+     */
     private Map<String, UserTransactionKey> getUserTransactionIds() {
         SQueryResult<UserTransactionKey> result = jdbcSession.query(new SQuery(UserTransactionKey.USER_TRANSACTION_KEY));
         Map<String, UserTransactionKey> userTransactionKeyMap = result.stream().collect(
@@ -75,6 +88,10 @@ public class GetEventLogsWithinTimespanOperation implements ReadOperation<Intern
         return userTransactionKeyMap;
     }
 
+    /**
+     * Filter out the logs within the timespan
+     * @return the logs that are inside timespan
+     */
     private SQueryResult<EventLog> getLogsWithinTimespan() {
         SQuery<EventLog> theQuery = new SQuery<>(EventLog.EVENT_LOG)
           .ge(EventLog.TIMESTAMP, from)
@@ -83,6 +100,10 @@ public class GetEventLogsWithinTimespanOperation implements ReadOperation<Intern
         return jdbcSession.query(theQuery);
     }
 
+    /**
+     * This is called from exception-handling when something goes wrong.
+     * @param notOkResult
+     */
     @Override
     public void setNotOkResult(OperationResult<InternalEventLog> notOkResult) {
         operationResult = notOkResult;

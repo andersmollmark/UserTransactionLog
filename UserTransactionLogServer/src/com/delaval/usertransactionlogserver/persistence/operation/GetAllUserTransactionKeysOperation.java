@@ -20,11 +20,17 @@ public class GetAllUserTransactionKeysOperation implements ReadOperation<Interna
     private SSessionJdbc jdbcSession;
     private OperationResult<InternalUserTransactionKey> operationResult;
 
+    /**
+     * @see Operation#setJdbcSession(SSessionJdbc)
+     */
     @Override
     public void setJdbcSession(SSessionJdbc session) {
         jdbcSession = session;
     }
 
+    /**
+     * @see Operation#validate()
+     */
     @Override
     public void validate() {
         if (jdbcSession == null) {

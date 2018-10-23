@@ -14,6 +14,8 @@ import java.util.Properties;
 /**
  * Singleton.
  * Holds all the properties needed in the UserTransactionLogServer.
+ * Loads all properties that exist on file when system boots, if it exists any file.
+ * Updates the file with new properties if there are more in the system than on the file.
  */
 public class ServerProperties {
 
@@ -143,7 +145,6 @@ public class ServerProperties {
         try (BufferedWriter writer = Files.newBufferedWriter(propPath, StandardCharsets.UTF_8, StandardOpenOption.APPEND)) {
             writer.write(propKey.getMyKey() + "=" + propKey.getDefaultValue());
             writer.newLine();
-//            prop.store(writer, "Adding property to file");
             UtlsLogUtil.info(this.getClass(), "adding property:", propKey.myKey, " to file:", PROP_FILE_NAME);
         }
         catch (IOException e) {

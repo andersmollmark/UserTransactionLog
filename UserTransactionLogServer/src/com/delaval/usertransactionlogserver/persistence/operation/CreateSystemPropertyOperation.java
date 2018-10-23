@@ -12,13 +12,16 @@ import simpleorm.sessionjdbc.SSessionJdbc;
 import java.util.Optional;
 
 /**
- * Created by delaval on 1/13/2016. TODO
+ * Creates system-properties
  */
 public class CreateSystemPropertyOperation implements CreateUpdateOperation {
 
     private SSessionJdbc jdbcSession;
     private WebSocketMessage webSocketMessage;
 
+    /**
+     * @see Operation#setJdbcSession(SSessionJdbc)
+     */
     @Override
     public void setJdbcSession(SSessionJdbc session) {
         jdbcSession = session;
@@ -34,6 +37,9 @@ public class CreateSystemPropertyOperation implements CreateUpdateOperation {
         return webSocketMessage;
     }
 
+    /**
+     * @see Operation#validate()
+     */
     @Override
     public void validate() {
         if(webSocketMessage == null){

@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 /**
  * Singleton.
  * Handles the persistence-logic of the tables.
+ * Handles the operation-classes in a generic way so that all logic can be reused
  */
 public class OperationDAO {
 
@@ -23,7 +24,7 @@ public class OperationDAO {
     private static OperationDAO _instance;
 
     private OperationDAO() {
-        // Empty by design
+        // Empty by design (Singleton)
     }
 
     public static synchronized OperationDAO getInstance() {
@@ -33,12 +34,21 @@ public class OperationDAO {
         return _instance;
     }
 
+    /**
+     * Executes a create or update-operation
+     * @param operation is the operation-class
+     */
     public void doCreateUpdate(CreateUpdateOperation operation) {
         synchronized (LOCK) {
             executeOperation(operation);
         }
     }
 
+    /**
+     * Executes a read-operation and returns the result
+     * @param readOperation is the read-operation-class
+     * @return the result that contains an internal representation of the entity/entities.
+     */
     public <T extends InternalEntityRepresentation> OperationResult<T> doRead(ReadOperation<T> readOperation) {
         synchronized (LOCK) {
             executeOperation(readOperation);
@@ -46,6 +56,10 @@ public class OperationDAO {
         }
     }
 
+    /**
+     * Handles generically an operation towards the db. The result of a read-operation will be stored inside the operation-object to be handled from calling code
+     * @param operation is the operation-class
+     */
     private <T extends InternalEntityRepresentation> void executeOperation(Operation<T> operation) {
         SSessionJdbc ses = null;
         try {
@@ -109,7 +123,9 @@ public class OperationDAO {
         }
     }
 
-
+    /**
+     * Makes the actual calls to the operation-class and handles the db-session
+     */
     private void doExecute(Operation operation, SSessionJdbc ses) throws InstantiationException, IllegalAccessException, SQLException {
         if (operation.isCreateUpdate()) {
             CreateUpdateOperation crudOperation = (CreateUpdateOperation)operation;

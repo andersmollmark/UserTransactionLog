@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by delaval on 2017-05-16.
+ * Wraps a result from an read-operation.
  */
 public class OperationResult<T extends InternalEntityRepresentation> {
 
@@ -20,6 +20,10 @@ public class OperationResult<T extends InternalEntityRepresentation> {
         return isResultOk() ? result : new ArrayList<>();
     }
 
+    /**
+     *
+     * @return true if its a result or not inside this
+     */
     public boolean isResultOk(){
         return result != null;
     }

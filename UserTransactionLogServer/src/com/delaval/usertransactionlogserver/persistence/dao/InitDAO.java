@@ -20,7 +20,8 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Creates all the needed tables in DB.
+ * Singleton
+ * Creates all the needed tables in DB. It also handles updates and altering to columns in tables.
  */
 public class InitDAO {
 
@@ -28,7 +29,7 @@ public class InitDAO {
     public static final String DEFAULT_DELETE_INTERVAL_IN_DAYS = "60";
 
     private InitDAO() {
-        // Empty by design
+        // Empty by design (Singleton)
     }
 
     public static synchronized InitDAO getInstance() {
@@ -38,6 +39,11 @@ public class InitDAO {
         return _instance;
     }
 
+    /**
+     * Checks the usertransaction-key-table exists in db.
+     * @return true if it does
+     * @throws SQLException
+     */
     public boolean isCreateTables() throws SQLException {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT * FROM ").append(UserTransactionKey.USER_TRANSACTION_KEY.getTableName());
@@ -86,6 +92,10 @@ public class InitDAO {
         return getTableWithName(UserTransactionKey.USER_TRANSACTION_KEY.getTableName());
     }
 
+    /**
+     * Alter EventLog- and SystemProperty-tables. Adding/altering varchar-columns and timestamp-columns
+     * @throws SQLException
+     */
     public void alterTables() throws SQLException {
         UtlsLogUtil.info(this.getClass(), EventLog.EVENT_LOG.getTableName(), " alter table...");
         ResultSet eventLogTable = getTableWithName(EventLog.EVENT_LOG.getTableName());
@@ -103,6 +113,13 @@ public class InitDAO {
         updateUserTransactionKeyIdToLowerIfExist();
     }
 
+    /**
+     * Alter a table. If a varcharcolumn is missing, it adds it and if a size is changed in the column it changes that.
+     * @param table
+     * @param tablename
+     * @param varcharColumns
+     * @throws SQLException
+     */
     private void alterTables(ResultSet table, String tablename, List<SFieldString> varcharColumns) throws SQLException {
         List<SFieldString> missingColumns = getMissingVarcharColumns(table, varcharColumns, tablename);
         for (SFieldString missingColumn : missingColumns) {
@@ -114,6 +131,13 @@ public class InitDAO {
         }
     }
 
+    /**
+     * Fetches all varchar-columns thats missing in the table according to the entity
+     * @param table
+     * @param varcharColumns
+     * @param tablename
+     * @return a list with the names of the columns thats missing
+     */
     private List<SFieldString> getMissingVarcharColumns(ResultSet table, List<SFieldString> varcharColumns, String tablename) {
         List<SFieldString> missingColumnnames = new ArrayList<>();
         UtlsLogUtil.info(this.getClass(), "checking missing columns...");
@@ -145,6 +169,13 @@ public class InitDAO {
         return missingColumnnames;
     }
 
+    /**
+     * Fetches the columns that had got a bigger size in entity than in database
+     * @param table
+     * @param varcharColumns
+     * @param tablename
+     * @return list with the columns that need to be updated
+     */
     private List<SFieldString> getVarcharColumnsWithBiggerColumnSize(ResultSet table, List<SFieldString> varcharColumns, String tablename) {
         List<SFieldString> changedColumnSize = new ArrayList<>();
         UtlsLogUtil.info(this.getClass(), "checking size of columns...");
@@ -175,6 +206,7 @@ public class InitDAO {
         }
         return changedColumnSize;
     }
+
 
     private void addMissingVarcharColumn(String tablename, SFieldString missingColumn) throws SQLException {
         UtlsLogUtil.info(this.getClass(),

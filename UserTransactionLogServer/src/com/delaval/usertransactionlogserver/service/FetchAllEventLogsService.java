@@ -47,6 +47,10 @@ public class FetchAllEventLogsService {
         writeJsonDumpOnFile(DEFAULT_FILE_PATH_TMP, DEFAULT_FILENAME_JSONDUMP);
     }
 
+
+    /**
+     * Creates a file saved locally with all logs.
+     */
     public void writeJsonDumpOnFile(String filepath, String filename) {
         UtlsLogUtil.info(this.getClass(), "Writing jsonfile, path:", filepath, " filename:", filename);
         Path path = Paths.get(filepath + filename);
@@ -57,6 +61,9 @@ public class FetchAllEventLogsService {
 
     }
 
+    /**
+     * Creates a file saved locally with all logs the last day.
+     */
     public void writeLastDayDataOnFile(){
         UtlsLogUtil.info(this.getClass(), "Writing jsonfile, path:", DEFAULT_FILE_PATH_TMP, " filename:", LAST_DAY_FILENAME);
         Path path = Paths.get(DEFAULT_FILE_PATH_TMP + LAST_DAY_FILENAME);

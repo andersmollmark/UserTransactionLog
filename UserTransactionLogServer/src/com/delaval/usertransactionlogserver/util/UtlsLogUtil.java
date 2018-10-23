@@ -1,14 +1,13 @@
 package com.delaval.usertransactionlogserver.util;
 
-import org.eclipse.jetty.websocket.api.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 /**
- * Created by delaval on 2016-02-04.
+ * Handles logging in Utl-server
  */
 public class UtlsLogUtil {
 

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by delaval on 1/18/2016.
+ * Implement this when creating operations that only does readings from db
  */
 public interface ReadOperation<T extends InternalEntityRepresentation> extends Operation {
 
@@ -16,6 +16,9 @@ public interface ReadOperation<T extends InternalEntityRepresentation> extends O
 //        do nothing
     }
 
+    /**
+     * @see Operation#isCreateUpdate()
+     */
     @Override
     default boolean isCreateUpdate(){
         return false;
