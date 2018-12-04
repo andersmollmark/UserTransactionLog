@@ -31,11 +31,15 @@ public final class SessionController {
 
     public void remove(Session session){
         synchronized (SESSION_LOCK){
-            sessions.get().remove(session);
-            String hostAdress = getRemoteAddress(session);
-            List<Session> sessionsOnThisHost = sessionsPerHost.get().get(hostAdress);
-            if(sessionsOnThisHost != null){
-                sessionsOnThisHost.remove(session);
+            Date date = sessions.get().get(session);
+            if(date != null) {
+                sessions.get().remove(session);
+                String hostAdress = getRemoteAddress(session);
+                List<Session> sessionsOnThisHost = sessionsPerHost.get().get(hostAdress);
+                if(sessionsOnThisHost != null){
+                    sessionsOnThisHost.remove(session);
+                }
+
             }
         }
     }
