@@ -98,7 +98,10 @@ export class AppComponent implements OnInit, OnDestroy {
                 if(selectedDate !== null) {
                     console.log('appcomp subscribe, selectedDateFrom:');
                     this.actionHandler.setNext(new GetAllLogsAction(this));
-                    this.utlsFileService.getAllLogs();
+                    if (this.activeLogs !== null) {
+                        this.utlsFileService.getAllLogs();
+                    }
+
                 }
 
             });
@@ -109,7 +112,9 @@ export class AppComponent implements OnInit, OnDestroy {
                 if(selectedDate !== null) {
                     console.log('appcomp subscribe, selectedDateFrom:');
                     this.actionHandler.setNext(new GetAllLogsAction(this));
-                    this.utlsFileService.getAllLogs();
+                    if(this.activeLogs !== null) {
+                        this.utlsFileService.getAllLogs();
+                    }
                 }
             });
         });

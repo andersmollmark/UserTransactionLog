@@ -27,7 +27,7 @@
     "concurrently": "^2.2.0",
     "css-loader": "^0.26.1",
     "electron": "1.6.2",
-    "electron-packager": "^8.4.0",
+    "electron-packager": "12.1.0",
     "es6-shim": "^0.34.0",
     "jasmine-core": "^2.5.2",
     "karma": "^1.5.0",

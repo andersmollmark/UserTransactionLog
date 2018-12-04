@@ -36,18 +36,19 @@ export class FetchLogComponent {
         let momentTz = require("moment-timezone");
         this.zone.run(() => {
             this.timezones = momentTz.tz.names();
-            if(favorite){
+            if (favorite) {
                 this.chosenTimezone = favorite;
                 this.timefilterService.createTimefilter(this.chosenTimezone);
-            }
-            else {
+            } else {
+                localStorage.setItem(AppConstants.TIMEZONE_FAVORITE, 'UTC');
+                this.chosenTimezone = 'UTC';
                 this.timefilterService.createTimefilter('UTC');
             }
         });
     }
 
     fetchLogs(): void {
-        if(this.chosenTimezone && this.chosenTimezone !== this.timezonesDefault){
+        if (this.chosenTimezone && this.chosenTimezone !== this.timezonesDefault) {
             let from = this.timefilterService.getSelectedTimefilterFrom();
             let to = this.timefilterService.getSelectedTimefilterTo();
             localStorage.setItem(AppConstants.TIMEZONE_FAVORITE, this.chosenTimezone);
